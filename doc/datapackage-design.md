@@ -1,15 +1,14 @@
 # Requirements
 
 - as simple as possible
-- one package - one team - distributed work
-- should be possible to work offline - without access to network
-- packages can be integrated from multiple sources and verified that indeed they are steps of a data flow
-- reproducibility must be verifiable (those which are not reproducible are marked, a final result is reproducible if all packages it depends on are reproducible)
-- cross-platform access (Win-Mac-Lin)
-- create a new package based on an older one by updating its input
-    - track input channels
-    - do it automatically?!
+- make it easy to work with
+- make it hard to make mistakes
+- even if "central" repo is temporarily not available work can continue in peer to peer mode - packages can be exchanged directly, integrated to the repo later
+- reproducibility must be verifiable
+- must be cross-platform (Win-Mac-Lin)
+- updates: easily create newer packages based on new input
 - access control with granularity of package-uuid - restricted packages
+- packages might be owned, but ownership surely changes over time
 
 
 # Assumptions
@@ -20,8 +19,9 @@
 
 # Roles
 
-- package developer
-- package data user
+- package developer (programmer)
+- package data user (programmer, analyst)
+- [external] reproducer (anyone?)
 
 
 # Use cases
@@ -30,25 +30,39 @@
     + create new package layout - with directory structure
     + unpack existing pkg for development (w/ most recent input data)
     + manage input data
-        + get input data (name, channel, version, nick)
+        + mount input data (name, channel, version, nick)
             * extract data under input/<nick>
             * register (name-uuid, version-uuid, nick) in metadata
-        + delete input data
-        + rename input data (nick)
+        + unmount input data (delete nick)
+        + rename input data (rename nick)
+        + set upgrade channel (nick, channel)
         + upgrade input data (nick[, version-uuid])
-    + create package from directory
-        * create archive
-    + publish package on a repository (optionally with all its dependencies)
-        + make package available on a channel
+    + create archive from directory
+    + publish package as archive on a repository
+    + make package available on a channel
     + export package from a repository as an archive
 
 - data user:
     + get data
     ? get data as okfn datapackage
 
+- reproducer:
+    + check [partial] reproducibility
+        * get exported data packages
+        * build a multi-package environment with
+            - input data
+            - code for non-input data
+            - script to build (snakemake?)
+            - reference output
+
+
 # Datapackage
 
-A datapackage is an immutable archive with annotation.
+A datapackage is an immutable archive.
+
+During development it is a directory with well defined layout.
+The directory layout differs from the archive layout (they have different intended uses), but tools can easily convert between the two.
+
 
 ## Archive
 
@@ -60,76 +74,132 @@ The archive contains
     + ordering: time stamp
     + catalog:
         + package name (package-uuid)
-        + update channel information (channel-uuid)
+        + optional per-nick update channel information (channel-uuids)
 	+ how to reproduce:
 	    + references to input data packages (name, version, nick)
 	    + how to run the code
+
+## Directory
+
+The directory contains
+
+- input directory
+    + read only, mount points for input data packages:
+        * nick1/data...
+        * nick2/data...
+        * ...
+- output directory
+    + initially empty
+    + it is what becomes the *data* directory in the datapackage archive
+- tmp directory
+    + initially empty
+    + the script can use it to keep intermediate results, between its processing phases
+- .pkgmeta
+    + datapackage descriptor, which defines
+        * the name of the package (uuid)
+        * what is contained in the input directory
+        * what output files are to be found
+        * how to run the code
+- source code, which
+    + is every other file, directory, not described above
+    + is stored under *code* in the datapackage archive
+
 
 ### Storage standards
 
 - bagit (data integrity with md5, sha1 sums)
 - okfn datapackage (metadata & generic tools)
 
+
+## Attributes
+
+A package has a set of immutable attributes:
+
+- package name
+    - embdedded in the archive
+    - it is a machine processable UUID, rather than human readable name
+- creation time
+    - embedded in the archive
+- version
+    - secure hash generated from the archive content as a whole
+
+
+# Repository
+
+A repository is maintaining a collection of packages.
+
+- new packages can be deposited in
+- existing packages can be retrieved by (name, version)
+- provides manageable mapping between human mnemonics and technical uuids (package name and channel)
+- provides ordering of packages via per-package channels for upgrades:
+    (name, channel) -> ordered list of versions
+
+
+## Requirements
+
+- must be easy to set up - one or more by developers?, one per project?
+- must be cross-platform (Win-Mac-Lin)
+- may provide remote access
+- must have local (offline) mode
+- the same package can be stored again under different channel
+- must ensure integrity of packages
+- should be easy to incrementally back up
+- may provide tools to discover and remove unused or unreproducible packages
+
+
 ## Annotations
 
-### Immutable
-
-Immutable annotations can be encoded in the file name.
-
-- name
-- version
-    - channel
-    - ordering info (sequence or time stamp?)
-    - crypto-hash of package (md5/sha1)
-
-### Volatile
+Annotations are volatile and stored separately from the archives in the repository.
 
 - description
 - developer info
 - flags ("reproduced")
 - tags ("exhibit-20140000-1", "test")
 
+# Channels
 
-# Repository
+Channels can be used for keeping track of improvements of compatible packages.
+Channels can also be used to differentiate between incompatible streams of packages sharing the same name.
+They are a tool to enable continuous improvements and updates.
+Packages within channels are automatically sorted by their timestamps.
 
-A repository is maintaining a collection of packages.
-A repository is a realm, in that packages get some immutable annotation when they arrive into the repository.
+Out of order package releases can be made without disrupting a channel - by not including the package in any channel.
 
-new packages can be deposited in
-existing packages can be retrieved by (name, version)
-provides ordering of packages in buckets:
-    (name, channel) -> ordered list of versions
+Position in a channel can be thought of as a numeric version, the last one is the most current version.
 
-- must be easy to set up - one or more by developers?, one per project?
-- must be cross-platform (Win-Mac-Lin)
-- may provide remote access
-- must have local (offline) mode
-- the same package can be stored again under different name, channel
-- must ensure integrity of packages
-- should be easy to incrementally back up
-- may provide tools to discover and remove unused or unreproducible packages
+Channels are mutable, packages can be added and removed.
+Constraint: packages with timestamps in the future can not be in channels.
 
 
-# Version problems
+## Channel attributes
 
-Are avoided by
+### Closed channels
 
-- sequence number is assigned by the repo (package realm)
-- same package can have multiple versions, even within same repo
-- same package can be present in different channels
-- packages are unambiguously referenced by (name, channel, crypto-hash)
-- channels are used for differentiating incompatible streams under the same name
+Channels can be *open* or *closed*.
 
-Storage:
+Closed channels do not get more updates.
+
+Closed channels can point to another channel as incompatible continuation (*the next version*).
+
+### Test channels
+
+A channel can point to *test channel*, which holds compatible packages with significantly smaller size.
+Tools can support switching to test channels during development.
+
+Special problem: data package created from test data
+
+Tools MUST allow to publish them to *test channels*
+
+Tools MUST make it hard to accidentally release them on *production channels* accidentally
+
+
+# Storage
+
 - http://en.wikipedia.org/wiki/Content-addressable_storage
 - git? http://git-scm.com/book/en/Git-Internals-Git-Objects
 
-# open problems:
 
-- how to handle conflicts (same version released twice)
-
-    - use realms that are repository specific
-    - versions are realm specific
+# Open problems
 
 - how to configure repos
 
@@ -143,3 +213,4 @@ Storage:
 
     - Encrypt packages?
     - apply unix permissions on parts of a repo?
+    - chain multiple repos with different permissions?
