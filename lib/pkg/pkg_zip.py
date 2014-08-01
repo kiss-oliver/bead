@@ -9,7 +9,7 @@ from __future__ import print_function
 
 import yaml
 
-from .path import Path
+from ..path import Path
 
 
 DATA_PATH = Path('data')

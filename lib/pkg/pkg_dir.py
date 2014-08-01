@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import os
 
-from . import path
+from .. import path
 from . import pkg_zip
 
 INPUT = 'input'

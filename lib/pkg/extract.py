@@ -8,8 +8,8 @@ import os
 import shutil
 import tempfile
 
-from . import path
-from .path import Path
+from .. import path
+from ..path import Path
 
 
 @contextlib.contextmanager
@@ -52,6 +52,7 @@ def extract_dir(zipfile, zip_dir, destination):
         os.rename(unzip_dir / zip_dir, destination)
 
 
+# FIXME: replace manual tests with automated ones
 def main():
     import zipfile
     z = zipfile.ZipFile('/ramdisk/x.zip')

@@ -11,10 +11,10 @@ import os
 import sys
 import zipfile
 
-from .path import Path
+from ..path import Path
 from . import pkg_zip
-from . import pkg_layout
-from . import securehash
+from . import pkg_dir
+from .. import securehash
 
 
 class ZipCreator(object):
@@ -58,7 +58,7 @@ class ZipCreator(object):
 
     def create(self, zip_file_name, source_directory):
         source_path = Path(source_directory)
-        assert pkg_layout.is_valid(source_path)
+        assert pkg_dir.is_valid(source_path)
         try:
             self.zipfile = zipfile.ZipFile(
                 zip_file_name,
@@ -74,10 +74,10 @@ class ZipCreator(object):
     def add_code(self, source_directory):
         def is_code(f):
             return f not in {
-                pkg_layout.INPUT,
-                pkg_layout.OUTPUT,
-                pkg_layout.PKGMETA,
-                pkg_layout.TEMP
+                pkg_dir.INPUT,
+                pkg_dir.OUTPUT,
+                pkg_dir.PKGMETA,
+                pkg_dir.TEMP
             }
 
         for f in sorted(os.listdir(source_directory)):
@@ -89,7 +89,7 @@ class ZipCreator(object):
 
     def add_data(self, source_directory):
         self.add_directory(
-            source_directory / pkg_layout.OUTPUT,
+            source_directory / pkg_dir.OUTPUT,
             pkg_zip.DATA_PATH
         )
 
