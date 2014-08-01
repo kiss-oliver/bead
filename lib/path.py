@@ -44,3 +44,13 @@ def ensure_directory(path):
 
 def parent(path):
     return Path(os.path.normpath(Path(path) / '..'))
+
+
+def write_file(path, content):
+    if isinstance(content, bytes):
+        f = open(path, 'wb')
+    else:
+        f = open(path, 'wt', encoding='utf-8')
+
+    with f:
+        f.write(content)

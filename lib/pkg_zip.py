@@ -28,3 +28,8 @@ def to_yaml(obj):
         default_style=False,
         default_flow_style=False,
     )
+
+
+def is_valid(zipfile):
+    # TODO
+    return True

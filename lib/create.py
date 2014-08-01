@@ -11,7 +11,6 @@ import os
 import sys
 import zipfile
 
-from . import path
 from .path import Path
 from . import pkg_zip
 from . import pkg_layout
@@ -58,6 +57,8 @@ class ZipCreator(object):
         self.add_hash(zip_path, securehash.bytes(bytes))
 
     def create(self, zip_file_name, source_directory):
+        source_path = Path(source_directory)
+        assert pkg_layout.is_valid(source_path)
         try:
             self.zipfile = zipfile.ZipFile(
                 zip_file_name,
@@ -65,21 +66,26 @@ class ZipCreator(object):
                 compression=zipfile.ZIP_DEFLATED,
                 allowZip64=True,
             )
-            self.create_from(Path(source_directory))
+            self.create_from(source_path)
             self.zipfile.close()
         finally:
             self.zipfile = None
 
     def add_code(self, source_directory):
-        dir_content = sorted(os.listdir(source_directory))
-        assert pkg_layout.INPUT in dir_content
-        assert pkg_layout.OUTPUT in dir_content
-        assert pkg_layout.PKGMETA in dir_content
+        def is_code(f):
+            return f not in {
+                pkg_layout.INPUT,
+                pkg_layout.OUTPUT,
+                pkg_layout.PKGMETA,
+                pkg_layout.TEMP
+            }
 
-        for f in dir_content:
-            if f in {pkg_layout.INPUT, pkg_layout.OUTPUT, pkg_layout.PKGMETA}:
-                continue
-            self.add_path(source_directory / f, pkg_zip.CODE_PATH / f)
+        for f in sorted(os.listdir(source_directory)):
+            if is_code(f):
+                self.add_path(
+                    source_directory / f,
+                    pkg_zip.CODE_PATH / f
+                )
 
     def add_data(self, source_directory):
         self.add_directory(
@@ -100,9 +106,10 @@ class ZipCreator(object):
         self.add_code(source_directory)
         self.add_meta(source_directory)
 
+        assert pkg_zip.is_valid(self.zipfile)
+
 
 def create(zip_file_name, source_directory):
-    assert not path.contains(source_directory, zip_file_name)
     ZipCreator().create(zip_file_name, source_directory)
 
 
