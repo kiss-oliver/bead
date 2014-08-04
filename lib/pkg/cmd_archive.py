@@ -12,6 +12,7 @@ import sys
 import zipfile
 
 from ..path import Path
+from .. import meta
 from . import pkg_zip
 from . import pkg_dir
 from .. import securehash
@@ -95,8 +96,8 @@ class ZipCreator(object):
 
     def add_meta(self, source_directory):
         # FIXME: add_meta is dummy, to be completed, when pkg_zip is defined
-        pkgmeta_yaml = pkg_zip.to_yaml({'TODO': 'FIXME'})
-        self.add_content(pkg_zip.META_PKGMETA_YAML, pkgmeta_yaml)
+        pkgmeta = meta.to_string({'TODO': 'FIXME'})
+        self.add_content(pkg_zip.META_PKGMETA, pkgmeta)
         self.add_content(pkg_zip.META_CHECKSUMS, self.checksums)
 
     def create_from(self, source_directory):

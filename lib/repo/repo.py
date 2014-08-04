@@ -8,7 +8,7 @@ from __future__ import print_function
 packages are stored in the hierarchy
 
 repo_root
-    |- package-names.yaml
+    |- package-names
     |- packages
         |- pkg_uuid
             |- version_uuid
@@ -18,7 +18,7 @@ repo_root
                     |- tag1
                     |- tag2
                     |- ...
-    |- channel-names.yaml
+    |- channel-names
     |- channels
         |- ???
 '''

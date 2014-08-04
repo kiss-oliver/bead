@@ -9,7 +9,7 @@ from __future__ import print_function
 import os
 
 from .. import path
-from . import pkg_zip
+from .. import persistence
 
 INPUT = 'input'
 OUTPUT = 'output'
@@ -41,6 +41,8 @@ def create(dir):
     os.mkdir(pkg_path / INPUT)
     os.mkdir(pkg_path / OUTPUT)
     os.mkdir(pkg_path / TEMP)
-    path.write_file(pkg_path / PKGMETA, pkg_zip.to_yaml({}))
+    pkgmeta = {}  # TODO
+    with open(pkg_path / PKGMETA, 'w') as f:
+        persistence.to_stream(pkgmeta, f)
 
     assert is_valid(pkg_path)
