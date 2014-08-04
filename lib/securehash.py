@@ -8,6 +8,11 @@ import hashlib
 READ_BLOCK_SIZE = 1024 ** 2
 
 
+# FIXME: hash should be created from (length of content, content)
+# in practice this means something like hashing netstrings
+# http://cr.yp.to/proto/netstrings.txt
+#
+
 def file(file):
     '''Read file and return sha512 hash for its content.
 
