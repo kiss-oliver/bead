@@ -25,7 +25,11 @@ def from_string(string):
     return json.loads(string)
 
 
-JSON_SAVE_OPTIONS = dict(indent=4, sort_keys=True)
+JSON_SAVE_OPTIONS = dict(
+    indent=4,
+    sort_keys=True,
+    ensure_ascii=True,
+)
 
 
 def to_string(content):
