@@ -6,7 +6,7 @@ from __future__ import print_function
 import os
 
 
-class Path(unicode):
+class Path(''.__class__):
 
     def __div__(self, other):
         return self.__class__(os.path.join(self, other))
