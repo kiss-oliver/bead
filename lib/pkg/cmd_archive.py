@@ -26,7 +26,7 @@ class ZipCreator(object):
 
     def add_hash(self, path, hash):
         assert path not in self.hashes
-        self.hashes[path] = hash.hexdigest()
+        self.hashes[path] = hash
 
     @property
     def checksums(self):

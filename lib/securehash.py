@@ -27,10 +27,10 @@ def file(file):
             if not block:
                 break
             hash.update(block)
-    return hash
+    return hash.hexdigest()
 
 
 def bytes(bytes):
     '''Return sha512 hash for bytes.
     '''
-    return hashlib.sha512(bytes)
+    return hashlib.sha512(bytes).hexdigest()
