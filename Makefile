@@ -4,7 +4,7 @@ test: test2 test3
 
 clean:
 	find -name \*.pyc | xargs rm -vf --
-	-find -name __pycache__ | xargs rmdir -v
+	-find lib -type d | xargs rmdir -v --ignore-fail-on-non-empty --
 
 test2: clean
 	in-virtualenv -r test_requirements.txt nosetests
