@@ -50,16 +50,3 @@ def extract_dir(zipfile, zip_dir, destination):
     with temp_dir(path.parent(destination)) as unzip_dir:
         zipfile.extractall(unzip_dir, filelist)
         os.rename(unzip_dir / zip_dir, destination)
-
-
-# FIXME: replace manual tests with automated ones
-def main():
-    import zipfile
-    z = zipfile.ZipFile('/ramdisk/x.zip')
-    extract_file(z, 'meta/checksums.sha512', '/ramdisk/xchecksum/checksums')
-    extract_dir(z, 'data', '/ramdisk/xdata')
-    extract_dir(z, 'code', '/ramdisk/xcode/x')
-
-
-if __name__ == '__main__':
-    main()
