@@ -6,8 +6,6 @@ from __future__ import print_function
 from ..test import TestCase
 from . import pkg_dir
 
-import fixtures
-
 from ..path import Path
 
 
@@ -23,7 +21,7 @@ class Test(TestCase):
     __pkg_dir = None
 
     def given_an_empty_directory(self):
-        self.__pkg_dir = self.useFixture(fixtures.TempDir()).path
+        self.__pkg_dir = self.new_temp_dir()
 
     def when_initialized(self):
         pkg_dir.create(self.__pkg_dir)

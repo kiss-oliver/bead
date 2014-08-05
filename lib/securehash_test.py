@@ -3,8 +3,10 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from .test import TestCase, FileFixture
+from .test import TestCase
 from . import securehash
+
+from .path import write_file
 
 
 class Test(TestCase):
@@ -26,9 +28,8 @@ class Test(TestCase):
     __some_bytes = None
 
     def given_a_file(self):
-        self.__file = (
-            self.useFixture(FileFixture(b'with some content')).file
-        )
+        self.__file = self.new_temp_dir() / 'file'
+        write_file(self.__file, b'with some content')
 
     def given_some_bytes(self):
         self.__some_bytes = b'some bytes'

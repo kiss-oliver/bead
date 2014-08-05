@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from .test import TestCase, FileFixture
+from .test import TestCase
 from . import persistence as m
 
 
@@ -35,9 +35,7 @@ class Test(TestCase):
     __structure = None
 
     def given_a_persisted_structure_as_a_file(self):
-        self.__file = (
-            self.useFixture(FileFixture(b'')).file
-        )
+        self.__file = self.new_temp_dir() / 'file'
         with open(self.__file, 'w') as f:
             m.to_stream(get_structure(), f)
 

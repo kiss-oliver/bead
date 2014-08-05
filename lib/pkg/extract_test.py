@@ -3,8 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import fixtures
-from ..test import TestCase, FileFixture
+from ..test import TestCase
 from . import extract as m
 
 import os
@@ -31,9 +30,7 @@ class Test(TestCase):
     __extracteddir = None
 
     def given_a_zipfile(self):
-        self.__zipfile = (
-            self.useFixture(FileFixture(b'')).file
-        )
+        self.__zipfile = self.new_temp_dir() / 'zipfile.zip'
         z = zipfile.ZipFile(self.__zipfile, 'w')
         z.writestr('somefile1', b'''somefile1's known content''')
         z.writestr('path/file1', b'''?? file1's known content''')
@@ -42,8 +39,7 @@ class Test(TestCase):
         z.close()
 
     def when_file1_is_extracted(self):
-        self.__extractedfile = self.useFixture(FileFixture(b'')).file
-        os.remove(self.__extractedfile)
+        self.__extractedfile = self.new_temp_dir() / 'extracted_file'
         with zipfile.ZipFile(self.__zipfile) as z:
             m.extract_file(z, 'path/to/file1', self.__extractedfile)
 
@@ -52,7 +48,7 @@ class Test(TestCase):
             self.assertEquals(b'''file1's known content''', f.read())
 
     def when_a_directory_is_extracted(self):
-        self.__extracteddir = self.useFixture(fixtures.TempDir()).join('dest')
+        self.__extracteddir = self.new_temp_dir() / 'destination dir'
         with zipfile.ZipFile(self.__zipfile) as z:
             m.extract_dir(z, 'path/to', self.__extracteddir)
         self.__extractedfile = os.path.join(self.__extracteddir, 'file1')

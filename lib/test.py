@@ -3,24 +3,13 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import os
-import tempfile
-
+import testtools
 import fixtures
 
-# silence warning: we are re-exporting
-from testtools import TestCase
-TestCase
+from .path import Path
 
 
-class FileFixture(fixtures.Fixture):
+class TestCase(testtools.TestCase):
 
-    def __init__(self, content):
-        self.content = content
-
-    def setUp(self):
-        super(FileFixture, self).setUp()
-        fd, self.file = tempfile.mkstemp()
-        os.write(fd, self.content)
-        os.close(fd)
-        self.addCleanup(os.remove, self.file)
+    def new_temp_dir(self):
+        return Path(self.useFixture(fixtures.TempDir()).path)

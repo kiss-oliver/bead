@@ -3,14 +3,12 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import fixtures
-from ..test import TestCase, FileFixture
+from ..test import TestCase
 from . import cmd_archive as m
 
-import os
 import zipfile
 
-from ..path import Path, write_file
+from ..path import write_file
 from . import pkg_dir
 from . import pkg_zip
 
@@ -31,15 +29,14 @@ class Test(TestCase):
     assert __SOURCE2 != __SOURCE1
 
     def given_a_package_directory(self):
-        self.__pkg_dir = Path(self.useFixture(fixtures.TempDir()).path)
+        self.__pkg_dir = self.new_temp_dir()
         pkg_dir.create(self.__pkg_dir)
         write_file(self.__pkg_dir / 'output/output1', self.__OUTPUT1)
         write_file(self.__pkg_dir / 'source1', self.__SOURCE1)
         write_file(self.__pkg_dir / 'source2', self.__SOURCE2)
 
     def when_archived(self):
-        self.__zipfile = self.useFixture(FileFixture(b'')).file
-        os.remove(self.__zipfile)
+        self.__zipfile = self.new_temp_dir() / 'pkg.zip'
         m.create(self.__zipfile, self.__pkg_dir)
 
     def then_archive_contains_files_from_package_directory(self):
