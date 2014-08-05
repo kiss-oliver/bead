@@ -1,23 +1,10 @@
-import os
-import tempfile
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
-import fixtures
-from testtools import TestCase
-
+from .test import TestCase, FileFixture
 from . import securehash
-
-
-class FileFixture(fixtures.Fixture):
-
-    def __init__(self, content):
-        self.content = content
-
-    def setUp(self):
-        super(FileFixture, self).setUp()
-        fd, self.file = tempfile.mkstemp()
-        os.write(fd, self.content)
-        os.close(fd)
-        self.addCleanup(os.remove, self.file)
 
 
 class Test(TestCase):
