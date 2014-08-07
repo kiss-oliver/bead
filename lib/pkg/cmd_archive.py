@@ -53,7 +53,8 @@ class ZipCreator(object):
         for f in os.listdir(path):
             self.add_path(path / f, zip_path / f)
 
-    def add_content(self, zip_path, bytes):
+    def add_string_content(self, zip_path, string):
+        bytes = string.encode('utf-8')
         self.zipfile.writestr(zip_path, bytes)
         self.add_hash(zip_path, securehash.bytes(bytes))
 
@@ -97,8 +98,8 @@ class ZipCreator(object):
     def add_meta(self, source_directory):
         # FIXME: add_meta is dummy, to be completed, when pkg_zip is defined
         pkgmeta = persistence.to_string({'TODO': 'FIXME'})
-        self.add_content(pkg_zip.META_PKGMETA, pkgmeta)
-        self.add_content(pkg_zip.META_CHECKSUMS, self.checksums)
+        self.add_string_content(pkg_zip.META_PKGMETA, pkgmeta)
+        self.add_string_content(pkg_zip.META_CHECKSUMS, self.checksums)
 
     def create_from(self, source_directory):
         assert self.zipfile
