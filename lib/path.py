@@ -4,6 +4,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
+import contextlib
+import shutil
+import tempfile
 
 
 class Path(''.__class__):
@@ -54,3 +57,14 @@ def write_file(path, content):
 
     with f:
         f.write(content)
+
+
+@contextlib.contextmanager
+def temp_dir(dir):
+    ensure_directory(dir)
+
+    temp_dir = tempfile.mkdtemp(dir=dir)
+    try:
+        yield Path(temp_dir)
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)

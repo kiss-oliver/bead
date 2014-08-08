@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import sys
+import tempfile
 import zipfile
 
 from ..path import Path
@@ -70,6 +71,7 @@ class ZipCreator(object):
             )
             self.create_from(source_path)
             self.zipfile.close()
+            assert pkg_zip.Package(zip_file_name).is_valid
         finally:
             self.zipfile = None
 
@@ -108,16 +110,22 @@ class ZipCreator(object):
         self.add_code(source_directory)
         self.add_meta(source_directory)
 
-        assert pkg_zip.is_valid(self.zipfile)
 
-
-def create(zip_file_name, source_directory):
-    ZipCreator().create(zip_file_name, source_directory)
+def create(source_directory):
+    source_path = Path(source_directory)
+    fd, tempname = tempfile.mkstemp(
+        dir=source_path / pkg_dir.TEMP, prefix='', suffix='.pkg'
+    )
+    os.close(fd)
+    os.remove(tempname)
+    ZipCreator().create(tempname, source_directory)
+    return tempname
 
 
 def main():
-    zip_file_name, source_directory = sys.argv[1:]
-    create(zip_file_name, source_directory)
+    source_directory = sys.argv[1:]
+    zip_file_name = create(source_directory)
+    print(zip_file_name)
 
 
 if __name__ == '__main__':

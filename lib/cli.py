@@ -71,7 +71,21 @@ def update(nick, version='latest'):
 
 @command
 def pack():
-    pass
+    import os
+    from .pkg import pkg_dir
+    from .pkg import pkg_zip
+    from .pkg import cmd_archive
+    tempname = cmd_archive.create('.')
+
+    with pkg_zip.Package(tempname) as pkg:
+        version = pkg.version
+    zipfilename = (
+        pkg_dir.TEMP / (
+            '{package}_{version}.zip'
+            .format(pkg_dir.get_package_name(), version)
+        )
+    )
+    os.rename(tempname, zipfilename)
 
 
 @command

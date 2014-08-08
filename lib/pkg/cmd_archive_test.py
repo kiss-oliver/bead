@@ -36,12 +36,12 @@ class Test(TestCase):
         write_file(self.__pkg_dir / 'source2', self.__SOURCE2)
 
     def when_archived(self):
-        self.__zipfile = self.new_temp_dir() / 'pkg.zip'
-        m.create(self.__zipfile, self.__pkg_dir)
+        self.__zipfile = m.create(self.__pkg_dir)
 
     def then_archive_contains_files_from_package_directory(self):
+        self.assertTrue(pkg_zip.Package(self.__zipfile).is_valid)
+
         z = zipfile.ZipFile(self.__zipfile)
-        self.assertTrue(pkg_zip.is_valid(z))
 
         self.assertEquals(self.__OUTPUT1, z.read('data/output1'))
         self.assertEquals(self.__SOURCE2, z.read('code/source2'))
