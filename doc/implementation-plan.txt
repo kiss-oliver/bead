@@ -1,0 +1,58 @@
+implementation plan
+
+1. data package files
+ - create package file from workspace
+ - extract workspace from package file
+ 
+2. store with unchangeable ids
+ - copy data in by id -> version
+ - get exact version by (id, version)
+3. names over ids
+ - register name for id
+ - rename id
+4. channels
+ - Channel as interface
+ - special channel TIMELINE: get latest version by name | id
+
+5. data packages and repo
+ - upload workspace as new package version
+ - create workspace directly from repo
+
+----
+EXTRAS:
+
+- verify reproducibility of packages
+- extract dependency chain as graph
+	- visualize dependencies
+	- extract dependencies as snakefile
+- tag packages
+- per package channels
+- lock channel with hint for continuation channel
+- test channels
+
+
+tools
+
+ws - v1.0 (workspace with file packages, without channels)
+	init name
+	develop package-file
+	mount package-file nick
+	update nick package-file
+	umount nick
+	pack
+
+repo - data store
+	create
+	get (id | name) [version]
+	put file (id | name)
+	rename id name
+	list [(name | id) [channel]]
+
+ws - v2.0 (workspace with repo packages and channels)
+	init name [channel]
+	develop repo package [channel] [version]
+	mount [repo] name channel [version] nick
+	update nick [repo] [channel]
+	umount nick
+	pack
+	release [repo] [channel]
