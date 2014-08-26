@@ -70,6 +70,10 @@ class Package(object):
             if name.startswith(zip_dir_prefix)
         ]
 
-        with temp_dir(path.parent(destination)) as unzip_dir:
-            self.zipfile.extractall(unzip_dir, filelist)
-            os.rename(unzip_dir / zip_dir, destination)
+        if filelist:
+            with temp_dir(path.parent(destination)) as unzip_dir:
+                self.zipfile.extractall(unzip_dir, filelist)
+                os.rename(unzip_dir / zip_dir, destination)
+        else:
+            # FIXME: untested
+            path.ensure_directory(destination)

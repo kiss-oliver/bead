@@ -8,11 +8,15 @@ with the following minimum structure:
     inputs: {
         'mount point1' : {
             package uuid: ...,
-            version uuid: ...
+            version uuid: ...,
+            file name: ...,
+            mounted: true | false,
         },
         'mount point2' : {
             package uuid: ...,
-            version uuid: ...
+            version uuid: ...,
+            file name: ...,
+            mounted: true | false,
         },
         ...
     },
@@ -32,6 +36,8 @@ KEY_INPUTS = 'inputs'
 
 KEY_INPUT_PACKAGE = 'package uuid'
 KEY_INPUT_VERSION = 'version uuid'
+KEY_INPUT_FILENAME = 'file name'
+KEY_INPUT_MOUNTED = 'mounted'
 
 # TODO: ***FUTURE***
 # KEY_INPUT_CHANNEL = 'upgrade channel uuid'
