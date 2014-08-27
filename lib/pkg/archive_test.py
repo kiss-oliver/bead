@@ -9,9 +9,6 @@ from . import archive as m
 import os
 import zipfile
 
-from . import workspace
-from ..path import write_file
-
 
 class Test_Archive_extractions(TestCase):
 
@@ -61,41 +58,3 @@ class Test_Archive_extractions(TestCase):
             {'file1', 'file2'},
             set(os.listdir(self.__extracteddir))
         )
-
-
-class Test_create(TestCase):
-
-    def test_structure(self):
-        self.given_a_package_directory()
-        self.when_archived()
-        self.then_archive_contains_files_from_package_directory()
-
-    # implementation
-
-    __pkg_dir = None
-    __SOURCE1 = b's1'
-    __SOURCE2 = b's2'
-    __OUTPUT1 = b'o1'
-    assert __SOURCE2 != __SOURCE1
-
-    def given_a_package_directory(self):
-        self.__pkg_dir = self.new_temp_dir()
-        workspace.Workspace(self.__pkg_dir).create()
-        write_file(self.__pkg_dir / 'output/output1', self.__OUTPUT1)
-        write_file(self.__pkg_dir / 'source1', self.__SOURCE1)
-        write_file(self.__pkg_dir / 'source2', self.__SOURCE2)
-
-    def when_archived(self):
-        self.__zipfile = m.create(self.__pkg_dir)
-
-    def then_archive_contains_files_from_package_directory(self):
-        self.assertTrue(m.Archive(self.__zipfile).is_valid)
-
-        z = zipfile.ZipFile(self.__zipfile)
-
-        self.assertEquals(self.__OUTPUT1, z.read('data/output1'))
-        self.assertEquals(self.__SOURCE2, z.read('code/source2'))
-
-        files = z.namelist()
-        self.assertIn('meta/pkgmeta', files)
-        self.assertIn('meta/checksums', files)

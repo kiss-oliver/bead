@@ -87,11 +87,12 @@ def update(nick, package_file_name):
 
 @command
 def pack():
-    tempname = archive.create('.')
+    tempname = Workspace('.').pack()
 
     with archive.Archive(tempname) as pkg:
         version = pkg.version
 
+    # TODO: move file name creation logic to Workspace.pack
     zipfilename = (
         layouts.Workspace.TEMP / (
             '{package}_{timestamp}_{version}.zip'

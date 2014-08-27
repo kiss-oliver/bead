@@ -4,14 +4,11 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
-import tempfile
 import zipfile
 
 from .. import path
-from ..path import Path, temp_dir
+from ..path import temp_dir
 from .. import securehash
-from .workspace import Workspace
-from .. import persistence
 from . import layouts
 
 
@@ -69,106 +66,3 @@ class Archive(object):
         else:
             # FIXME: untested
             path.ensure_directory(destination)
-
-
-class ZipCreator(object):
-
-    def __init__(self):
-        self.hashes = {}
-        self.zipfile = None
-
-    def add_hash(self, path, hash):
-        assert path not in self.hashes
-        self.hashes[path] = hash
-
-    @property
-    def checksums(self):
-        return ''.join(
-            '{} {}\n'.format(hash, name)
-            for name, hash in sorted(self.hashes.items())
-        )
-
-    def add_file(self, path, zip_path):
-        self.zipfile.write(path, zip_path)
-        self.add_hash(zip_path, securehash.file(open(path, 'rb')))
-
-    def add_path(self, path, zip_path):
-        if os.path.islink(path):
-            raise ValueError(
-                'workspace contains a link: {}'.format(path)
-            )
-        elif os.path.isdir(path):
-            self.add_directory(path, zip_path)
-        elif os.path.isfile(path):
-            self.add_file(path, zip_path)
-
-    def add_directory(self, path, zip_path):
-        for f in os.listdir(path):
-            self.add_path(path / f, zip_path / f)
-
-    def add_string_content(self, zip_path, string):
-        bytes = string.encode('utf-8')
-        self.zipfile.writestr(zip_path, bytes)
-        self.add_hash(zip_path, securehash.bytes(bytes))
-
-    def create(self, zip_file_name, source_directory):
-        source_path = Path(source_directory)
-        assert Workspace(source_path).is_valid
-        try:
-            self.zipfile = zipfile.ZipFile(
-                zip_file_name,
-                mode='w',
-                compression=zipfile.ZIP_DEFLATED,
-                allowZip64=True,
-            )
-            self.create_from(source_path)
-            self.zipfile.close()
-            assert Archive(zip_file_name).is_valid
-        finally:
-            self.zipfile = None
-
-    def add_code(self, source_directory):
-        def is_code(f):
-            return f not in {
-                layouts.Workspace.INPUT,
-                layouts.Workspace.OUTPUT,
-                layouts.Workspace.PKGMETA,
-                layouts.Workspace.TEMP
-            }
-
-        for f in sorted(os.listdir(source_directory)):
-            if is_code(f):
-                self.add_path(
-                    source_directory / f,
-                    layouts.Archive.CODE / f
-                )
-
-    def add_data(self, source_directory):
-        self.add_directory(
-            source_directory / layouts.Workspace.OUTPUT,
-            layouts.Archive.DATA
-        )
-
-    def add_meta(self, source_directory):
-        # FIXME: add_meta is dummy, to be completed, when Archive is defined
-        pkgmeta = persistence.to_string({'TODO': 'FIXME'})
-        self.add_string_content(layouts.Archive.META_PKGMETA, pkgmeta)
-        self.add_string_content(layouts.Archive.META_CHECKSUMS, self.checksums)
-
-    def create_from(self, source_directory):
-        assert self.zipfile
-
-        self.add_data(source_directory)
-        self.add_code(source_directory)
-        self.add_meta(source_directory)
-
-
-def create(source_directory):
-    source_path = Path(source_directory)
-    fd, tempname = tempfile.mkstemp(
-        dir=source_path / layouts.Workspace.TEMP, prefix='', suffix='.pkg'
-    )
-    os.close(fd)
-    os.remove(tempname)
-    ZipCreator().create(tempname, source_directory)
-    return tempname
