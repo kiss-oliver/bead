@@ -151,7 +151,7 @@ class ZipCreator(object):
         )
 
     def add_meta(self, source_directory):
-        # FIXME: add_meta is dummy, to be completed, when pkg_zip is defined
+        # FIXME: add_meta is dummy, to be completed, when Archive is defined
         pkgmeta = persistence.to_string({'TODO': 'FIXME'})
         self.add_string_content(Zip.META_PKGMETA, pkgmeta)
         self.add_string_content(Zip.META_CHECKSUMS, self.checksums)
