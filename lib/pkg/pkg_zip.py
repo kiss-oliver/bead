@@ -1,7 +1,3 @@
-'''
-Archive layout of packages
-'''
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -16,17 +12,11 @@ from ..path import Path, temp_dir
 from .. import securehash
 from . import pkg_dir
 from .. import persistence
+from .layouts import Zip
+from .layouts import Workspace
 
 
-DATA_PATH = Path('data')
-CODE_PATH = Path('code')
-META_PATH = Path('meta')
-
-META_PKGMETA = META_PATH / 'pkgmeta'
-META_CHECKSUMS = META_PATH / 'checksums'
-
-
-class Package(object):
+class Archive(object):
 
     def __init__(self, filename):
         self.zipfile = zipfile.ZipFile(filename)
@@ -46,7 +36,7 @@ class Package(object):
 
     @property
     def version(self):
-        with self.zipfile.open(META_CHECKSUMS) as f:
+        with self.zipfile.open(Zip.META_CHECKSUMS) as f:
             return securehash.file(f)
 
     # -
@@ -134,37 +124,37 @@ class ZipCreator(object):
             )
             self.create_from(source_path)
             self.zipfile.close()
-            assert Package(zip_file_name).is_valid
+            assert Archive(zip_file_name).is_valid
         finally:
             self.zipfile = None
 
     def add_code(self, source_directory):
         def is_code(f):
             return f not in {
-                pkg_dir.INPUT,
-                pkg_dir.OUTPUT,
-                pkg_dir.PKGMETA,
-                pkg_dir.TEMP
+                Workspace.INPUT,
+                Workspace.OUTPUT,
+                Workspace.PKGMETA,
+                Workspace.TEMP
             }
 
         for f in sorted(os.listdir(source_directory)):
             if is_code(f):
                 self.add_path(
                     source_directory / f,
-                    CODE_PATH / f
+                    Zip.CODE / f
                 )
 
     def add_data(self, source_directory):
         self.add_directory(
-            source_directory / pkg_dir.OUTPUT,
-            DATA_PATH
+            source_directory / Workspace.OUTPUT,
+            Zip.DATA
         )
 
     def add_meta(self, source_directory):
         # FIXME: add_meta is dummy, to be completed, when pkg_zip is defined
         pkgmeta = persistence.to_string({'TODO': 'FIXME'})
-        self.add_string_content(META_PKGMETA, pkgmeta)
-        self.add_string_content(META_CHECKSUMS, self.checksums)
+        self.add_string_content(Zip.META_PKGMETA, pkgmeta)
+        self.add_string_content(Zip.META_CHECKSUMS, self.checksums)
 
     def create_from(self, source_directory):
         assert self.zipfile
@@ -177,7 +167,7 @@ class ZipCreator(object):
 def create(source_directory):
     source_path = Path(source_directory)
     fd, tempname = tempfile.mkstemp(
-        dir=source_path / pkg_dir.TEMP, prefix='', suffix='.pkg'
+        dir=source_path / Workspace.TEMP, prefix='', suffix='.pkg'
     )
     os.close(fd)
     os.remove(tempname)

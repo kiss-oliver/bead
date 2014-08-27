@@ -13,7 +13,7 @@ from . import pkg_dir
 from ..path import write_file
 
 
-class Test_Package_extractions(TestCase):
+class Test_Archive_extractions(TestCase):
 
     def test_extract_file(self):
         self.given_a_package()
@@ -43,7 +43,7 @@ class Test_Package_extractions(TestCase):
 
     def when_file1_is_extracted(self):
         self.__extractedfile = self.new_temp_dir() / 'extracted_file'
-        with m.Package(self.__package) as pkg:
+        with m.Archive(self.__package) as pkg:
             pkg.extract_file('path/to/file1', self.__extractedfile)
 
     def then_file1_has_the_expected_content(self):
@@ -52,7 +52,7 @@ class Test_Package_extractions(TestCase):
 
     def when_a_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'
-        with m.Package(self.__package) as pkg:
+        with m.Archive(self.__package) as pkg:
             pkg.extract_dir('path/to', self.__extracteddir)
         self.__extractedfile = os.path.join(self.__extracteddir, 'file1')
 
@@ -89,7 +89,7 @@ class Test_create(TestCase):
         self.__zipfile = m.create(self.__pkg_dir)
 
     def then_archive_contains_files_from_package_directory(self):
-        self.assertTrue(m.Package(self.__zipfile).is_valid)
+        self.assertTrue(m.Archive(self.__zipfile).is_valid)
 
         z = zipfile.ZipFile(self.__zipfile)
 

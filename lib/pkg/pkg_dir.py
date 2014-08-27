@@ -8,24 +8,18 @@ from __future__ import print_function
 
 import os
 
-from .. import path
+from ..path import Path, ensure_directory
 from .. import persistence
-
-Path = path.Path
-
-INPUT = Path('input')
-OUTPUT = Path('output')
-TEMP = Path('temp')
-PKGMETA = '.pkgmeta'
+from .layouts import Workspace
 
 
 def is_valid(dir):
     return all(
         (
-            os.path.isdir(dir / INPUT),
-            os.path.isdir(dir / OUTPUT),
-            os.path.isdir(dir / TEMP),
-            os.path.isfile(dir / PKGMETA),
+            os.path.isdir(dir / Workspace.INPUT),
+            os.path.isdir(dir / Workspace.OUTPUT),
+            os.path.isdir(dir / Workspace.TEMP),
+            os.path.isfile(dir / Workspace.PKGMETA),
         )
     )
 
@@ -45,7 +39,7 @@ def create(dir):
     create_directories(pkg_path)
 
     pkgmeta = {}  # TODO
-    with open(pkg_path / PKGMETA, 'w') as f:
+    with open(pkg_path / Workspace.PKGMETA, 'w') as f:
         persistence.to_stream(pkgmeta, f)
 
     assert is_valid(pkg_path)
@@ -53,10 +47,10 @@ def create(dir):
 
 def create_directories(dir):
     pkg_path = Path(dir)
-    path.ensure_directory(pkg_path)
-    path.ensure_directory(pkg_path / INPUT)
-    path.ensure_directory(pkg_path / OUTPUT)
-    path.ensure_directory(pkg_path / TEMP)
+    ensure_directory(pkg_path)
+    ensure_directory(pkg_path / Workspace.INPUT)
+    ensure_directory(pkg_path / Workspace.OUTPUT)
+    ensure_directory(pkg_path / Workspace.TEMP)
 
 
 def get_package_name():
