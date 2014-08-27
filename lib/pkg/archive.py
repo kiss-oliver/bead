@@ -12,8 +12,7 @@ from ..path import Path, temp_dir
 from .. import securehash
 from . import workspace
 from .. import persistence
-from .layouts import Zip
-from .layouts import Workspace
+from . import layouts
 
 
 class Archive(object):
@@ -36,7 +35,7 @@ class Archive(object):
 
     @property
     def version(self):
-        with self.zipfile.open(Zip.META_CHECKSUMS) as f:
+        with self.zipfile.open(layouts.Archive.META_CHECKSUMS) as f:
             return securehash.file(f)
 
     # -
@@ -131,30 +130,30 @@ class ZipCreator(object):
     def add_code(self, source_directory):
         def is_code(f):
             return f not in {
-                Workspace.INPUT,
-                Workspace.OUTPUT,
-                Workspace.PKGMETA,
-                Workspace.TEMP
+                layouts.Workspace.INPUT,
+                layouts.Workspace.OUTPUT,
+                layouts.Workspace.PKGMETA,
+                layouts.Workspace.TEMP
             }
 
         for f in sorted(os.listdir(source_directory)):
             if is_code(f):
                 self.add_path(
                     source_directory / f,
-                    Zip.CODE / f
+                    layouts.Archive.CODE / f
                 )
 
     def add_data(self, source_directory):
         self.add_directory(
-            source_directory / Workspace.OUTPUT,
-            Zip.DATA
+            source_directory / layouts.Workspace.OUTPUT,
+            layouts.Archive.DATA
         )
 
     def add_meta(self, source_directory):
         # FIXME: add_meta is dummy, to be completed, when Archive is defined
         pkgmeta = persistence.to_string({'TODO': 'FIXME'})
-        self.add_string_content(Zip.META_PKGMETA, pkgmeta)
-        self.add_string_content(Zip.META_CHECKSUMS, self.checksums)
+        self.add_string_content(layouts.Archive.META_PKGMETA, pkgmeta)
+        self.add_string_content(layouts.Archive.META_CHECKSUMS, self.checksums)
 
     def create_from(self, source_directory):
         assert self.zipfile
@@ -167,7 +166,7 @@ class ZipCreator(object):
 def create(source_directory):
     source_path = Path(source_directory)
     fd, tempname = tempfile.mkstemp(
-        dir=source_path / Workspace.TEMP, prefix='', suffix='.pkg'
+        dir=source_path / layouts.Workspace.TEMP, prefix='', suffix='.pkg'
     )
     os.close(fd)
     os.remove(tempname)

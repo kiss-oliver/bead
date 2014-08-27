@@ -9,7 +9,7 @@ from mando.core import Program
 from ..path import Path
 from ..pkg import workspace
 from ..pkg import archive
-from ..pkg.layouts import Workspace, Zip
+from ..pkg import layouts
 from ..timestamp import timestamp
 
 from .. import VERSION
@@ -38,10 +38,13 @@ def develop(name, package_file_name):
     '''
     dir = Path(name)
     with archive.Archive(package_file_name) as pkg:
-        pkg.extract_dir(Zip.CODE, dir)
+        pkg.extract_dir(layouts.Archive.CODE, dir)
         # FIXME: extracted PKGMETA needs a rewrite
         # as it contains different things in the development and archive format
-        pkg.extract_file(Zip.META_PKGMETA, dir / Workspace.PKGMETA)
+        pkg.extract_file(
+            layouts.Archive.META_PKGMETA,
+            dir / layouts.Workspace.PKGMETA
+        )
 
     workspace.create_directories(dir)
     assert workspace.is_valid(dir)
@@ -90,8 +93,7 @@ def pack():
         version = pkg.version
 
     zipfilename = (
-
-        Workspace.TEMP / (
+        layouts.Workspace.TEMP / (
             '{package}_{timestamp}_{version}.zip'
             .format(
                 package=workspace.get_package_name(),

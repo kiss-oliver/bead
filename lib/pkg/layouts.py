@@ -10,7 +10,7 @@ from __future__ import print_function
 from ..path import Path
 
 
-class Zip:
+class Archive:
 
     DATA = Path('data')
     CODE = Path('code')
