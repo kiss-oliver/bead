@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import os
 from mando.core import Program
 
 from ..path import Path
@@ -17,14 +18,13 @@ arg = main.arg
 command = main.command
 
 
+@command
 def new(name):
     '''
     Create new package directory layout.
     '''
     pkg_dir.create(name)
     print('Created {}'.format(name))
-
-command(new)
 
 
 @command
@@ -36,13 +36,15 @@ def develop(name, package_file_name):
     extracted.
     '''
     dir = Path(name)
-    pkg = pkg_zip.Package(package_file_name)
-    pkg.extract_dir(pkg_zip.CODE_PATH, dir)
-    # FIXME: extracted PKGMETA needs a rewrite
-    # as it contains different things in the development and archive format
-    pkg.extract_file(pkg_zip.META_PKGMETA, dir / pkg_dir.PKGMETA)
+    with pkg_zip.Package(package_file_name) as pkg:
+        pkg.extract_dir(pkg_zip.CODE_PATH, dir)
+        # FIXME: extracted PKGMETA needs a rewrite
+        # as it contains different things in the development and archive format
+        pkg.extract_file(pkg_zip.META_PKGMETA, dir / pkg_dir.PKGMETA)
+
     pkg_dir.create_directories(dir)
     assert pkg_dir.is_valid(dir)
+
     print('Extracted source into {}'.format(dir))
 
 
@@ -81,9 +83,7 @@ def update(nick, package_file_name):
 
 @command
 def pack():
-    import os
-    from ..pkg import cmd_archive
-    tempname = cmd_archive.create('.')
+    tempname = pkg_zip.create('.')
 
     with pkg_zip.Package(tempname) as pkg:
         version = pkg.version
@@ -99,8 +99,5 @@ def pack():
         )
     )
     os.rename(tempname, zipfilename)
+
     print('Package created at {}'.format(zipfilename))
-
-
-if __name__ == '__main__':
-    main()
