@@ -10,48 +10,53 @@ import os
 
 from ..path import Path, ensure_directory
 from .. import persistence
-from .layouts import Workspace
+from . import layouts
 
 
-def is_valid(dir):
-    return all(
-        (
-            os.path.isdir(dir / Workspace.INPUT),
-            os.path.isdir(dir / Workspace.OUTPUT),
-            os.path.isdir(dir / Workspace.TEMP),
-            os.path.isfile(dir / Workspace.PKGMETA),
+class Workspace(object):
+
+    def __init__(self, directory):
+        self.directory = Path(os.path.abspath(directory))
+
+    @property
+    def is_valid(self):
+        dir = self.directory
+        return all(
+            (
+                os.path.isdir(dir / layouts.Workspace.INPUT),
+                os.path.isdir(dir / layouts.Workspace.OUTPUT),
+                os.path.isdir(dir / layouts.Workspace.TEMP),
+                os.path.isfile(dir / layouts.Workspace.PKGMETA),
+            )
         )
-    )
 
+    def create(self):
+        '''
+        Set up an empty project structure.
 
-def create(dir):
-    '''
-    Set up an empty project structure.
+        Works with either an empty directory or a directory to be created.
+        '''
+        dir = self.directory
+        try:
+            assert os.listdir(dir) == []
+        except OSError:
+            pass
 
-    Works with either an empty directory or a directory to be created.
-    '''
-    try:
-        assert os.listdir(dir) == []
-    except OSError:
-        pass
+        self.create_directories()
 
-    pkg_path = Path(dir)
-    create_directories(pkg_path)
+        pkgmeta = {}  # TODO
+        with open(dir / layouts.Workspace.PKGMETA, 'w') as f:
+            persistence.to_stream(pkgmeta, f)
 
-    pkgmeta = {}  # TODO
-    with open(pkg_path / Workspace.PKGMETA, 'w') as f:
-        persistence.to_stream(pkgmeta, f)
+        assert self.is_valid
 
-    assert is_valid(pkg_path)
+    def create_directories(self):
+        dir = self.directory
+        ensure_directory(dir)
+        ensure_directory(dir / layouts.Workspace.INPUT)
+        ensure_directory(dir / layouts.Workspace.OUTPUT)
+        ensure_directory(dir / layouts.Workspace.TEMP)
 
-
-def create_directories(dir):
-    pkg_path = Path(dir)
-    ensure_directory(pkg_path)
-    ensure_directory(pkg_path / Workspace.INPUT)
-    ensure_directory(pkg_path / Workspace.OUTPUT)
-    ensure_directory(pkg_path / Workspace.TEMP)
-
-
-def get_package_name():
-    return os.path.basename(os.getcwd())
+    @property
+    def package_name(self):
+        return os.path.basename(self.directory)

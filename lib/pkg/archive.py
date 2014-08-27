@@ -10,7 +10,7 @@ import zipfile
 from .. import path
 from ..path import Path, temp_dir
 from .. import securehash
-from . import workspace
+from .workspace import Workspace
 from .. import persistence
 from . import layouts
 
@@ -113,7 +113,7 @@ class ZipCreator(object):
 
     def create(self, zip_file_name, source_directory):
         source_path = Path(source_directory)
-        assert workspace.is_valid(source_path)
+        assert Workspace(source_path).is_valid
         try:
             self.zipfile = zipfile.ZipFile(
                 zip_file_name,

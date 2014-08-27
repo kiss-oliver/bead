@@ -6,8 +6,6 @@ from __future__ import print_function
 from ..test import TestCase
 from . import workspace as m
 
-from ..path import Path
-
 
 class Test(TestCase):
 
@@ -24,7 +22,7 @@ class Test(TestCase):
         self.__pkg_dir = self.new_temp_dir()
 
     def when_initialized(self):
-        m.create(self.__pkg_dir)
+        m.Workspace(self.__pkg_dir).create()
 
     def then_directory_is_a_valid_pkg_dir(self):
-        self.assertTrue(m.is_valid(Path(self.__pkg_dir)))
+        self.assertTrue(m.Workspace(self.__pkg_dir).is_valid)

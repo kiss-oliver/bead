@@ -7,7 +7,7 @@ import os
 from mando.core import Program
 
 from ..path import Path
-from ..pkg import workspace
+from ..pkg.workspace import Workspace
 from ..pkg import archive
 from ..pkg import layouts
 from ..timestamp import timestamp
@@ -24,7 +24,7 @@ def new(name):
     '''
     Create new package directory layout.
     '''
-    workspace.create(name)
+    Workspace(name).create()
     print('Created {}'.format(name))
 
 
@@ -46,8 +46,8 @@ def develop(name, package_file_name):
             dir / layouts.Workspace.PKGMETA
         )
 
-    workspace.create_directories(dir)
-    assert workspace.is_valid(dir)
+    Workspace(dir).create_directories()
+    assert Workspace(dir).is_valid
 
     print('Extracted source into {}'.format(dir))
 
@@ -96,7 +96,7 @@ def pack():
         layouts.Workspace.TEMP / (
             '{package}_{timestamp}_{version}.zip'
             .format(
-                package=workspace.get_package_name(),
+                package=Workspace('.').package_name,
                 timestamp=timestamp(),
                 version=version,
             )
