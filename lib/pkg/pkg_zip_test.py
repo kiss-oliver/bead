@@ -9,7 +9,7 @@ from . import pkg_zip as m
 import os
 import zipfile
 
-from . import pkg_dir
+from . import workspace
 from ..path import write_file
 
 
@@ -80,7 +80,7 @@ class Test_create(TestCase):
 
     def given_a_package_directory(self):
         self.__pkg_dir = self.new_temp_dir()
-        pkg_dir.create(self.__pkg_dir)
+        workspace.create(self.__pkg_dir)
         write_file(self.__pkg_dir / 'output/output1', self.__OUTPUT1)
         write_file(self.__pkg_dir / 'source1', self.__SOURCE1)
         write_file(self.__pkg_dir / 'source2', self.__SOURCE2)

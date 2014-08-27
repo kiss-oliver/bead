@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from ..test import TestCase
-from . import pkg_dir
+from . import workspace as m
 
 from ..path import Path
 
@@ -24,7 +24,7 @@ class Test(TestCase):
         self.__pkg_dir = self.new_temp_dir()
 
     def when_initialized(self):
-        pkg_dir.create(self.__pkg_dir)
+        m.create(self.__pkg_dir)
 
     def then_directory_is_a_valid_pkg_dir(self):
-        self.assertTrue(pkg_dir.is_valid(Path(self.__pkg_dir)))
+        self.assertTrue(m.is_valid(Path(self.__pkg_dir)))
