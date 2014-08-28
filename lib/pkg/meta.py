@@ -21,6 +21,8 @@ with the following minimum structure:
         ...
     },
     package uuid: ...,
+    timestamp: ...,        # only archives - naive ordering
+    unofficial name: ...,  # only archives, package name for bootstrapping
 }
 '''
 
@@ -42,4 +44,10 @@ KEY_INPUT_MOUNTED = 'mounted'
 # TODO: ***FUTURE***
 # KEY_INPUT_CHANNEL = 'upgrade channel uuid'
 
+# Archive meta:
 KEY_PACKAGE_TIMESTAMP = 'timestamp'
+# TODO: decide if KEY_UNOFFICIAL_NAME needed
+KEY_UNOFFICIAL_NAME = 'unofficial name'
+
+# Workspace meta:
+KEY_REPO_ROOT = 'repo'

@@ -45,6 +45,7 @@ def develop(name, package_file_name):
             layouts.Archive.META_PKGMETA,
             dir / layouts.Workspace.PKGMETA
         )
+        # TODO: try to mount all inputs
 
     Workspace(dir).create_directories()
     assert Workspace(dir).is_valid

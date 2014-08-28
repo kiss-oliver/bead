@@ -13,7 +13,10 @@ import zipfile
 from ..path import Path, ensure_directory
 from .. import persistence
 from .. import securehash
+from .. import timestamp
+from ..identifier import uuid
 from . import layouts
+from . import meta
 
 
 class Workspace(object):
@@ -33,6 +36,11 @@ class Workspace(object):
             )
         )
 
+    @property
+    def meta(self):
+        with open(self.directory / layouts.Workspace.PKGMETA) as f:
+            return persistence.from_stream(f)
+
     def create(self):
         '''
         Set up an empty project structure.
@@ -47,7 +55,10 @@ class Workspace(object):
 
         self.create_directories()
 
-        pkgmeta = {}  # TODO
+        pkgmeta = {
+            meta.KEY_PACKAGE: uuid(),
+            meta.KEY_INPUTS: {},
+        }
         with open(dir / layouts.Workspace.PKGMETA, 'w') as f:
             persistence.to_stream(pkgmeta, f)
 
@@ -90,13 +101,6 @@ class _ZipCreator(object):
         assert path not in self.hashes
         self.hashes[path] = hash
 
-    @property
-    def checksums(self):
-        return ''.join(
-            '{} {}\n'.format(hash, name)
-            for name, hash in sorted(self.hashes.items())
-        )
-
     def add_file(self, path, zip_path):
         self.zipfile.write(path, zip_path)
         self.add_hash(zip_path, securehash.file(open(path, 'rb')))
@@ -122,7 +126,6 @@ class _ZipCreator(object):
 
     def create(self, zip_file_name, workspace):
         assert workspace.is_valid
-        source_path = workspace.directory
         try:
             self.zipfile = zipfile.ZipFile(
                 zip_file_name,
@@ -130,12 +133,14 @@ class _ZipCreator(object):
                 compression=zipfile.ZIP_DEFLATED,
                 allowZip64=True,
             )
-            self.create_from(source_path)
+            self.create_from(workspace)
             self.zipfile.close()
         finally:
             self.zipfile = None
 
-    def add_code(self, source_directory):
+    def add_code(self, workspace):
+        source_directory = workspace.directory
+
         def is_code(f):
             return f not in {
                 layouts.Workspace.INPUT,
@@ -151,21 +156,35 @@ class _ZipCreator(object):
                     layouts.Archive.CODE / f
                 )
 
-    def add_data(self, source_directory):
+    def add_data(self, workspace):
         self.add_directory(
-            source_directory / layouts.Workspace.OUTPUT,
+            workspace.directory / layouts.Workspace.OUTPUT,
             layouts.Archive.DATA
         )
 
-    def add_meta(self, source_directory):
-        # FIXME: add_meta is dummy, to be completed, when Archive is defined
-        pkgmeta = persistence.to_string({'TODO': 'FIXME'})
-        self.add_string_content(layouts.Archive.META_PKGMETA, pkgmeta)
-        self.add_string_content(layouts.Archive.META_CHECKSUMS, self.checksums)
+    def add_meta(self, workspace):
+        wsmeta = workspace.meta
+        pkgmeta = {
+            meta.KEY_PACKAGE: wsmeta[meta.KEY_PACKAGE],
+            # FIXME: timestamp should match output file name
+            meta.KEY_PACKAGE_TIMESTAMP: timestamp.timestamp(),
+            meta.KEY_INPUTS: {},
+            meta.KEY_UNOFFICIAL_NAME: workspace.package_name,
+        }
+        # TODO: add INPUTS to pkgmeta
 
-    def create_from(self, source_directory):
+        self.add_string_content(
+            layouts.Archive.META_PKGMETA,
+            persistence.to_string(pkgmeta)
+        )
+        self.add_string_content(
+            layouts.Archive.META_CHECKSUMS,
+            persistence.to_string(self.hashes)
+        )
+
+    def create_from(self, workspace):
         assert self.zipfile
 
-        self.add_data(source_directory)
-        self.add_code(source_directory)
-        self.add_meta(source_directory)
+        self.add_data(workspace)
+        self.add_code(workspace)
+        self.add_meta(workspace)

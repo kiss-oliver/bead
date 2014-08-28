@@ -8,8 +8,11 @@ import zipfile
 
 from .. import path
 from ..path import temp_dir
+from .. import persistence
 from .. import securehash
+from .. import timestamp
 from . import layouts
+from . import meta
 
 
 class Archive(object):
@@ -28,12 +31,43 @@ class Archive(object):
     @property
     def is_valid(self):
         # TODO
-        return True
+        '''
+        verify, that
+        - all files under code, data, meta are present in the checksums
+          file and they match their checksums
+          (can extra files be allowed in the archive?)
+        - the pkgmeta file is valid
+            - has package uuid
+            - has timestamp
+            - has unofficial package name
+            - has inputs (even if empty)
+        '''
+        m = self.meta
+        valid = all((
+            meta.KEY_PACKAGE in m,
+            meta.KEY_PACKAGE_TIMESTAMP in m,
+            meta.KEY_INPUTS in m,
+            meta.KEY_UNOFFICIAL_NAME in m,
+        ))
+
+        if valid:
+            now = timestamp.time_from_timestamp(timestamp.timestamp())
+            pkgtime = timestamp.time_from_timestamp(
+                m[meta.KEY_PACKAGE_TIMESTAMP]
+            )
+            valid = pkgtime < now
+
+        return valid
 
     @property
     def version(self):
         with self.zipfile.open(layouts.Archive.META_CHECKSUMS) as f:
             return securehash.file(f)
+
+    @property
+    def meta(self):
+        with self.zipfile.open(layouts.Archive.META_PKGMETA) as f:
+            return persistence.from_stream(f)
 
     # -
     def extract_file(self, zip_path, destination):
