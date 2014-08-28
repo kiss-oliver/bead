@@ -9,8 +9,10 @@ from . import archive as m
 import os
 import zipfile
 
+from . import layouts
 
-class Test_Archive_extractions(TestCase):
+
+class Test_Archive(TestCase):
 
     def test_extract_file(self):
         self.given_a_package()
@@ -23,11 +25,17 @@ class Test_Archive_extractions(TestCase):
         self.then_directory_has_the_expected_files()
         self.then_file1_has_the_expected_content()
 
+    def test_version(self):
+        self.given_a_package()
+        self.when_version_is_checked()
+        self.then_version_is_a_string()
+
     # implementation
 
     __package = None
     __extractedfile = None
     __extracteddir = None
+    __version = None
 
     def given_a_package(self):
         self.__package = self.new_temp_dir() / 'package.zip'
@@ -36,6 +44,7 @@ class Test_Archive_extractions(TestCase):
         z.writestr('path/file1', b'''?? file1's known content''')
         z.writestr('path/to/file1', b'''file1's known content''')
         z.writestr('path/to/file2', b'''file2's known content''')
+        z.writestr(layouts.Archive.META_CHECKSUMS, b'some checksum')
         z.close()
 
     def when_file1_is_extracted(self):
@@ -58,3 +67,10 @@ class Test_Archive_extractions(TestCase):
             {'file1', 'file2'},
             set(os.listdir(self.__extracteddir))
         )
+
+    def when_version_is_checked(self):
+        with m.Archive(self.__package) as pkg:
+            self.__version = pkg.version
+
+    def then_version_is_a_string(self):
+        self.assertIsInstance(self.__version, ''.__class__)

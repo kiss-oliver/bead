@@ -103,7 +103,10 @@ class _ZipCreator(object):
 
     def add_file(self, path, zip_path):
         self.zipfile.write(path, zip_path)
-        self.add_hash(zip_path, securehash.file(open(path, 'rb')))
+        self.add_hash(
+            zip_path,
+            securehash.file(open(path, 'rb'), os.path.getsize(path))
+        )
 
     def add_path(self, path, zip_path):
         if os.path.islink(path):

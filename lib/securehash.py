@@ -7,13 +7,12 @@ import hashlib
 
 READ_BLOCK_SIZE = 1024 ** 2
 
+# hashes are created from {length of content}:content;
+# similarity to http://cr.yp.to/proto/netstrings.txt are not accidental:
+# length is hashed with content AND there is a known suffix
 
-# FIXME: hash should be created from (length of content, content)
-# in practice this means something like hashing netstrings
-# http://cr.yp.to/proto/netstrings.txt
-#
 
-def file(file):
+def file(file, file_size):
     '''Read file and return sha512 hash for its content.
 
     Closes the file.
@@ -21,16 +20,22 @@ def file(file):
     '''
 
     hash = hashlib.sha512()
+    hash.update('{}:'.format(file_size).encode('ascii'))
     with file:
         while True:
             block = file.read(READ_BLOCK_SIZE)
             if not block:
                 break
             hash.update(block)
-    return hash.hexdigest()
+    hash.update(b';')
+    return ''.__class__(hash.hexdigest())
 
 
 def bytes(bytes):
     '''Return sha512 hash for bytes.
     '''
-    return hashlib.sha512(bytes).hexdigest()
+    hash = hashlib.sha512()
+    hash.update('{}:'.format(len(bytes)).encode('ascii'))
+    hash.update(bytes)
+    hash.update(b';')
+    return ''.__class__(hash.hexdigest())

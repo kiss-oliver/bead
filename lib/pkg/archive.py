@@ -62,8 +62,9 @@ class Archive(object):
 
     @property
     def version(self):
-        with self.zipfile.open(layouts.Archive.META_CHECKSUMS) as f:
-            return securehash.file(f)
+        zipinfo = self.zipfile.getinfo(layouts.Archive.META_CHECKSUMS)
+        with self.zipfile.open(zipinfo) as f:
+            return securehash.file(f, zipinfo.file_size)
 
     @property
     def meta(self):
