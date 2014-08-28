@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import io
 import os
 import zipfile
 
@@ -67,7 +68,7 @@ class Archive(object):
     @property
     def meta(self):
         with self.zipfile.open(layouts.Archive.META_PKGMETA) as f:
-            return persistence.from_stream(f)
+            return persistence.from_stream(io.TextIOWrapper(f))
 
     # -
     def extract_file(self, zip_path, destination):

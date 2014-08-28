@@ -27,4 +27,4 @@ def uuid():
     each change, or adding a constant (but algorithm specific) prefix to all
     uuids generated.
     '''
-    return ''.__class__(hashlib.md5(uuid1().hex).hexdigest())
+    return ''.__class__(hashlib.md5(uuid1().hex.encode('utf-8')).hexdigest())
