@@ -25,6 +25,11 @@ class Test_Archive(TestCase):
         self.then_directory_has_the_expected_files()
         self.then_file1_has_the_expected_content()
 
+    def test_extract_nonexistant_dir(self):
+        self.given_a_package()
+        self.when_a_nonexistent_directory_is_extracted()
+        self.then_an_empty_directory_is_created()
+
     def test_version(self):
         self.given_a_package()
         self.when_version_is_checked()
@@ -74,3 +79,12 @@ class Test_Archive(TestCase):
 
     def then_version_is_a_string(self):
         self.assertIsInstance(self.__version, ''.__class__)
+
+    def when_a_nonexistent_directory_is_extracted(self):
+        self.__extracteddir = self.new_temp_dir() / 'destination dir'
+        with m.Archive(self.__package) as pkg:
+            pkg.extract_dir('path/to/nonexistent', self.__extracteddir)
+
+    def then_an_empty_directory_is_created(self):
+        self.assertTrue(os.path.isdir(self.__extracteddir))
+        self.assertEquals([], os.listdir(self.__extracteddir))

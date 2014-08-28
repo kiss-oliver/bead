@@ -100,5 +100,4 @@ class Archive(object):
                 self.zipfile.extractall(unzip_dir, filelist)
                 os.rename(unzip_dir / zip_dir, destination)
         else:
-            # FIXME: untested
             path.ensure_directory(destination)
