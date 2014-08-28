@@ -10,6 +10,7 @@ import zipfile
 
 from ..path import write_file, ensure_directory
 from .archive import Archive
+from ..timestamp import timestamp
 
 
 class Test(TestCase):
@@ -62,7 +63,7 @@ class Test_pack(TestCase):
         write_file(self.__pkg_dir / 'subdir/source2', self.__SOURCE2)
 
     def when_archived(self):
-        self.__zipfile = m.Workspace(self.__pkg_dir).pack()
+        self.__zipfile = m.Workspace(self.__pkg_dir).pack(timestamp())
 
     def then_archive_contains_files_from_package_directory(self):
         z = zipfile.ZipFile(self.__zipfile)

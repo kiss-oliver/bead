@@ -3,7 +3,6 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import os
 from mando.core import Program
 
 from ..path import Path
@@ -88,22 +87,6 @@ def update(nick, package_file_name):
 
 @command
 def pack():
-    tempname = Workspace('.').pack()
-
-    with archive.Archive(tempname) as pkg:
-        version = pkg.version
-
-    # TODO: move file name creation logic to Workspace.pack
-    zipfilename = (
-        layouts.Workspace.TEMP / (
-            '{package}_{timestamp}_{version}.zip'
-            .format(
-                package=Workspace('.').package_name,
-                timestamp=timestamp(),
-                version=version,
-            )
-        )
-    )
-    os.rename(tempname, zipfilename)
+    zipfilename = Workspace('.').pack(timestamp())
 
     print('Package created at {}'.format(zipfilename))

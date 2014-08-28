@@ -7,13 +7,11 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
-import tempfile
 import zipfile
 
 from ..path import Path, ensure_directory
 from .. import persistence
 from .. import securehash
-from .. import timestamp
 from ..identifier import uuid
 from . import layouts
 from . import meta
@@ -75,20 +73,24 @@ class Workspace(object):
     def package_name(self):
         return os.path.basename(self.directory)
 
-    def pack(self):
+    def pack(self, timestamp):
         '''
         Create archive from workspace into the temp directory.
 
         returns the path to the created archive.
         '''
-        source_path = self.directory
-        fd, tempname = tempfile.mkstemp(
-            dir=source_path / layouts.Workspace.TEMP, prefix='', suffix='.pkg'
+        zipfilename = (
+            self.directory / layouts.Workspace.TEMP / (
+                '{package}_{timestamp}.zip'
+                .format(
+                    package=self.package_name,
+                    timestamp=timestamp,
+                )
+            )
         )
-        os.close(fd)
-        os.remove(tempname)
-        _ZipCreator().create(tempname, self)
-        return tempname
+
+        _ZipCreator().create(zipfilename, self, timestamp)
+        return zipfilename
 
 
 class _ZipCreator(object):
@@ -127,17 +129,18 @@ class _ZipCreator(object):
         self.zipfile.writestr(zip_path, bytes)
         self.add_hash(zip_path, securehash.bytes(bytes))
 
-    def create(self, zip_file_name, workspace):
+    def create(self, zip_file_name, workspace, timestamp):
         assert workspace.is_valid
         try:
-            self.zipfile = zipfile.ZipFile(
+            with zipfile.ZipFile(
                 zip_file_name,
                 mode='w',
                 compression=zipfile.ZIP_DEFLATED,
                 allowZip64=True,
-            )
-            self.create_from(workspace)
-            self.zipfile.close()
+            ) as self.zipfile:
+                self.add_data(workspace)
+                self.add_code(workspace)
+                self.add_meta(workspace, timestamp)
         finally:
             self.zipfile = None
 
@@ -165,12 +168,11 @@ class _ZipCreator(object):
             layouts.Archive.DATA
         )
 
-    def add_meta(self, workspace):
+    def add_meta(self, workspace, timestamp):
         wsmeta = workspace.meta
         pkgmeta = {
             meta.KEY_PACKAGE: wsmeta[meta.KEY_PACKAGE],
-            # FIXME: timestamp should match output file name
-            meta.KEY_PACKAGE_TIMESTAMP: timestamp.timestamp(),
+            meta.KEY_PACKAGE_TIMESTAMP: timestamp,
             meta.KEY_INPUTS: {},
             meta.KEY_UNOFFICIAL_NAME: workspace.package_name,
         }
@@ -184,10 +186,3 @@ class _ZipCreator(object):
             layouts.Archive.META_CHECKSUMS,
             persistence.to_string(self.hashes)
         )
-
-    def create_from(self, workspace):
-        assert self.zipfile
-
-        self.add_data(workspace)
-        self.add_code(workspace)
-        self.add_meta(workspace)

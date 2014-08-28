@@ -23,7 +23,7 @@ class UTC(tzinfo):
         return ZERO
 
 
-TIMESTAMP_FORMAT = '%Y%m%d%H%M%S%f'
+TIMESTAMP_FORMAT = '%Y%m%d_%H%M%S_%f'
 
 
 def timestamp():
