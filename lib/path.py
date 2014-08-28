@@ -17,27 +17,6 @@ class Path(''.__class__):
     __truediv__ = __div__
 
 
-def segments(path):
-    '''List of non-empty path segments
-    '''
-    def segments(path):
-        next_path, name = os.path.split(path)
-        if next_path:
-            if next_path != path:
-                return segments(next_path) + [name]
-            return [next_path, name]
-        return [name]
-    return [s for s in segments(os.path.realpath(path)) if s]
-
-
-def contains(directory, file_name):
-    '''Creating `file_name` would be in subtree of `directory`?
-    '''
-    directory_segments = segments(directory)
-    file_name_segments = segments(file_name)
-    return file_name_segments[:len(directory_segments)] == directory_segments
-
-
 def ensure_directory(path):
     if not os.path.exists(path):
         os.makedirs(path)
