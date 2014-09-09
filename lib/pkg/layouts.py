@@ -13,8 +13,8 @@ from ..path import Path
 class Archive:
 
     DATA = Path('data')
-    CODE = Path('code')
     META = Path('meta')
+    CODE = META / 'code'
 
     META_PKGMETA = META / 'pkgmeta'
     META_CHECKSUMS = META / 'checksums'

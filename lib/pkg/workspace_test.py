@@ -69,8 +69,8 @@ class Test_pack(TestCase):
         z = zipfile.ZipFile(self.__zipfile)
 
         self.assertEquals(self.__OUTPUT1, z.read('data/output1'))
-        self.assertEquals(self.__SOURCE1, z.read('code/source1'))
-        self.assertEquals(self.__SOURCE2, z.read('code/subdir/source2'))
+        self.assertEquals(self.__SOURCE1, z.read('meta/code/source1'))
+        self.assertEquals(self.__SOURCE2, z.read('meta/code/subdir/source2'))
 
         files = z.namelist()
         self.assertIn('meta/pkgmeta', files)
