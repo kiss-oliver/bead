@@ -14,25 +14,38 @@ from .archive import Archive
 from ..timestamp import timestamp
 
 
-class Test(TestCase):
+class Test_create(TestCase):
 
-    def test(self):
+    def test_valid(self):
         self.given_an_empty_directory()
         self.when_initialized()
         self.then_directory_is_a_valid_pkg_dir()
 
+    def test_has_no_inputs(self):
+        self.given_an_empty_directory()
+        self.when_initialized()
+        self.then_workspace_has_no_inputs()
+
     # implementation
 
-    __pkg_dir = None
+    __workspace_dir = None
+
+    @property
+    def workspace(self):
+        return m.Workspace(self.__workspace_dir)
 
     def given_an_empty_directory(self):
-        self.__pkg_dir = self.new_temp_dir()
+        self.__workspace_dir = self.new_temp_dir()
 
     def when_initialized(self):
-        m.Workspace(self.__pkg_dir).create()
+        self.workspace.create()
 
     def then_directory_is_a_valid_pkg_dir(self):
-        self.assertTrue(m.Workspace(self.__pkg_dir).is_valid)
+        self.assertTrue(self.workspace.is_valid)
+
+    def then_workspace_has_no_inputs(self):
+        self.assertFalse(self.workspace.has_input('pkg1'))
+        self.assertFalse(self.workspace.is_mounted('pkg1'))
 
 
 class Test_pack(TestCase):
@@ -49,7 +62,7 @@ class Test_pack(TestCase):
 
     # implementation
 
-    __pkg_dir = None
+    __workspace_dir = None
     __zipdir = None
     __zipfile = None
     __SOURCE1 = b's1'
@@ -57,18 +70,22 @@ class Test_pack(TestCase):
     __OUTPUT1 = b'o1'
     assert __SOURCE2 != __SOURCE1
 
+    @property
+    def workspace(self):
+        return m.Workspace(self.__workspace_dir)
+
     def given_a_package_directory(self):
-        self.__pkg_dir = self.new_temp_dir()
-        m.Workspace(self.__pkg_dir).create()
-        write_file(self.__pkg_dir / 'output/output1', self.__OUTPUT1)
-        write_file(self.__pkg_dir / 'source1', self.__SOURCE1)
-        ensure_directory(self.__pkg_dir / 'subdir')
-        write_file(self.__pkg_dir / 'subdir/source2', self.__SOURCE2)
+        self.__workspace_dir = self.new_temp_dir()
+        self.workspace.create()
+        write_file(self.__workspace_dir / 'output/output1', self.__OUTPUT1)
+        write_file(self.__workspace_dir / 'source1', self.__SOURCE1)
+        ensure_directory(self.__workspace_dir / 'subdir')
+        write_file(self.__workspace_dir / 'subdir/source2', self.__SOURCE2)
 
     def when_archived(self):
         self.__zipdir = self.new_temp_dir()
         self.__zipfile = self.__zipdir / 'pkg.zip'
-        m.Workspace(self.__pkg_dir).pack(self.__zipfile, timestamp())
+        self.workspace.pack(self.__zipfile, timestamp())
 
     def then_archive_contains_files_from_package_directory(self):
         z = zipfile.ZipFile(self.__zipfile)
@@ -107,27 +124,38 @@ class Test_mount(TestCase):
         self.when_mounting_a_package()
         self.then_extracted_files_under_input_are_readonly()
 
+    def test_mount_addds_input_to_pkgmeta(self):
+        self.given_a_package_directory()
+        self.when_mounting_a_package()
+        self.then_mount_info_is_added_to_pkgmeta()
+
     # implementation
 
-    # FIXME: rename __pkg_dir to __workspace_dir
-    __pkg_dir = None
-    __repo_dir = None
+    __workspace_dir = None
+
+    @property
+    def workspace(self):
+        return m.Workspace(self.__workspace_dir)
 
     def given_a_package_directory(self):
-        self.__pkg_dir = self.new_temp_dir()
-        m.Workspace(self.__pkg_dir).create()
+        self.__workspace_dir = self.new_temp_dir()
+        self.workspace.create()
 
     def when_mounting_a_package(self):
         mounted_pkg_path = self.new_temp_dir() / 'pkg.zip'
         make_package(mounted_pkg_path, {'output/output1': b'mounted1'})
-        m.Workspace(self.__pkg_dir).mount('pkg1', Archive(mounted_pkg_path))
+        self.workspace.mount('pkg1', Archive(mounted_pkg_path))
 
     def then_data_files_in_package_are_available_in_workspace(self):
-        with open(self.__pkg_dir / 'input/pkg1/output1', 'rb') as f:
+        with open(self.__workspace_dir / 'input/pkg1/output1', 'rb') as f:
             self.assertEquals(b'mounted1', f.read())
 
     def then_extracted_files_under_input_are_readonly(self):
-        root = self.__pkg_dir / 'input/pkg1'
+        root = self.__workspace_dir / 'input/pkg1'
         self.assertTrue(os.path.exists(root))
         self.assertRaises(IOError, open, root / 'output1', 'ab')
         self.assertRaises(IOError, open, root / 'new-file', 'wb')
+
+    def then_mount_info_is_added_to_pkgmeta(self):
+        self.assertTrue(self.workspace.has_input('pkg1'))
+        self.assertTrue(self.workspace.is_mounted('pkg1'))

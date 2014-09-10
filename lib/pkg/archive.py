@@ -67,6 +67,10 @@ class Archive(object):
             return securehash.file(f, zipinfo.file_size)
 
     @property
+    def uuid(self):
+        return self.meta[meta.KEY_PACKAGE]
+
+    @property
     def meta(self):
         with self.zipfile.open(layouts.Archive.PKGMETA) as f:
             return persistence.from_stream(io.TextIOWrapper(f))

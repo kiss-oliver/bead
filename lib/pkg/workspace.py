@@ -39,6 +39,11 @@ class Workspace(object):
         with open(self.directory / layouts.Workspace.PKGMETA) as f:
             return persistence.from_stream(f)
 
+    @meta.setter
+    def meta(self, meta):
+        with open(self.directory / layouts.Workspace.PKGMETA, 'wt') as f:
+            return persistence.to_stream(meta, f)
+
     def create(self):
         '''
         Set up an empty project structure.
@@ -80,11 +85,40 @@ class Workspace(object):
 
         _ZipCreator().create(zipfilename, self, timestamp)
 
+    def has_input(self, nick):
+        '''Is there an input defined for nick?
+
+        NOTE: it is not necessarily mounted!
+        '''
+        return nick in self.meta[meta.KEY_INPUTS]
+
+    def is_mounted(self, nick):
+        try:
+            return self.meta[meta.KEY_INPUTS][nick][meta.KEY_INPUT_MOUNTED]
+        except KeyError:
+            return False
+
+    def add_input(self, nick, uuid, version):
+        m = self.meta
+        m[meta.KEY_INPUTS][nick] = {
+            meta.KEY_INPUT_PACKAGE: uuid,
+            meta.KEY_INPUT_VERSION: version,
+            meta.KEY_INPUT_MOUNTED: False
+        }
+        self.meta = m
+
+    def mark_input_mounted(self, nick, mounted):
+        m = self.meta
+        m[meta.KEY_INPUTS][nick][meta.KEY_INPUT_MOUNTED] = mounted
+        self.meta = m
+
     def mount(self, nick, archive):
+        self.add_input(nick, archive.uuid, archive.version)
         mount_dir = self.directory / layouts.Workspace.INPUT / nick
         archive.extract_dir(layouts.Archive.DATA, mount_dir)
         for f in all_subpaths(mount_dir):
             make_readonly(f)
+        self.mark_input_mounted(nick, True)
 
 
 class _ZipCreator(object):
