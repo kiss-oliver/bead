@@ -208,7 +208,13 @@ class _ZipCreator(object):
         pkgmeta = {
             meta.KEY_PACKAGE: wsmeta[meta.KEY_PACKAGE],
             meta.KEY_PACKAGE_TIMESTAMP: timestamp,
-            meta.KEY_INPUTS: {},
+            meta.KEY_INPUTS: {
+                nick: {
+                    meta.KEY_INPUT_PACKAGE: spec[meta.KEY_INPUT_PACKAGE],
+                    meta.KEY_INPUT_VERSION: spec[meta.KEY_INPUT_VERSION],
+                }
+                for nick, spec in wsmeta[meta.KEY_INPUTS].items()
+            },
             meta.KEY_DEFAULT_NAME: workspace.package_name,
         }
         # TODO: add INPUTS to pkgmeta
