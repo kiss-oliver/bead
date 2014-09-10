@@ -179,10 +179,10 @@ class _ZipCreator(object):
         # TODO: add INPUTS to pkgmeta
 
         self.add_string_content(
-            layouts.Archive.META_PKGMETA,
+            layouts.Archive.PKGMETA,
             persistence.to_string(pkgmeta)
         )
         self.add_string_content(
-            layouts.Archive.META_CHECKSUMS,
+            layouts.Archive.CHECKSUMS,
             persistence.to_string(self.hashes)
         )

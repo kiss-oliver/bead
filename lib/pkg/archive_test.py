@@ -49,7 +49,7 @@ class Test_Archive(TestCase):
         z.writestr('path/file1', b'''?? file1's known content''')
         z.writestr('path/to/file1', b'''file1's known content''')
         z.writestr('path/to/file2', b'''file2's known content''')
-        z.writestr(layouts.Archive.META_CHECKSUMS, b'some checksum')
+        z.writestr(layouts.Archive.CHECKSUMS, b'some checksum')
         z.close()
 
     def when_file1_is_extracted(self):

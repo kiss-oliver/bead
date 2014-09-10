@@ -16,8 +16,8 @@ class Archive:
     META = Path('meta')
     CODE = META / 'code'
 
-    META_PKGMETA = META / 'pkgmeta'
-    META_CHECKSUMS = META / 'checksums'
+    PKGMETA = META / 'pkgmeta'
+    CHECKSUMS = META / 'checksums'
 
 
 class Workspace:

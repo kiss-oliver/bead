@@ -62,13 +62,13 @@ class Archive(object):
 
     @property
     def version(self):
-        zipinfo = self.zipfile.getinfo(layouts.Archive.META_CHECKSUMS)
+        zipinfo = self.zipfile.getinfo(layouts.Archive.CHECKSUMS)
         with self.zipfile.open(zipinfo) as f:
             return securehash.file(f, zipinfo.file_size)
 
     @property
     def meta(self):
-        with self.zipfile.open(layouts.Archive.META_PKGMETA) as f:
+        with self.zipfile.open(layouts.Archive.PKGMETA) as f:
             return persistence.from_stream(io.TextIOWrapper(f))
 
     # -

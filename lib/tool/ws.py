@@ -41,7 +41,7 @@ def develop(name, package_file_name):
         # FIXME: extracted PKGMETA needs a rewrite
         # as it contains different things in the development and archive format
         pkg.extract_file(
-            layouts.Archive.META_PKGMETA,
+            layouts.Archive.PKGMETA,
             dir / layouts.Workspace.PKGMETA
         )
         # TODO: try to mount all inputs
