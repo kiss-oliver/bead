@@ -49,6 +49,8 @@ class Test_pack(TestCase):
     # implementation
 
     __pkg_dir = None
+    __zipdir = None
+    __zipfile = None
     __SOURCE1 = b's1'
     __SOURCE2 = b's2'
     __OUTPUT1 = b'o1'
@@ -63,7 +65,9 @@ class Test_pack(TestCase):
         write_file(self.__pkg_dir / 'subdir/source2', self.__SOURCE2)
 
     def when_archived(self):
-        self.__zipfile = m.Workspace(self.__pkg_dir).pack(timestamp())
+        self.__zipdir = self.new_temp_dir()
+        self.__zipfile = self.__zipdir / 'pkg.zip'
+        m.Workspace(self.__pkg_dir).pack(self.__zipfile, timestamp())
 
     def then_archive_contains_files_from_package_directory(self):
         z = zipfile.ZipFile(self.__zipfile)

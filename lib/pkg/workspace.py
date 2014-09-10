@@ -19,7 +19,7 @@ from . import meta
 
 class Workspace(object):
 
-    def __init__(self, directory):
+    def __init__(self, directory='.'):
         self.directory = Path(os.path.abspath(directory))
 
     @property
@@ -73,24 +73,12 @@ class Workspace(object):
     def package_name(self):
         return os.path.basename(self.directory)
 
-    def pack(self, timestamp):
+    def pack(self, zipfilename, timestamp):
         '''
-        Create archive from workspace into the temp directory.
-
-        returns the path to the created archive.
+        Create archive from workspace.
         '''
-        zipfilename = (
-            self.directory / layouts.Workspace.TEMP / (
-                '{package}_{timestamp}.zip'
-                .format(
-                    package=self.package_name,
-                    timestamp=timestamp,
-                )
-            )
-        )
 
         _ZipCreator().create(zipfilename, self, timestamp)
-        return zipfilename
 
 
 class _ZipCreator(object):

@@ -87,6 +87,17 @@ def update(nick, package_file_name):
 
 @command
 def pack():
-    zipfilename = Workspace('.').pack(timestamp())
+    workspace = Workspace()
+    ts = timestamp()
+    zipfilename = (
+        Path('.') / layouts.Workspace.TEMP / (
+            '{package}_{timestamp}.zip'
+            .format(
+                package=workspace.package_name,
+                timestamp=ts,
+            )
+        )
+    )
+    workspace.pack(zipfilename, timestamp=ts)
 
     print('Package created at {}'.format(zipfilename))
