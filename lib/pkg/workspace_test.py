@@ -124,7 +124,7 @@ class Test_mount(TestCase):
         self.when_mounting_a_package()
         self.then_extracted_files_under_input_are_readonly()
 
-    def test_mount_addds_input_to_pkgmeta(self):
+    def test_mount_adds_input_to_pkgmeta(self):
         self.given_a_package_directory()
         self.when_mounting_a_package()
         self.then_mount_info_is_added_to_pkgmeta()
