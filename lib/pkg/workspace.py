@@ -174,7 +174,7 @@ class _ZipCreator(object):
             meta.KEY_PACKAGE: wsmeta[meta.KEY_PACKAGE],
             meta.KEY_PACKAGE_TIMESTAMP: timestamp,
             meta.KEY_INPUTS: {},
-            meta.KEY_UNOFFICIAL_NAME: workspace.package_name,
+            meta.KEY_DEFAULT_NAME: workspace.package_name,
         }
         # TODO: add INPUTS to pkgmeta
 

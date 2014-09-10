@@ -9,20 +9,18 @@ with the following minimum structure:
         'mount point1' : {
             package uuid: ...,
             version uuid: ...,
-            file name: ...,
             mounted: true | false,
         },
         'mount point2' : {
             package uuid: ...,
             version uuid: ...,
-            file name: ...,
             mounted: true | false,
         },
         ...
     },
     package uuid: ...,
-    timestamp: ...,        # only archives - naive ordering
-    unofficial name: ...,  # only archives, package name for bootstrapping
+    timestamp: ...,     # only archives - naive ordering
+    default name: ...,  # only archives, package name for bootstrapping
 }
 '''
 
@@ -38,7 +36,6 @@ KEY_INPUTS = 'inputs'
 
 KEY_INPUT_PACKAGE = 'package uuid'
 KEY_INPUT_VERSION = 'version uuid'
-KEY_INPUT_FILENAME = 'file name'
 KEY_INPUT_MOUNTED = 'mounted'
 
 # TODO: ***FUTURE***
@@ -46,8 +43,7 @@ KEY_INPUT_MOUNTED = 'mounted'
 
 # Archive meta:
 KEY_PACKAGE_TIMESTAMP = 'timestamp'
-# TODO: decide if KEY_UNOFFICIAL_NAME needed
-KEY_UNOFFICIAL_NAME = 'unofficial name'
+KEY_DEFAULT_NAME = 'default name'
 
 # Workspace meta:
 KEY_REPO_ROOT = 'repo'

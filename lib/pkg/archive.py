@@ -48,7 +48,7 @@ class Archive(object):
             meta.KEY_PACKAGE in m,
             meta.KEY_PACKAGE_TIMESTAMP in m,
             meta.KEY_INPUTS in m,
-            meta.KEY_UNOFFICIAL_NAME in m,
+            meta.KEY_DEFAULT_NAME in m,
         ))
 
         if valid:
