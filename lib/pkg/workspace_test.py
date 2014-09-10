@@ -6,9 +6,10 @@ from __future__ import print_function
 from ..test import TestCase
 from . import workspace as m
 
+import os
 import zipfile
 
-from ..path import write_file, ensure_directory
+from ..path import write_file, ensure_directory, temp_dir
 from .archive import Archive
 from ..timestamp import timestamp
 
@@ -83,3 +84,50 @@ class Test_pack(TestCase):
     def then_archive_is_valid_package(self):
         with Archive(self.__zipfile) as pkg:
             self.assertTrue(pkg.is_valid)
+
+
+def make_package(path, filespecs):
+    with temp_dir() as root:
+        workspace = m.Workspace(root)
+        workspace.create()
+        for filename, content in filespecs.items():
+            write_file(workspace.directory / filename, content)
+        workspace.pack(path, timestamp())
+
+
+class Test_mount(TestCase):
+
+    def test_makes_package_files_available_under_input(self):
+        self.given_a_package_directory()
+        self.when_mounting_a_package()
+        self.then_data_files_in_package_are_available_in_workspace()
+
+    def test_mounted_inputs_are_read_only(self):
+        self.given_a_package_directory()
+        self.when_mounting_a_package()
+        self.then_extracted_files_under_input_are_readonly()
+
+    # implementation
+
+    # FIXME: rename __pkg_dir to __workspace_dir
+    __pkg_dir = None
+    __repo_dir = None
+
+    def given_a_package_directory(self):
+        self.__pkg_dir = self.new_temp_dir()
+        m.Workspace(self.__pkg_dir).create()
+
+    def when_mounting_a_package(self):
+        mounted_pkg_path = self.new_temp_dir() / 'pkg.zip'
+        make_package(mounted_pkg_path, {'output/output1': b'mounted1'})
+        m.Workspace(self.__pkg_dir).mount('pkg1', Archive(mounted_pkg_path))
+
+    def then_data_files_in_package_are_available_in_workspace(self):
+        with open(self.__pkg_dir / 'input/pkg1/output1', 'rb') as f:
+            self.assertEquals(b'mounted1', f.read())
+
+    def then_extracted_files_under_input_are_readonly(self):
+        root = self.__pkg_dir / 'input/pkg1'
+        self.assertTrue(os.path.exists(root))
+        self.assertRaises(IOError, open, root / 'output1', 'ab')
+        self.assertRaises(IOError, open, root / 'new-file', 'wb')

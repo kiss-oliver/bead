@@ -9,7 +9,7 @@ from __future__ import print_function
 import os
 import zipfile
 
-from ..path import Path, ensure_directory
+from ..path import Path, ensure_directory, all_subpaths, make_readonly
 from .. import persistence
 from .. import securehash
 from ..identifier import uuid
@@ -79,6 +79,12 @@ class Workspace(object):
         '''
 
         _ZipCreator().create(zipfilename, self, timestamp)
+
+    def mount(self, nick, archive):
+        mount_dir = self.directory / layouts.Workspace.INPUT / nick
+        archive.extract_dir(layouts.Archive.DATA, mount_dir)
+        for f in all_subpaths(mount_dir):
+            make_readonly(f)
 
 
 class _ZipCreator(object):
