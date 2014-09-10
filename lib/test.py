@@ -6,10 +6,12 @@ from __future__ import print_function
 import testtools
 import fixtures
 
-from .path import Path
+from .path import Path, rmtree
 
 
 class TestCase(testtools.TestCase):
 
     def new_temp_dir(self):
-        return Path(self.useFixture(fixtures.TempDir()).path)
+        path = Path(self.useFixture(fixtures.TempDir()).path)
+        self.addCleanup(rmtree, path, ignore_errors=True)
+        return path

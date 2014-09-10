@@ -67,3 +67,9 @@ def all_subpaths(dir):
         yield root
         for file in files:
             yield root / file
+
+
+def rmtree(root, *args, **kwargs):
+    for path in all_subpaths(root):
+        make_writable(path)
+    shutil.rmtree(root, *args, **kwargs)
