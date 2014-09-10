@@ -129,6 +129,11 @@ class Test_mount(TestCase):
         self.when_mounting_a_package()
         self.then_mount_info_is_added_to_pkgmeta()
 
+    def test_mounting_more_than_one_package(self):
+        self.given_a_package_directory()
+        self.when_mounting_a_package()
+        self.then_another_package_can_be_mounted()
+
     # implementation
 
     __workspace_dir = None
@@ -141,14 +146,20 @@ class Test_mount(TestCase):
         self.__workspace_dir = self.new_temp_dir()
         self.workspace.create()
 
-    def when_mounting_a_package(self):
+    def _mount_a_package(self, nick):
         mounted_pkg_path = self.new_temp_dir() / 'pkg.zip'
-        make_package(mounted_pkg_path, {'output/output1': b'mounted1'})
-        self.workspace.mount('pkg1', Archive(mounted_pkg_path))
+        make_package(
+            mounted_pkg_path,
+            {'output/output1': 'data for {}'.format(nick).encode('utf-8')}
+        )
+        self.workspace.mount(nick, Archive(mounted_pkg_path))
+
+    def when_mounting_a_package(self):
+        self._mount_a_package('pkg1')
 
     def then_data_files_in_package_are_available_in_workspace(self):
         with open(self.__workspace_dir / 'input/pkg1/output1', 'rb') as f:
-            self.assertEquals(b'mounted1', f.read())
+            self.assertEquals(b'data for pkg1', f.read())
 
     def then_extracted_files_under_input_are_readonly(self):
         root = self.__workspace_dir / 'input/pkg1'
@@ -159,3 +170,6 @@ class Test_mount(TestCase):
     def then_mount_info_is_added_to_pkgmeta(self):
         self.assertTrue(self.workspace.has_input('pkg1'))
         self.assertTrue(self.workspace.is_mounted('pkg1'))
+
+    def then_another_package_can_be_mounted(self):
+        self._mount_a_package('pkg2')

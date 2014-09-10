@@ -9,7 +9,8 @@ from __future__ import print_function
 import os
 import zipfile
 
-from ..path import Path, ensure_directory, all_subpaths, make_readonly
+from ..path import Path, ensure_directory, all_subpaths
+from ..path import make_readonly, make_writable
 from .. import persistence
 from .. import securehash
 from ..identifier import uuid
@@ -71,6 +72,7 @@ class Workspace(object):
         dir = self.directory
         ensure_directory(dir)
         ensure_directory(dir / layouts.Workspace.INPUT)
+        make_readonly(dir / layouts.Workspace.INPUT)
         ensure_directory(dir / layouts.Workspace.OUTPUT)
         ensure_directory(dir / layouts.Workspace.TEMP)
 
@@ -113,12 +115,17 @@ class Workspace(object):
         self.meta = m
 
     def mount(self, nick, archive):
-        self.add_input(nick, archive.uuid, archive.version)
-        mount_dir = self.directory / layouts.Workspace.INPUT / nick
-        archive.extract_dir(layouts.Archive.DATA, mount_dir)
-        for f in all_subpaths(mount_dir):
-            make_readonly(f)
-        self.mark_input_mounted(nick, True)
+        input = self.directory / layouts.Workspace.INPUT
+        make_writable(input)
+        try:
+            self.add_input(nick, archive.uuid, archive.version)
+            mount_dir = input / nick
+            archive.extract_dir(layouts.Archive.DATA, mount_dir)
+            for f in all_subpaths(mount_dir):
+                make_readonly(f)
+            self.mark_input_mounted(nick, True)
+        finally:
+            make_readonly(input)
 
 
 class _ZipCreator(object):
