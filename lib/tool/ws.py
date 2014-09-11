@@ -29,17 +29,6 @@ def new(name):
     print('Created {}'.format(name))
 
 
-def find_package(repo_dir, package_uuid, package_version):
-    for candidate in os.listdir(repo_dir):
-        try:
-            package = archive.Archive(candidate)
-            if package.uuid == package_uuid:
-                if package.version == package_version:
-                    return repo_dir / candidate
-        except:
-            pass
-
-
 @command
 def develop(name, package_file_name, mount=False):
     '''
@@ -76,75 +65,10 @@ def develop(name, package_file_name, mount=False):
     assert workspace.is_valid
 
     if mount:
-        baby_repo = workspace.meta[meta.KEY_BABY_REPO]
-        input = workspace.meta[meta.KEY_INPUTS]
-        for nick, spec in input.items():
-            package_file_name = find_package(
-                Path(baby_repo),
-                spec[meta.KEY_INPUT_PACKAGE],
-                spec[meta.KEY_INPUT_VERSION],
-            )
-            workspace.mount(nick, archive.Archive(package_file_name))
+        mount_all(workspace)
 
     print('Extracted source into {}'.format(dir))
     print_mounts(directory=dir)
-
-
-@arg('package_file_name', metavar='<package file name>')
-def mount(nick, package_file_name):
-    '''
-    Add data to input directory.
-
-    aliases: mount, add-input
-    '''
-    workspace = Workspace()
-    pkg = archive.Archive(package_file_name)
-    assert not workspace.has_input(nick)
-    workspace.mount(nick, pkg)
-    assert workspace.has_input(nick)
-
-command(mount)
-command('add-input')(mount)
-
-
-def print_mounts(directory):
-    workspace = Workspace(directory)
-    inputs = workspace.meta[meta.KEY_INPUTS]
-    if not inputs:
-        print('Package has no defined inputs, yet')
-    else:
-        print('Package inputs')
-        for nick in sorted(inputs):
-            print(
-                '{}: {}mounted'
-                .format(nick, '' if workspace.is_mounted(nick) else 'not ')
-            )
-
-
-@command('mounts')
-def mounts():
-    '''Show mount names and their status'''
-    print_mounts('.')
-
-
-def unmount(nick):
-    '''
-    TODO - Remove data from input directory.
-
-    aliases: unmount, umount, forget-input
-    '''
-    pass
-
-command(unmount)
-command('umount')(unmount)
-command('forget-input')(unmount)
-
-
-@command
-def update(nick, package_file_name):
-    '''TODO - replace input <nick> with a newer version
-    '''
-    pass
 
 
 @command
@@ -164,3 +88,108 @@ def pack():
     workspace.pack(zipfilename, timestamp=ts)
 
     print('Package created at {}'.format(zipfilename))
+
+
+def find_package(repo_dir, package_uuid, package_version):
+    for name in os.listdir(repo_dir):
+        candidate = repo_dir / name
+        try:
+            package = archive.Archive(candidate)
+            if package.uuid == package_uuid:
+                if package.version == package_version:
+                    return candidate
+        except:
+            pass
+
+
+def mount_nick(workspace, nick):
+    assert workspace.has_input(nick)
+    if not workspace.is_mounted(nick):
+        baby_repo = workspace.meta[meta.KEY_BABY_REPO]
+        spec = workspace.meta[meta.KEY_INPUTS][nick]
+        package_file_name = find_package(
+            Path(baby_repo),
+            spec[meta.KEY_INPUT_PACKAGE],
+            spec[meta.KEY_INPUT_VERSION],
+        )
+        if package_file_name is None:
+            print('Could not find archive for {} - not mounted!'.format(nick))
+            return
+        workspace.mount(nick, archive.Archive(package_file_name))
+        print('Mounted {}.'.format(nick))
+
+
+def mount_all(workspace):
+    for nick in workspace.meta[meta.KEY_INPUTS]:
+        mount_nick(workspace, nick)
+
+
+def mount_archive(workspace, nick, package_file_name):
+    assert not workspace.has_input(nick)
+    workspace.mount(nick, archive.Archive(package_file_name))
+    print('{} mounted on {}.'.format(package_file_name, nick))
+
+
+@arg('nick', nargs='?')
+@arg('package_file_name', nargs='?', metavar='package file name')
+def mount(nick, package_file_name):
+    '''
+    Add data to input directory.
+
+    aliases: mount, add-input
+    '''
+    workspace = Workspace()
+    if nick is None:
+        mount_all(workspace)
+    elif package_file_name is None:
+        mount_nick(workspace, nick)
+    else:
+        mount_archive(workspace, nick, package_file_name)
+
+command(mount)
+# command('add-input')(mount)
+
+
+def print_mounts(directory):
+    workspace = Workspace(directory)
+    inputs = workspace.meta[meta.KEY_INPUTS]
+    if not inputs:
+        print('Package has no defined inputs, yet')
+    else:
+        print('Package inputs:')
+        for nick in sorted(inputs):
+            print(
+                '  {}: {}mounted'
+                .format(nick, '' if workspace.is_mounted(nick) else 'not ')
+            )
+
+
+@command('mounts')
+def mounts():
+    '''Show mount names and their status'''
+    print_mounts('.')
+
+
+def unmount(nick):
+    '''
+    INTERNAL: Remove data from input directory.
+    '''
+    Workspace().unmount(nick)
+    print('{} is unmounted.'.format(nick))
+
+command(unmount)
+
+
+def delete_input(nick):
+    '''Forget input'''
+    Workspace().delete_input(nick)
+    print('Input {} is deleted.'.format(nick))
+
+command('delete-input')(delete_input)
+
+
+@command
+def update(nick, package_file_name):
+    '''TODO: replace input with a newer version
+    '''
+    pass

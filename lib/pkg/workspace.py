@@ -10,7 +10,7 @@ import os
 import zipfile
 
 from ..path import Path, ensure_directory, all_subpaths
-from ..path import make_readonly, make_writable
+from ..path import make_readonly, make_writable, rmtree
 from .. import persistence
 from .. import securehash
 from ..identifier import uuid
@@ -62,6 +62,7 @@ class Workspace(object):
         pkgmeta = {
             meta.KEY_PACKAGE: uuid(),
             meta.KEY_INPUTS: {},
+            meta.KEY_BABY_REPO: '..',
         }
         with open(dir / layouts.Workspace.PKGMETA, 'w') as f:
             persistence.to_stream(pkgmeta, f)
@@ -109,23 +110,42 @@ class Workspace(object):
         }
         self.meta = m
 
+    def delete_input(self, nick):
+        # XXX should be merged into unmount?
+        assert self.has_input(nick)
+        if self.is_mounted(nick):
+            self.unmount(nick)
+        m = self.meta
+        del m[meta.KEY_INPUTS][nick]
+        self.meta = m
+
     def mark_input_mounted(self, nick, mounted):
         m = self.meta
         m[meta.KEY_INPUTS][nick][meta.KEY_INPUT_MOUNTED] = mounted
         self.meta = m
 
     def mount(self, nick, archive):
-        input = self.directory / layouts.Workspace.INPUT
-        make_writable(input)
+        input_dir = self.directory / layouts.Workspace.INPUT
+        make_writable(input_dir)
         try:
             self.add_input(nick, archive.uuid, archive.version)
-            mount_dir = input / nick
+            mount_dir = input_dir / nick
             archive.extract_dir(layouts.Archive.DATA, mount_dir)
             for f in all_subpaths(mount_dir):
                 make_readonly(f)
             self.mark_input_mounted(nick, True)
         finally:
-            make_readonly(input)
+            make_readonly(input_dir)
+
+    def unmount(self, nick):
+        assert self.has_input(nick)
+        input_dir = self.directory / layouts.Workspace.INPUT
+        make_writable(input_dir)
+        try:
+            rmtree(input_dir / nick)
+            self.mark_input_mounted(nick, False)
+        finally:
+            make_readonly(input_dir)
 
 
 class _ZipCreator(object):
