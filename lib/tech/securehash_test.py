@@ -5,10 +5,11 @@ from __future__ import print_function
 
 import os
 
-from .test import TestCase
-from . import securehash
+from ..test import TestCase
+from .. import tech
 
-from .path import write_file
+securehash = tech.securehash
+write_file = tech.path.write_file
 
 
 class Test(TestCase):

@@ -7,13 +7,15 @@ import io
 import os
 import zipfile
 
-from .. import path
-from ..path import temp_dir
-from .. import persistence
-from .. import securehash
-from .. import timestamp
+from .. import tech
 from . import layouts
 from . import metakey
+
+# technology modules
+timestamp = tech.timestamp
+securehash = tech.securehash
+persistence = tech.persistence
+path = tech.path
 
 
 class Archive(object):
@@ -80,7 +82,7 @@ class Archive(object):
 
         assert not os.path.exists(destination)
 
-        with temp_dir(path.parent(destination)) as unzip_dir:
+        with path.temp_dir(path.parent(destination)) as unzip_dir:
             self.zipfile.extract(zip_path, unzip_dir)
             os.rename(unzip_dir / zip_path, destination)
 
@@ -99,7 +101,7 @@ class Archive(object):
         ]
 
         if filelist:
-            with temp_dir(path.parent(destination)) as unzip_dir:
+            with path.temp_dir(path.parent(destination)) as unzip_dir:
                 self.zipfile.extractall(unzip_dir, filelist)
                 os.rename(unzip_dir / zip_dir, destination)
         else:

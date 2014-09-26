@@ -9,9 +9,13 @@ from . import workspace as m
 import os
 import zipfile
 
-from ..path import write_file, ensure_directory, temp_dir
+from .. import tech
 from .archive import Archive
-from ..timestamp import timestamp
+
+write_file = tech.path.write_file
+ensure_directory = tech.path.ensure_directory
+temp_dir = tech.path.temp_dir
+timestamp = tech.timestamp.timestamp
 
 
 class Test_create(TestCase):

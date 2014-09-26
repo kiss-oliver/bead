@@ -6,18 +6,22 @@ from __future__ import print_function
 from mando.core import Program
 
 import os
-from ..path import Path
+
+from .. import tech
+
 from ..pkg.workspace import Workspace
 from ..pkg import archive
 from ..pkg import layouts
 from ..pkg import metakey
-from ..timestamp import timestamp
 
 from .. import VERSION
 
 main = Program('ws', VERSION)
 arg = main.arg
 command = main.command
+
+Path = tech.path.Path
+timestamp = tech.timestamp
 
 
 @command
