@@ -6,7 +6,10 @@ from __future__ import print_function
 import testtools
 import fixtures
 
-from .path import Path, rmtree
+from . import tech
+
+Path = tech.path.Path
+rmtree = tech.path.rmtree
 
 
 class TestCase(testtools.TestCase):

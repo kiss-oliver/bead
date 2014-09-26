@@ -9,13 +9,24 @@ from __future__ import print_function
 import os
 import zipfile
 
-from ..path import Path, ensure_directory, all_subpaths
-from ..path import make_readonly, make_writable, rmtree, write_file, read_file
-from .. import persistence
-from .. import securehash
-from ..identifier import uuid
 from . import layouts
 from . import metakey
+from .. import tech
+
+# technology modules
+persistence = tech.persistence
+securehash = tech.securehash
+
+# functions from technology providers
+uuid = tech.identifier.uuid
+Path = tech.path.Path
+ensure_directory = tech.path.ensure_directory
+all_subpaths = tech.path.all_subpaths
+make_readonly = tech.path.make_readonly
+make_writable = tech.path.make_writable
+rmtree = tech.path.rmtree
+write_file = tech.path.write_file
+read_file = tech.path.read_file
 
 
 class Workspace(object):
