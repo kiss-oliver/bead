@@ -16,23 +16,13 @@ from .. import tech
 # technology modules
 persistence = tech.persistence
 securehash = tech.securehash
-
-# functions from technology providers
-uuid = tech.identifier.uuid
-Path = tech.path.Path
-ensure_directory = tech.path.ensure_directory
-all_subpaths = tech.path.all_subpaths
-make_readonly = tech.path.make_readonly
-make_writable = tech.path.make_writable
-rmtree = tech.path.rmtree
-write_file = tech.path.write_file
-read_file = tech.path.read_file
+fs = tech.fs
 
 
 class Workspace(object):
 
     def __init__(self, directory='.'):
-        self.directory = Path(os.path.abspath(directory))
+        self.directory = fs.Path(os.path.abspath(directory))
 
     @property
     def is_valid(self):
@@ -58,11 +48,11 @@ class Workspace(object):
 
     @property
     def flat_repo(self):
-        return read_file(self.directory / layouts.Workspace.REPO)
+        return fs.read_file(self.directory / layouts.Workspace.REPO)
 
     @flat_repo.setter
     def flat_repo(self, directory):
-        write_file(self.directory / layouts.Workspace.REPO, directory)
+        fs.write_file(self.directory / layouts.Workspace.REPO, directory)
 
     def create(self):
         '''
@@ -79,10 +69,10 @@ class Workspace(object):
         self.create_directories()
 
         pkgmeta = {
-            metakey.PACKAGE: uuid(),
+            metakey.PACKAGE: tech.identifier.uuid(),
             metakey.INPUTS: {},
         }
-        write_file(
+        fs.write_file(
             dir / layouts.Workspace.PKGMETA,
             persistence.to_string(pkgmeta)
         )
@@ -92,12 +82,12 @@ class Workspace(object):
 
     def create_directories(self):
         dir = self.directory
-        ensure_directory(dir)
-        ensure_directory(dir / layouts.Workspace.INPUT)
-        make_readonly(dir / layouts.Workspace.INPUT)
-        ensure_directory(dir / layouts.Workspace.OUTPUT)
-        ensure_directory(dir / layouts.Workspace.TEMP)
-        ensure_directory(dir / layouts.Workspace.META)
+        fs.ensure_directory(dir)
+        fs.ensure_directory(dir / layouts.Workspace.INPUT)
+        fs.make_readonly(dir / layouts.Workspace.INPUT)
+        fs.ensure_directory(dir / layouts.Workspace.OUTPUT)
+        fs.ensure_directory(dir / layouts.Workspace.TEMP)
+        fs.ensure_directory(dir / layouts.Workspace.META)
 
     @property
     def package_name(self):
@@ -148,26 +138,26 @@ class Workspace(object):
 
     def mount(self, nick, archive):
         input_dir = self.directory / layouts.Workspace.INPUT
-        make_writable(input_dir)
+        fs.make_writable(input_dir)
         try:
             self.add_input(nick, archive.uuid, archive.version)
             mount_dir = input_dir / nick
             archive.extract_dir(layouts.Archive.DATA, mount_dir)
-            for f in all_subpaths(mount_dir):
-                make_readonly(f)
+            for f in fs.all_subpaths(mount_dir):
+                fs.make_readonly(f)
             self.mark_input_mounted(nick, True)
         finally:
-            make_readonly(input_dir)
+            fs.make_readonly(input_dir)
 
     def unmount(self, nick):
         assert self.has_input(nick)
         input_dir = self.directory / layouts.Workspace.INPUT
-        make_writable(input_dir)
+        fs.make_writable(input_dir)
         try:
-            rmtree(input_dir / nick)
+            fs.rmtree(input_dir / nick)
             self.mark_input_mounted(nick, False)
         finally:
-            make_readonly(input_dir)
+            fs.make_readonly(input_dir)
 
 
 class _ZipCreator(object):

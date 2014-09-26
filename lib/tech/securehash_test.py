@@ -9,7 +9,7 @@ from ..test import TestCase
 from .. import tech
 
 securehash = tech.securehash
-write_file = tech.path.write_file
+write_file = tech.fs.write_file
 
 
 class Test(TestCase):

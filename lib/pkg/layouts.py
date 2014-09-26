@@ -9,7 +9,7 @@ from __future__ import print_function
 
 from .. import tech
 
-Path = tech.path.Path
+Path = tech.fs.Path
 
 
 class Archive:

@@ -20,7 +20,7 @@ main = Program('ws', VERSION)
 arg = main.arg
 command = main.command
 
-Path = tech.path.Path
+Path = tech.fs.Path
 timestamp = tech.timestamp
 
 

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from ..test import TestCase
-from . import path as m
+from . import fs as m
 
 import os
 

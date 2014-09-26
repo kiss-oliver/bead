@@ -12,9 +12,9 @@ import zipfile
 from .. import tech
 from .archive import Archive
 
-write_file = tech.path.write_file
-ensure_directory = tech.path.ensure_directory
-temp_dir = tech.path.temp_dir
+write_file = tech.fs.write_file
+ensure_directory = tech.fs.ensure_directory
+temp_dir = tech.fs.temp_dir
 timestamp = tech.timestamp.timestamp
 
 

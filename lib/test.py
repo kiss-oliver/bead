@@ -8,13 +8,10 @@ import fixtures
 
 from . import tech
 
-Path = tech.path.Path
-rmtree = tech.path.rmtree
-
 
 class TestCase(testtools.TestCase):
 
     def new_temp_dir(self):
-        path = Path(self.useFixture(fixtures.TempDir()).path)
-        self.addCleanup(rmtree, path, ignore_errors=True)
+        path = tech.fs.Path(self.useFixture(fixtures.TempDir()).path)
+        self.addCleanup(tech.fs.rmtree, path, ignore_errors=True)
         return path

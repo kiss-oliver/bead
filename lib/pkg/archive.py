@@ -15,7 +15,7 @@ from . import metakey
 timestamp = tech.timestamp
 securehash = tech.securehash
 persistence = tech.persistence
-path = tech.path
+path = tech.fs
 
 
 class Archive(object):
