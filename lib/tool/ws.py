@@ -10,7 +10,7 @@ from ..path import Path
 from ..pkg.workspace import Workspace
 from ..pkg import archive
 from ..pkg import layouts
-from ..pkg import meta
+from ..pkg import metakey
 from ..timestamp import timestamp
 
 from .. import VERSION
@@ -46,17 +46,17 @@ def develop(name, package_file_name, mount=False):
         # as it contains different things in the development and archive format
         archive_meta = pkg.meta
         development_meta = {
-            meta.KEY_PACKAGE: archive_meta[meta.KEY_PACKAGE],
+            metakey.PACKAGE: archive_meta[metakey.PACKAGE],
             # this flat repo can be used to mount packages for demo purposes
             # that is, until we have a proper repo
-            meta.KEY_FLAT_REPO: os.path.abspath(os.path.dirname(dir)),
-            meta.KEY_INPUTS: {
+            metakey.FLAT_REPO: os.path.abspath(os.path.dirname(dir)),
+            metakey.INPUTS: {
                 nick: {
-                    meta.KEY_INPUT_MOUNTED: False,
-                    meta.KEY_INPUT_PACKAGE: spec[meta.KEY_INPUT_PACKAGE],
-                    meta.KEY_INPUT_VERSION: spec[meta.KEY_INPUT_VERSION],
+                    metakey.INPUT_MOUNTED: False,
+                    metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
+                    metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
                 }
-                for nick, spec in archive_meta[meta.KEY_INPUTS].items()
+                for nick, spec in archive_meta[metakey.INPUTS].items()
             },
         }
         workspace.meta = development_meta
@@ -105,12 +105,12 @@ def find_package(repo_dir, package_uuid, package_version):
 def mount_nick(workspace, nick):
     assert workspace.has_input(nick)
     if not workspace.is_mounted(nick):
-        flat_repo = workspace.meta[meta.KEY_FLAT_REPO]
-        spec = workspace.meta[meta.KEY_INPUTS][nick]
+        flat_repo = workspace.meta[metakey.FLAT_REPO]
+        spec = workspace.meta[metakey.INPUTS][nick]
         package_file_name = find_package(
             Path(flat_repo),
-            spec[meta.KEY_INPUT_PACKAGE],
-            spec[meta.KEY_INPUT_VERSION],
+            spec[metakey.INPUT_PACKAGE],
+            spec[metakey.INPUT_VERSION],
         )
         if package_file_name is None:
             print('Could not find archive for {} - not mounted!'.format(nick))
@@ -120,7 +120,7 @@ def mount_nick(workspace, nick):
 
 
 def mount_all(workspace):
-    for nick in workspace.meta[meta.KEY_INPUTS]:
+    for nick in workspace.meta[metakey.INPUTS]:
         mount_nick(workspace, nick)
 
 
@@ -152,7 +152,7 @@ command(mount)
 
 def print_mounts(directory):
     workspace = Workspace(directory)
-    inputs = workspace.meta[meta.KEY_INPUTS]
+    inputs = workspace.meta[metakey.INPUTS]
     if not inputs:
         print('Package has no defined inputs, yet')
     else:

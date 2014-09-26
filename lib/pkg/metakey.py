@@ -31,20 +31,20 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
-KEY_PACKAGE = 'package uuid'
+PACKAGE = 'package uuid'
 
-KEY_INPUTS = 'inputs'
+INPUTS = 'inputs'
 
-KEY_INPUT_PACKAGE = 'package uuid'
-KEY_INPUT_VERSION = 'version uuid'
-KEY_INPUT_MOUNTED = 'mounted'
+INPUT_PACKAGE = 'package uuid'
+INPUT_VERSION = 'version uuid'
+INPUT_MOUNTED = 'mounted'
 
 # TODO: ***FUTURE***
-# KEY_INPUT_CHANNEL = 'upgrade channel uuid'
+# INPUT_CHANNEL = 'upgrade channel uuid'
 
 # Archive meta:
-KEY_PACKAGE_TIMESTAMP = 'timestamp'
-KEY_DEFAULT_NAME = 'default name'
+PACKAGE_TIMESTAMP = 'timestamp'
+DEFAULT_NAME = 'default name'
 
 # Workspace meta:
-KEY_FLAT_REPO = 'flat repo'
+FLAT_REPO = 'flat repo'

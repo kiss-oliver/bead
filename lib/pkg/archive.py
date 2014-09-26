@@ -13,7 +13,7 @@ from .. import persistence
 from .. import securehash
 from .. import timestamp
 from . import layouts
-from . import meta
+from . import metakey
 
 
 class Archive(object):
@@ -44,16 +44,16 @@ class Archive(object):
             - has inputs (even if empty)
         '''
         valid = all((
-            meta.KEY_PACKAGE in self.meta,
-            meta.KEY_PACKAGE_TIMESTAMP in self.meta,
-            meta.KEY_INPUTS in self.meta,
-            meta.KEY_DEFAULT_NAME in self.meta,
+            metakey.PACKAGE in self.meta,
+            metakey.PACKAGE_TIMESTAMP in self.meta,
+            metakey.INPUTS in self.meta,
+            metakey.DEFAULT_NAME in self.meta,
         ))
 
         if valid:
             now = timestamp.time_from_timestamp(timestamp.timestamp())
             pkgtime = timestamp.time_from_timestamp(
-                self.meta[meta.KEY_PACKAGE_TIMESTAMP]
+                self.meta[metakey.PACKAGE_TIMESTAMP]
             )
             valid = pkgtime < now
 
@@ -67,7 +67,7 @@ class Archive(object):
 
     @property
     def uuid(self):
-        return self.meta[meta.KEY_PACKAGE]
+        return self.meta[metakey.PACKAGE]
 
     @property
     def meta(self):

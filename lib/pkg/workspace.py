@@ -15,7 +15,7 @@ from .. import persistence
 from .. import securehash
 from ..identifier import uuid
 from . import layouts
-from . import meta
+from . import metakey
 
 
 class Workspace(object):
@@ -60,9 +60,9 @@ class Workspace(object):
         self.create_directories()
 
         pkgmeta = {
-            meta.KEY_PACKAGE: uuid(),
-            meta.KEY_INPUTS: {},
-            meta.KEY_FLAT_REPO: '..',
+            metakey.PACKAGE: uuid(),
+            metakey.INPUTS: {},
+            metakey.FLAT_REPO: '..',
         }
         with open(dir / layouts.Workspace.PKGMETA, 'w') as f:
             persistence.to_stream(pkgmeta, f)
@@ -93,20 +93,20 @@ class Workspace(object):
 
         NOTE: it is not necessarily mounted!
         '''
-        return nick in self.meta[meta.KEY_INPUTS]
+        return nick in self.meta[metakey.INPUTS]
 
     def is_mounted(self, nick):
         try:
-            return self.meta[meta.KEY_INPUTS][nick][meta.KEY_INPUT_MOUNTED]
+            return self.meta[metakey.INPUTS][nick][metakey.INPUT_MOUNTED]
         except KeyError:
             return False
 
     def add_input(self, nick, uuid, version):
         m = self.meta
-        m[meta.KEY_INPUTS][nick] = {
-            meta.KEY_INPUT_PACKAGE: uuid,
-            meta.KEY_INPUT_VERSION: version,
-            meta.KEY_INPUT_MOUNTED: False
+        m[metakey.INPUTS][nick] = {
+            metakey.INPUT_PACKAGE: uuid,
+            metakey.INPUT_VERSION: version,
+            metakey.INPUT_MOUNTED: False
         }
         self.meta = m
 
@@ -116,12 +116,12 @@ class Workspace(object):
         if self.is_mounted(nick):
             self.unmount(nick)
         m = self.meta
-        del m[meta.KEY_INPUTS][nick]
+        del m[metakey.INPUTS][nick]
         self.meta = m
 
     def mark_input_mounted(self, nick, mounted):
         m = self.meta
-        m[meta.KEY_INPUTS][nick][meta.KEY_INPUT_MOUNTED] = mounted
+        m[metakey.INPUTS][nick][metakey.INPUT_MOUNTED] = mounted
         self.meta = m
 
     def mount(self, nick, archive):
@@ -226,16 +226,16 @@ class _ZipCreator(object):
     def add_meta(self, workspace, timestamp):
         wsmeta = workspace.meta
         pkgmeta = {
-            meta.KEY_PACKAGE: wsmeta[meta.KEY_PACKAGE],
-            meta.KEY_PACKAGE_TIMESTAMP: timestamp,
-            meta.KEY_INPUTS: {
+            metakey.PACKAGE: wsmeta[metakey.PACKAGE],
+            metakey.PACKAGE_TIMESTAMP: timestamp,
+            metakey.INPUTS: {
                 nick: {
-                    meta.KEY_INPUT_PACKAGE: spec[meta.KEY_INPUT_PACKAGE],
-                    meta.KEY_INPUT_VERSION: spec[meta.KEY_INPUT_VERSION],
+                    metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
+                    metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
                 }
-                for nick, spec in wsmeta[meta.KEY_INPUTS].items()
+                for nick, spec in wsmeta[metakey.INPUTS].items()
             },
-            meta.KEY_DEFAULT_NAME: workspace.package_name,
+            metakey.DEFAULT_NAME: workspace.package_name,
         }
 
         self.add_string_content(
