@@ -21,7 +21,6 @@ with the following minimum structure:
     package uuid: ...,
     timestamp: ...,     # only archives - naive ordering
     default name: ...,  # only archives, package name for bootstrapping
-    flat repo: ... # only workspaces
 }
 '''
 
@@ -45,6 +44,3 @@ INPUT_MOUNTED = 'mounted'
 # Archive meta:
 PACKAGE_TIMESTAMP = 'timestamp'
 DEFAULT_NAME = 'default name'
-
-# Workspace meta:
-FLAT_REPO = 'flat repo'

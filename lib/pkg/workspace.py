@@ -10,7 +10,7 @@ import os
 import zipfile
 
 from ..path import Path, ensure_directory, all_subpaths
-from ..path import make_readonly, make_writable, rmtree
+from ..path import make_readonly, make_writable, rmtree, write_file, read_file
 from .. import persistence
 from .. import securehash
 from ..identifier import uuid
@@ -45,6 +45,14 @@ class Workspace(object):
         with open(self.directory / layouts.Workspace.PKGMETA, 'wt') as f:
             return persistence.to_stream(meta, f)
 
+    @property
+    def flat_repo(self):
+        return read_file(self.directory / layouts.Workspace.REPO)
+
+    @flat_repo.setter
+    def flat_repo(self, directory):
+        write_file(self.directory / layouts.Workspace.REPO, directory)
+
     def create(self):
         '''
         Set up an empty project structure.
@@ -62,10 +70,12 @@ class Workspace(object):
         pkgmeta = {
             metakey.PACKAGE: uuid(),
             metakey.INPUTS: {},
-            metakey.FLAT_REPO: '..',
         }
-        with open(dir / layouts.Workspace.PKGMETA, 'w') as f:
-            persistence.to_stream(pkgmeta, f)
+        write_file(
+            dir / layouts.Workspace.PKGMETA,
+            persistence.to_string(pkgmeta)
+        )
+        self.flat_repo = '..'
 
         assert self.is_valid
 
@@ -76,6 +86,7 @@ class Workspace(object):
         make_readonly(dir / layouts.Workspace.INPUT)
         ensure_directory(dir / layouts.Workspace.OUTPUT)
         ensure_directory(dir / layouts.Workspace.TEMP)
+        ensure_directory(dir / layouts.Workspace.META)
 
     @property
     def package_name(self):

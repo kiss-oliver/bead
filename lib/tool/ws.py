@@ -42,14 +42,13 @@ def develop(name, package_file_name, mount=False):
 
     with archive.Archive(package_file_name) as pkg:
         pkg.extract_dir(layouts.Archive.CODE, dir)
+        workspace.create_directories()
+
         # extracted PKGMETA needs a rewrite
         # as it contains different things in the development and archive format
         archive_meta = pkg.meta
         development_meta = {
             metakey.PACKAGE: archive_meta[metakey.PACKAGE],
-            # this flat repo can be used to mount packages for demo purposes
-            # that is, until we have a proper repo
-            metakey.FLAT_REPO: os.path.abspath(os.path.dirname(dir)),
             metakey.INPUTS: {
                 nick: {
                     metakey.INPUT_MOUNTED: False,
@@ -60,8 +59,12 @@ def develop(name, package_file_name, mount=False):
             },
         }
         workspace.meta = development_meta
+        # this flat repo can be used to mount packages for demo purposes
+        # that is, until we have a proper repo
+        workspace.flat_repo = os.path.abspath(
+            os.path.dirname(package_file_name)
+        )
 
-    workspace.create_directories()
     assert workspace.is_valid
 
     if mount:
@@ -105,10 +108,9 @@ def find_package(repo_dir, package_uuid, package_version):
 def mount_nick(workspace, nick):
     assert workspace.has_input(nick)
     if not workspace.is_mounted(nick):
-        flat_repo = workspace.meta[metakey.FLAT_REPO]
         spec = workspace.meta[metakey.INPUTS][nick]
         package_file_name = find_package(
-            Path(flat_repo),
+            Path(workspace.flat_repo),
             spec[metakey.INPUT_PACKAGE],
             spec[metakey.INPUT_VERSION],
         )

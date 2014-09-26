@@ -40,6 +40,11 @@ def write_file(path, content):
         f.write(content)
 
 
+def read_file(path):
+    with open(path) as f:
+        return f.read()
+
+
 @contextlib.contextmanager
 def temp_dir(dir='.'):
     ensure_directory(dir)

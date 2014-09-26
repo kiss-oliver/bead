@@ -25,8 +25,7 @@ class Workspace:
     INPUT = Path('input')
     OUTPUT = Path('output')
     TEMP = Path('temp')
-    PKGMETA = '.pkgmeta'
-    # TODO: Workspace.PKGMETA file -> .meta directory
-    # META = Path('.meta')
-    # META_INPUTS = META / 'inputs'
-    # META_PACKAGE = META / 'package'
+    META = Path('.pafu')
+
+    PKGMETA = META / 'package'
+    REPO = META / 'repo'
