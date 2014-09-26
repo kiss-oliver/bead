@@ -43,18 +43,17 @@ class Archive(object):
             - has unofficial package name
             - has inputs (even if empty)
         '''
-        m = self.meta
         valid = all((
-            meta.KEY_PACKAGE in m,
-            meta.KEY_PACKAGE_TIMESTAMP in m,
-            meta.KEY_INPUTS in m,
-            meta.KEY_DEFAULT_NAME in m,
+            meta.KEY_PACKAGE in self.meta,
+            meta.KEY_PACKAGE_TIMESTAMP in self.meta,
+            meta.KEY_INPUTS in self.meta,
+            meta.KEY_DEFAULT_NAME in self.meta,
         ))
 
         if valid:
             now = timestamp.time_from_timestamp(timestamp.timestamp())
             pkgtime = timestamp.time_from_timestamp(
-                m[meta.KEY_PACKAGE_TIMESTAMP]
+                self.meta[meta.KEY_PACKAGE_TIMESTAMP]
             )
             valid = pkgtime < now
 

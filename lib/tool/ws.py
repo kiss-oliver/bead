@@ -47,9 +47,9 @@ def develop(name, package_file_name, mount=False):
         archive_meta = pkg.meta
         development_meta = {
             meta.KEY_PACKAGE: archive_meta[meta.KEY_PACKAGE],
-            # this baby repo can be used to mount packages for demo purposes
+            # this flat repo can be used to mount packages for demo purposes
             # that is, until we have a proper repo
-            meta.KEY_BABY_REPO: os.path.abspath(os.path.dirname(dir)),
+            meta.KEY_FLAT_REPO: os.path.abspath(os.path.dirname(dir)),
             meta.KEY_INPUTS: {
                 nick: {
                     meta.KEY_INPUT_MOUNTED: False,
@@ -105,10 +105,10 @@ def find_package(repo_dir, package_uuid, package_version):
 def mount_nick(workspace, nick):
     assert workspace.has_input(nick)
     if not workspace.is_mounted(nick):
-        baby_repo = workspace.meta[meta.KEY_BABY_REPO]
+        flat_repo = workspace.meta[meta.KEY_FLAT_REPO]
         spec = workspace.meta[meta.KEY_INPUTS][nick]
         package_file_name = find_package(
-            Path(baby_repo),
+            Path(flat_repo),
             spec[meta.KEY_INPUT_PACKAGE],
             spec[meta.KEY_INPUT_VERSION],
         )

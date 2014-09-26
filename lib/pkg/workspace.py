@@ -62,7 +62,7 @@ class Workspace(object):
         pkgmeta = {
             meta.KEY_PACKAGE: uuid(),
             meta.KEY_INPUTS: {},
-            meta.KEY_BABY_REPO: '..',
+            meta.KEY_FLAT_REPO: '..',
         }
         with open(dir / layouts.Workspace.PKGMETA, 'w') as f:
             persistence.to_stream(pkgmeta, f)
@@ -237,7 +237,6 @@ class _ZipCreator(object):
             },
             meta.KEY_DEFAULT_NAME: workspace.package_name,
         }
-        # TODO: add INPUTS to pkgmeta
 
         self.add_string_content(
             layouts.Archive.PKGMETA,

@@ -21,7 +21,7 @@ with the following minimum structure:
     package uuid: ...,
     timestamp: ...,     # only archives - naive ordering
     default name: ...,  # only archives, package name for bootstrapping
-    baby repo: ... # only workspaces
+    flat repo: ... # only workspaces
 }
 '''
 
@@ -47,4 +47,4 @@ KEY_PACKAGE_TIMESTAMP = 'timestamp'
 KEY_DEFAULT_NAME = 'default name'
 
 # Workspace meta:
-KEY_BABY_REPO = 'baby repo'
+KEY_FLAT_REPO = 'flat repo'
