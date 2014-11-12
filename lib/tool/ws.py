@@ -21,7 +21,7 @@ arg = main.arg
 command = main.command
 
 Path = tech.fs.Path
-timestamp = tech.timestamp
+timestamp = tech.timestamp.timestamp
 
 
 @command
