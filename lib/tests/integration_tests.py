@@ -1,15 +1,9 @@
-import unittest
 from nose import tools
-
-try:
-    from scripttest import TestFileEnvironment
-    env = TestFileEnvironment()
-except ImportError:
-    env = None
+from scripttest import TestFileEnvironment
 
 
-@unittest.skipIf(env is None, 'scripttest not installed')
 def test_package_operations():
+    env = TestFileEnvironment()
     result = env.run('ws', 'new', 'something')
 
     tools.assert_in('something', result.files_created)
