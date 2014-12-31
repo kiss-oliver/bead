@@ -34,8 +34,6 @@ create table if not exists uuid_name(
     primary key (scope, uuid),
     unique (scope, name)
 );
-
--- create unique index if not exists ix_uuid_scope_name on uuid_name(scope, name);
 '''
 
 SQL_ADD = '''\
