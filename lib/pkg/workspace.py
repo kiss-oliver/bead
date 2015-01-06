@@ -47,6 +47,14 @@ class Workspace(object):
             return persistence.to_stream(meta, f)
 
     @property
+    def inputspecs(self):
+        return self.meta[metakey.INPUTS]
+
+    @property
+    def inputs(self):
+        return self.inputspecs.keys()
+
+    @property
     def flat_repo(self):
         return fs.read_file(self.directory / layouts.Workspace.REPO)
 
@@ -105,11 +113,11 @@ class Workspace(object):
 
         NOTE: it is not necessarily mounted!
         '''
-        return nick in self.meta[metakey.INPUTS]
+        return nick in self.inputs
 
     def is_mounted(self, nick):
         try:
-            return self.meta[metakey.INPUTS][nick][metakey.INPUT_MOUNTED]
+            return self.inputspecs[nick][metakey.INPUT_MOUNTED]
         except KeyError:
             return False
 

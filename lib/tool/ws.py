@@ -6,6 +6,7 @@ from __future__ import print_function
 from mando.core import Program
 
 import os
+import sys
 
 from .. import tech
 
@@ -22,6 +23,16 @@ command = main.command
 
 Path = tech.fs.Path
 timestamp = tech.timestamp.timestamp
+
+ERROR_EXIT = 1
+
+
+def assert_valid_workspace(workspace):
+    if not workspace.is_valid:
+        msg = 'ERROR: {} is not a valid workspace'.format(workspace.directory)
+        sys.stderr.write(msg)
+        sys.stderr.write('\n')
+        sys.exit(ERROR_EXIT)
 
 
 @command
@@ -112,7 +123,7 @@ def find_package(repo_dir, package_uuid, package_version):
 def mount_nick(workspace, nick):
     assert workspace.has_input(nick)
     if not workspace.is_mounted(nick):
-        spec = workspace.meta[metakey.INPUTS][nick]
+        spec = workspace.inputspecs[nick]
         package_file_name = find_package(
             Path(workspace.flat_repo),
             spec[metakey.INPUT_PACKAGE],
@@ -125,8 +136,9 @@ def mount_nick(workspace, nick):
         print('Mounted {}.'.format(nick))
 
 
+@command('mount-all')
 def mount_all(workspace):
-    for nick in workspace.meta[metakey.INPUTS]:
+    for nick in workspace.inputs:
         mount_nick(workspace, nick)
 
 
@@ -136,37 +148,44 @@ def mount_archive(workspace, nick, package_file_name):
     print('{} mounted on {}.'.format(package_file_name, nick))
 
 
-@arg('nick', nargs='?')
-@arg('package_file_name', nargs='?', metavar='package file name')
-def mount(nick, package_file_name):
+@command
+@arg(
+    'package', nargs='?', metavar='PACKAGE',
+    help='package to mount data from'
+)
+@arg(
+    'nick', metavar='NICK',
+    help='data will be mounted under "input/%(metavar)s"'
+)
+def mount(package, nick):
     '''
-    Add data to input directory.
-
-    aliases: mount, add-input
+    Add data from another package to the input directory.
     '''
     workspace = Workspace()
-    if nick is None:
-        mount_all(workspace)
-    elif package_file_name is None:
+    if package is None:
         mount_nick(workspace, nick)
     else:
+        package_file_name = package
         mount_archive(workspace, nick, package_file_name)
-
-command(mount)
-# command('add-input')(mount)
 
 
 def print_mounts(directory):
     workspace = Workspace(directory)
-    inputs = workspace.meta[metakey.INPUTS]
+    assert_valid_workspace(workspace)
+    inputs = workspace.inputs
     if not inputs:
         print('Package has no defined inputs, yet')
     else:
         print('Package inputs:')
+        MOUNTED = 'mounted'
+        NOT_MOUNTED = 'not mounted'
         for nick in sorted(inputs):
             print(
-                '  {}: {}mounted'
-                .format(nick, '' if workspace.is_mounted(nick) else 'not ')
+                '  {}: {}'
+                .format(
+                    nick,
+                    MOUNTED if workspace.is_mounted(nick) else NOT_MOUNTED
+                )
             )
 
 
@@ -176,26 +195,28 @@ def mounts():
     print_mounts('.')
 
 
-def unmount(nick):
-    '''
-    INTERNAL: Remove data from input directory.
-    '''
-    Workspace().unmount(nick)
-    print('{} is unmounted.'.format(nick))
-
-command(unmount)
-
-
+@command('delete-input')
 def delete_input(nick):
     '''Forget input'''
     Workspace().delete_input(nick)
     print('Input {} is deleted.'.format(nick))
 
-command('delete-input')(delete_input)
-
 
 @command
+@arg('package_file_name', nargs='?')
 def update(nick, package_file_name):
     '''TODO: replace input with a newer version
     '''
     pass
+
+
+@command
+@arg(
+    'directory', nargs='?', default='.',
+    help='workspace directory (default: %(default)s)'
+)
+def nuke(directory):
+    '''Delete the workspace, inluding data, code and documentation'''
+    workspace = Workspace(directory)
+    assert_valid_workspace(workspace)
+    tech.fs.rmtree(os.path.abspath(directory))
