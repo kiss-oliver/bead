@@ -32,7 +32,7 @@ JSON_SAVE_OPTIONS = dict(
 )
 
 
-def to_string(content):
+def dumps(content):
     return json.dumps(content, **JSON_SAVE_OPTIONS)
 
 

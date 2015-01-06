@@ -40,7 +40,7 @@ class Test(TestCase):
             m.to_stream(get_structure(), f)
 
     def given_a_persisted_structure_as_a_string(self):
-        self.__string = m.to_string(get_structure())
+        self.__string = m.dumps(get_structure())
 
     def when_file_is_read_back(self):
         with open(self.__file, 'r') as f:

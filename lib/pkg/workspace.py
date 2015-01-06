@@ -82,7 +82,7 @@ class Workspace(object):
         }
         fs.write_file(
             dir / layouts.Workspace.PKGMETA,
-            persistence.to_string(pkgmeta)
+            persistence.dumps(pkgmeta)
         )
         self.flat_repo = '..'
 
@@ -260,9 +260,9 @@ class _ZipCreator(object):
 
         self.add_string_content(
             layouts.Archive.PKGMETA,
-            persistence.to_string(pkgmeta)
+            persistence.dumps(pkgmeta)
         )
         self.add_string_content(
             layouts.Archive.CHECKSUMS,
-            persistence.to_string(self.hashes)
+            persistence.dumps(self.hashes)
         )
