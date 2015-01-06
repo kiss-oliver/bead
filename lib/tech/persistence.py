@@ -21,7 +21,7 @@ def load(istream):
     return json.load(istream)
 
 
-def from_string(string):
+def loads(string):
     return json.loads(string)
 
 

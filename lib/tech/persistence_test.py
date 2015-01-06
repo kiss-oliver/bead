@@ -47,7 +47,7 @@ class Test(TestCase):
             self.__structure = m.load(f)
 
     def when_string_is_parsed_back(self):
-        self.__structure = m.from_string(self.__string)
+        self.__structure = m.loads(self.__string)
 
     def then_it_equals_the_original_structure(self):
         self.assertEquals(get_structure(), self.__structure)
