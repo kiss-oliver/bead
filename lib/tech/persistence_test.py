@@ -37,17 +37,17 @@ class Test(TestCase):
     def given_a_persisted_structure_as_a_file(self):
         self.__file = self.new_temp_dir() / 'file'
         with open(self.__file, 'w') as f:
-            m.to_stream(get_structure(), f)
+            m.dump(get_structure(), f)
 
     def given_a_persisted_structure_as_a_string(self):
-        self.__string = m.to_string(get_structure())
+        self.__string = m.dumps(get_structure())
 
     def when_file_is_read_back(self):
         with open(self.__file, 'r') as f:
-            self.__structure = m.from_stream(f)
+            self.__structure = m.load(f)
 
     def when_string_is_parsed_back(self):
-        self.__structure = m.from_string(self.__string)
+        self.__structure = m.loads(self.__string)
 
     def then_it_equals_the_original_structure(self):
         self.assertEquals(get_structure(), self.__structure)

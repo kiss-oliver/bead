@@ -17,11 +17,11 @@ import json
 #   favor of a new json-like one
 
 
-def from_stream(istream):
+def load(istream):
     return json.load(istream)
 
 
-def from_string(string):
+def loads(string):
     return json.loads(string)
 
 
@@ -32,9 +32,9 @@ JSON_SAVE_OPTIONS = dict(
 )
 
 
-def to_string(content):
+def dumps(content):
     return json.dumps(content, **JSON_SAVE_OPTIONS)
 
 
-def to_stream(content, ostream):
+def dump(content, ostream):
     json.dump(content, ostream, **JSON_SAVE_OPTIONS)

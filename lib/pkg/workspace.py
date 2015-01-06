@@ -39,12 +39,12 @@ class Workspace(object):
     @property
     def meta(self):
         with open(self.directory / layouts.Workspace.PKGMETA) as f:
-            return persistence.from_stream(f)
+            return persistence.load(f)
 
     @meta.setter
     def meta(self, meta):
         with open(self.directory / layouts.Workspace.PKGMETA, 'wt') as f:
-            return persistence.to_stream(meta, f)
+            return persistence.dump(meta, f)
 
     @property
     def inputspecs(self):
@@ -82,7 +82,7 @@ class Workspace(object):
         }
         fs.write_file(
             dir / layouts.Workspace.PKGMETA,
-            persistence.to_string(pkgmeta)
+            persistence.dumps(pkgmeta)
         )
         self.flat_repo = '..'
 
@@ -260,9 +260,9 @@ class _ZipCreator(object):
 
         self.add_string_content(
             layouts.Archive.PKGMETA,
-            persistence.to_string(pkgmeta)
+            persistence.dumps(pkgmeta)
         )
         self.add_string_content(
             layouts.Archive.CHECKSUMS,
-            persistence.to_string(self.hashes)
+            persistence.dumps(self.hashes)
         )
