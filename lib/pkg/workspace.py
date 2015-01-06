@@ -44,7 +44,7 @@ class Workspace(object):
     @meta.setter
     def meta(self, meta):
         with open(self.directory / layouts.Workspace.PKGMETA, 'wt') as f:
-            return persistence.to_stream(meta, f)
+            return persistence.dump(meta, f)
 
     @property
     def inputspecs(self):

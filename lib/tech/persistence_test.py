@@ -37,7 +37,7 @@ class Test(TestCase):
     def given_a_persisted_structure_as_a_file(self):
         self.__file = self.new_temp_dir() / 'file'
         with open(self.__file, 'w') as f:
-            m.to_stream(get_structure(), f)
+            m.dump(get_structure(), f)
 
     def given_a_persisted_structure_as_a_string(self):
         self.__string = m.dumps(get_structure())
