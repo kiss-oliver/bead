@@ -17,7 +17,7 @@ import json
 #   favor of a new json-like one
 
 
-def from_stream(istream):
+def load(istream):
     return json.load(istream)
 
 

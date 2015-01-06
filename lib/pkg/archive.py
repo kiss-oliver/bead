@@ -74,7 +74,7 @@ class Archive(object):
     @property
     def meta(self):
         with self.zipfile.open(layouts.Archive.PKGMETA) as f:
-            return persistence.from_stream(io.TextIOWrapper(f))
+            return persistence.load(io.TextIOWrapper(f))
 
     # -
     def extract_file(self, zip_path, destination):

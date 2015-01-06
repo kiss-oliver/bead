@@ -44,7 +44,7 @@ class Test(TestCase):
 
     def when_file_is_read_back(self):
         with open(self.__file, 'r') as f:
-            self.__structure = m.from_stream(f)
+            self.__structure = m.load(f)
 
     def when_string_is_parsed_back(self):
         self.__structure = m.from_string(self.__string)

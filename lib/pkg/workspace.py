@@ -39,7 +39,7 @@ class Workspace(object):
     @property
     def meta(self):
         with open(self.directory / layouts.Workspace.PKGMETA) as f:
-            return persistence.from_stream(f)
+            return persistence.load(f)
 
     @meta.setter
     def meta(self, meta):
