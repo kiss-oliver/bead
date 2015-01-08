@@ -1,0 +1,29 @@
+P for problem
+D for decision
+? for undecided yet
+
+P: separate sensitive data
+D: multiple local repos
+
+
+P: find locally available packages
+D: local repos
+ - a flat directory with many files
+ - specially formatted directories with packages in hierarchy
+   - marked at the root with a marker file "HARE-REPO" with content "basic"
+   ? subdirectories containing packages have a file 'UUID' with the uuid content
+      -: introduces a reserved name?
+
+
+P: bijectively map package names to uuids and back
+?: personal config has a name<->uuid map
+?: local repos encode the map in the directory/file names
+ -: needs further thinking how to do it
+ -: easy to be corrupted manually, thus making packages unavailable
+ -: extra tool to check and fix corruptions
+ +: trivial discoverability of packages
+
+
+P: personal config needs to be protected from crashes
+?: simple config, little data, data is in the filesystem/structures
+?: lots of data, sqlite3 and transactions
