@@ -36,9 +36,9 @@ tools
 ws - v1.0 (workspace with file packages, without channels)
 	new name
 	develop package-file
-	mount package-file nick
-	update nick package-file
-	umount nick
+	mount package-file input_nick
+	update input_nick package-file
+	umount input_nick
 	pack
 
 repo - data store
@@ -51,8 +51,8 @@ repo - data store
 ws - v2.0 (workspace with repo packages and channels)
 	new name [channel]
 	develop repo package [channel] [version]
-	mount [repo] name channel [version] nick
-	update nick [repo] [channel]
-	umount nick
+	mount [repo] name channel [version] input_nick
+	update input_nick [repo] [channel]
+	umount input_nick
 	pack
 	release [repo] [channel]

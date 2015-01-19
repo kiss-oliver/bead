@@ -150,13 +150,16 @@ class Test_mount(TestCase):
         self.__workspace_dir = self.new_temp_dir()
         self.workspace.create()
 
-    def _mount_a_package(self, nick):
+    def _mount_a_package(self, input_nick):
         mounted_pkg_path = self.new_temp_dir() / 'pkg.zip'
         make_package(
             mounted_pkg_path,
-            {'output/output1': 'data for {}'.format(nick).encode('utf-8')}
+            {
+                'output/output1':
+                'data for {}'.format(input_nick).encode('utf-8')
+            }
         )
-        self.workspace.mount(nick, Archive(mounted_pkg_path))
+        self.workspace.mount(input_nick, Archive(mounted_pkg_path))
 
     def when_mounting_a_package(self):
         self._mount_a_package('pkg1')

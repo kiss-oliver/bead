@@ -108,62 +108,62 @@ class Workspace(object):
 
         _ZipCreator().create(zipfilename, self, timestamp)
 
-    def has_input(self, nick):
-        '''Is there an input defined for nick?
+    def has_input(self, input_nick):
+        '''Is there an input defined for input_nick?
 
         NOTE: it is not necessarily mounted!
         '''
-        return nick in self.inputs
+        return input_nick in self.inputs
 
-    def is_mounted(self, nick):
+    def is_mounted(self, input_nick):
         try:
-            return self.inputspecs[nick][metakey.INPUT_MOUNTED]
+            return self.inputspecs[input_nick][metakey.INPUT_MOUNTED]
         except KeyError:
             return False
 
-    def add_input(self, nick, uuid, version):
+    def add_input(self, input_nick, uuid, version):
         m = self.meta
-        m[metakey.INPUTS][nick] = {
+        m[metakey.INPUTS][input_nick] = {
             metakey.INPUT_PACKAGE: uuid,
             metakey.INPUT_VERSION: version,
             metakey.INPUT_MOUNTED: False
         }
         self.meta = m
 
-    def delete_input(self, nick):
+    def delete_input(self, input_nick):
         # XXX should be merged into unmount?
-        assert self.has_input(nick)
-        if self.is_mounted(nick):
-            self.unmount(nick)
+        assert self.has_input(input_nick)
+        if self.is_mounted(input_nick):
+            self.unmount(input_nick)
         m = self.meta
-        del m[metakey.INPUTS][nick]
+        del m[metakey.INPUTS][input_nick]
         self.meta = m
 
-    def mark_input_mounted(self, nick, mounted):
+    def mark_input_mounted(self, input_nick, mounted):
         m = self.meta
-        m[metakey.INPUTS][nick][metakey.INPUT_MOUNTED] = mounted
+        m[metakey.INPUTS][input_nick][metakey.INPUT_MOUNTED] = mounted
         self.meta = m
 
-    def mount(self, nick, archive):
+    def mount(self, input_nick, archive):
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
-            self.add_input(nick, archive.uuid, archive.version)
-            mount_dir = input_dir / nick
+            self.add_input(input_nick, archive.uuid, archive.version)
+            mount_dir = input_dir / input_nick
             archive.extract_dir(layouts.Archive.DATA, mount_dir)
             for f in fs.all_subpaths(mount_dir):
                 fs.make_readonly(f)
-            self.mark_input_mounted(nick, True)
+            self.mark_input_mounted(input_nick, True)
         finally:
             fs.make_readonly(input_dir)
 
-    def unmount(self, nick):
-        assert self.has_input(nick)
+    def unmount(self, input_nick):
+        assert self.has_input(input_nick)
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
-            fs.rmtree(input_dir / nick)
-            self.mark_input_mounted(nick, False)
+            fs.rmtree(input_dir / input_nick)
+            self.mark_input_mounted(input_nick, False)
         finally:
             fs.make_readonly(input_dir)
 
@@ -249,11 +249,11 @@ class _ZipCreator(object):
             metakey.PACKAGE: wsmeta[metakey.PACKAGE],
             metakey.PACKAGE_TIMESTAMP: timestamp,
             metakey.INPUTS: {
-                nick: {
+                input_nick: {
                     metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
                     metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
                 }
-                for nick, spec in wsmeta[metakey.INPUTS].items()
+                for input_nick, spec in wsmeta[metakey.INPUTS].items()
             },
             metakey.DEFAULT_NAME: workspace.package_name,
         }

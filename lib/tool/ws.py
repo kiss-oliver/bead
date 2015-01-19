@@ -65,12 +65,12 @@ def develop(name, package_file_name, mount=False):
         development_meta = {
             metakey.PACKAGE: archive_meta[metakey.PACKAGE],
             metakey.INPUTS: {
-                nick: {
+                input_nick: {
                     metakey.INPUT_MOUNTED: False,
                     metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
                     metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
                 }
-                for nick, spec in archive_meta[metakey.INPUTS].items()
+                for input_nick, spec in archive_meta[metakey.INPUTS].items()
             },
         }
         workspace.meta = development_meta
@@ -120,32 +120,35 @@ def find_package(repo_dir, package_uuid, package_version):
             pass
 
 
-def mount_nick(workspace, nick):
-    assert workspace.has_input(nick)
-    if not workspace.is_mounted(nick):
-        spec = workspace.inputspecs[nick]
+def mount_input_nick(workspace, input_nick):
+    assert workspace.has_input(input_nick)
+    if not workspace.is_mounted(input_nick):
+        spec = workspace.inputspecs[input_nick]
         package_file_name = find_package(
             Path(workspace.flat_repo),
             spec[metakey.INPUT_PACKAGE],
             spec[metakey.INPUT_VERSION],
         )
         if package_file_name is None:
-            print('Could not find archive for {} - not mounted!'.format(nick))
+            print(
+                'Could not find archive for {} - not mounted!'
+                .format(input_nick)
+            )
             return
-        workspace.mount(nick, archive.Archive(package_file_name))
-        print('Mounted {}.'.format(nick))
+        workspace.mount(input_nick, archive.Archive(package_file_name))
+        print('Mounted {}.'.format(input_nick))
 
 
 @command('mount-all')
 def mount_all(workspace):
-    for nick in workspace.inputs:
-        mount_nick(workspace, nick)
+    for input_nick in workspace.inputs:
+        mount_input_nick(workspace, input_nick)
 
 
-def mount_archive(workspace, nick, package_file_name):
-    assert not workspace.has_input(nick)
-    workspace.mount(nick, archive.Archive(package_file_name))
-    print('{} mounted on {}.'.format(package_file_name, nick))
+def mount_archive(workspace, input_nick, package_file_name):
+    assert not workspace.has_input(input_nick)
+    workspace.mount(input_nick, archive.Archive(package_file_name))
+    print('{} mounted on {}.'.format(package_file_name, input_nick))
 
 
 @command
@@ -154,19 +157,19 @@ def mount_archive(workspace, nick, package_file_name):
     help='package to mount data from'
 )
 @arg(
-    'nick', metavar='NICK',
+    'input_nick', metavar='NAME',
     help='data will be mounted under "input/%(metavar)s"'
 )
-def mount(package, nick):
+def mount(package, input_nick):
     '''
     Add data from another package to the input directory.
     '''
     workspace = Workspace()
     if package is None:
-        mount_nick(workspace, nick)
+        mount_input_nick(workspace, input_nick)
     else:
         package_file_name = package
-        mount_archive(workspace, nick, package_file_name)
+        mount_archive(workspace, input_nick, package_file_name)
 
 
 def print_mounts(directory):
@@ -179,12 +182,14 @@ def print_mounts(directory):
         print('Package inputs:')
         MOUNTED = 'mounted'
         NOT_MOUNTED = 'not mounted'
-        for nick in sorted(inputs):
+        for input_nick in sorted(inputs):
             print(
                 '  {}: {}'
                 .format(
-                    nick,
-                    MOUNTED if workspace.is_mounted(nick) else NOT_MOUNTED
+                    input_nick,
+                    MOUNTED
+                    if workspace.is_mounted(input_nick)
+                    else NOT_MOUNTED
                 )
             )
 
@@ -196,15 +201,15 @@ def mounts():
 
 
 @command('delete-input')
-def delete_input(nick):
+def delete_input(input_nick):
     '''Forget input'''
-    Workspace().delete_input(nick)
-    print('Input {} is deleted.'.format(nick))
+    Workspace().delete_input(input_nick)
+    print('Input {} is deleted.'.format(input_nick))
 
 
 @command
 @arg('package_file_name', nargs='?')
-def update(nick, package_file_name):
+def update(input_nick, package_file_name):
     '''TODO: replace input with a newer version
     '''
     pass
