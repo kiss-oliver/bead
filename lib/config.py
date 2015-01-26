@@ -30,8 +30,6 @@ class Config(object):
     Persistent key-value store for user configs as a context manager
     '''
 
-    __slots__ = ('_dict', '_copy')
-
     def __init__(self):
         self._dict = {}
         self._copy = None
@@ -56,20 +54,6 @@ class Config(object):
             tech.fs.ensure_directory(tech.fs.parent(config_path))
             with open(config_path, 'w') as f:
                 tech.persistence.dump(self._dict, f)
-
-    def __getattr__(self, attr):
-        try:
-            return self._dict[attr]
-        except KeyError:
-            # python 3.4 is picky
-            # 2.7 and pypy is fine without changing the exception type
-            raise AttributeError
-
-    def __setattr__(self, attr, value):
-        if attr in self.__slots__:
-            object.__setattr__(self, attr, value)
-        else:
-            self._dict[attr] = value
 
     def __getitem__(self, item):
         return self._dict[item]

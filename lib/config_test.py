@@ -56,37 +56,27 @@ class Test_get_path(TestCase, TempHome):
 
 class Test_Config(TestCase, TempHome):
 
-    def test_attribute_access(self):
-        self.given_XDG_CONFIG_HOME()
-        with m.Config() as c:
-            c.attr = 'value'
-            self.assertEqual('value', c.attr)
-
     def test_access_by_indexing(self):
         self.given_XDG_CONFIG_HOME()
         with m.Config() as c:
-            c.attr1 = 'value'
+            c['attr1'] = 'value'
             self.assertEqual('value', c['attr1'])
-
-            c['attr2'] = 'value'
-            self.assertEqual('value', c.attr2)
 
     def test_persistence(self):
         self.given_XDG_CONFIG_HOME()
 
         with m.Config() as c:
-            c.list = [1, 'hello config']
-            c.unicode_dict = {'kéy': 'valué'}
+            c['list'] = [1, 'hello config']
+            c['unicode_dict'] = {'kéy': 'valué'}
 
         with m.Config() as c:
             self.assertEqual([1, 'hello config'], c['list'])
-            self.assertEqual([1, 'hello config'], c.list)
-            self.assertEqual({'kéy': 'valué'}, c.unicode_dict)
+            self.assertEqual({'kéy': 'valué'}, c['unicode_dict'])
 
     def test_unchanged_config_is_not_persisted(self):
         self.given_XDG_CONFIG_HOME()
         with m.Config() as c:
-            c.overwritten = False
+            c['overwritten'] = False
 
         with m.Config() as c:
             # overwrite config without Config() knowing about it
@@ -94,16 +84,9 @@ class Test_Config(TestCase, TempHome):
                 m.get_path(m.CONFIG_FILE_NAME),
                 '{"overwritten": true}'
             )
-            c.overwritten = False
+            c['overwritten'] = False
 
         # we expect that exiting from the with block above, the config
         # is not persisted as it saw no modification to its values since loaded
         with m.Config() as c:
-            self.assertTrue(c.overwritten)
-
-    def test_hasattr(self):
-        self.given_XDG_CONFIG_HOME()
-        with m.Config() as c:
-            self.assertFalse(hasattr(c, 'key'))
-            c['key'] = 'value'
-            self.assertTrue(hasattr(c, 'key'))
+            self.assertTrue(c['overwritten'])
