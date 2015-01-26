@@ -1,9 +1,9 @@
 # Requirements
 
 - as simple as possible
-- make it easy to work with
+- make it easy to work with for non-programmers
 - make it hard to make mistakes
-- even if "central" repo is temporarily not available work can continue in peer to peer mode - packages can be exchanged directly, integrated to the repo later
+- peer to peer by default - file exchange is outside the core system
 - reproducibility must be verifiable
 - must be cross-platform (Win-Mac-Lin)
 - updates: easily create newer packages based on new input
