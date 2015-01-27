@@ -28,7 +28,7 @@ def atomic(f):
 
 SQL_CREATE_TABLE = '''\
 create table if not exists uuid_name(
-    scope text,
+    scope text not null,
     name text,
     uuid text,
     primary key (scope, uuid),

@@ -14,7 +14,7 @@ A_NAME = 'name'
 A_UUID = 'uuid'
 
 
-class Test_uuid_translator(TestCase):
+class Test_uuid_translator(TestCase):  # noqa
 
     @property
     def uuid_translator(self):
@@ -111,3 +111,10 @@ class Test_uuid_translator(TestCase):
         with m.uuid_translator(dbfile2) as t:
             self.assertEqual('name', t.get_name(scope=A_SCOPE, uuid='uuid1'))
             self.assertEqual('name1', t.get_name(scope=A_SCOPE, uuid='uuid2'))
+
+    def test_scope_None_raises_IntegrityError(self):  # noqa
+        with self.uuid_translator as t:
+            self.assertRaises(
+                m.IntegrityError,
+                t.add, scope=None, name=A_NAME, uuid=A_UUID
+            )
