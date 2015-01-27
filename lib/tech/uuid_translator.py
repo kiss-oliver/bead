@@ -93,6 +93,9 @@ class UuidTranslator(object):
         except ValueError:
             raise LookupError(dict(scope=scope, uuid=uuid))
 
+    def has_name(self, scope, name):
+        return bool(self._execute(SQL_GET_UUID, scope=scope, name=name))
+
     @atomic
     def add(self, scope, uuid, name):
         self._execute(

@@ -27,6 +27,7 @@ class Test_uuid_translator(TestCase):
                 A_UUID,
                 t.get_uuid(scope=A_SCOPE, name=A_NAME)
             )
+            self.assertTrue(t.has_name(scope=A_SCOPE, name=A_NAME))
 
     def test_unknown_name(self):
         with self.uuid_translator as t:
@@ -34,6 +35,7 @@ class Test_uuid_translator(TestCase):
                 LookupError,
                 t.get_uuid, scope=A_SCOPE, name=A_NAME,
             )
+            self.assertFalse(t.has_name(scope=A_SCOPE, name=A_NAME))
 
     def test_known_uuid(self):
         with self.uuid_translator as t:
