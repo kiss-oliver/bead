@@ -8,6 +8,7 @@ from mando.core import Program
 import os
 import sys
 
+from .. import config
 from .. import tech
 
 from ..pkg.workspace import Workspace
@@ -23,16 +24,40 @@ command = main.command
 
 Path = tech.fs.Path
 timestamp = tech.timestamp.timestamp
+uuid_translator = tech.uuid_translator.uuid_translator
 
 ERROR_EXIT = 1
+
+FIXME_PERSONAL_UUID = 'FIXME: personal-uuid'
+
+
+def die(msg):
+    sys.stderr.write('ERROR: ')
+    sys.stderr.write(msg)
+    sys.stderr.write('\n')
+    sys.exit(ERROR_EXIT)
 
 
 def assert_valid_workspace(workspace):
     if not workspace.is_valid:
-        msg = 'ERROR: {} is not a valid workspace'.format(workspace.directory)
-        sys.stderr.write(msg)
-        sys.stderr.write('\n')
-        sys.exit(ERROR_EXIT)
+        die('{} is not a valid workspace'.format(workspace.directory))
+
+
+def assert_may_be_valid_name(name):
+    valid_syntax = (
+        name
+        and os.path.sep not in name
+        and '/' not in name
+        and '\\' not in name
+        and ':' not in name
+    )
+    if not valid_syntax:
+        die('Invalid name "{}"'.format(name))
+
+    packages_db_file_name = config.get_path(config.PACKAGES_DB_FILE_NAME)
+    with uuid_translator(packages_db_file_name) as t:
+        if t.has_name(scope=FIXME_PERSONAL_UUID, name=name):
+            die('"{}" is already used, rename it if you insist'.format(name))
 
 
 @command
@@ -40,7 +65,16 @@ def new(name):
     '''
     Create new package directory layout.
     '''
-    Workspace(name).create()
+    config.ensure_config_dir()
+    assert_may_be_valid_name(name)
+
+    package_uuid = tech.identifier.uuid()
+    packages_db_file_name = config.get_path(config.PACKAGES_DB_FILE_NAME)
+    ws = Workspace(name)
+    ws.create(package_uuid)
+    with uuid_translator(packages_db_file_name) as t:
+        t.add(scope=FIXME_PERSONAL_UUID, name=name, uuid=package_uuid)
+
     print('Created {}'.format(name))
 
 

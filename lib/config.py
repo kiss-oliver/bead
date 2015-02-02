@@ -10,7 +10,11 @@ from . import tech
 Path = tech.fs.Path
 
 CONFIG_FILE_NAME = 'config.json'
+PACKAGES_DB_FILE_NAME = 'packages.sqlite3'
 XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
+
+# personal-uuid identifies *me* the user and differentiates from my peers
+KEY_PERSONAL_UUID = 'personal-uuid'
 
 
 def get_config_dir_path():
