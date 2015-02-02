@@ -24,39 +24,21 @@ def get_path(config_file):
     return get_config_dir_path() / config_file
 
 
-class Config(object):
+def ensure_config_dir():
+    tech.fs.ensure_directory(get_config_dir_path())
 
-    '''
-    Persistent key-value store for user configs as a context manager
-    '''
 
-    def __init__(self):
-        self._dict = {}
-        self._copy = None
+def load():
+    try:
+        with open(get_path(CONFIG_FILE_NAME), 'r') as f:
+            return tech.persistence.load(f)
+    except IOError:
+        # TODO: return a valid configuration (e.g. personal-uuid pre=filled)
+        return {}
 
-    def __enter__(self):
-        def load_config():
-            try:
-                with open(get_path(CONFIG_FILE_NAME), 'r') as f:
-                    return f.read()
-            except IOError:
-                return '{}'
 
-        config = load_config()
-        self._dict = tech.persistence.loads(config)
-        self._copy = tech.persistence.loads(config)
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self._copy != self._dict:
-            self._copy = None
-            config_path = get_path(CONFIG_FILE_NAME)
-            tech.fs.ensure_directory(tech.fs.parent(config_path))
-            with open(config_path, 'w') as f:
-                tech.persistence.dump(self._dict, f)
-
-    def __getitem__(self, item):
-        return self._dict[item]
-
-    def __setitem__(self, key, value):
-        self._dict[key] = value
+def save(config):
+    config_path = get_path(CONFIG_FILE_NAME)
+    tech.fs.ensure_directory(tech.fs.parent(config_path))
+    with open(config_path, 'w') as f:
+        tech.persistence.dump(config, f)

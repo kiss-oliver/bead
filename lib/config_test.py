@@ -54,39 +54,16 @@ class Test_get_path(TestCase, TempHome):
             m.get_config_dir_path() / 'configfile', m.get_path('configfile'))
 
 
-class Test_Config(TestCase, TempHome):
-
-    def test_access_by_indexing(self):
-        self.given_XDG_CONFIG_HOME()
-        with m.Config() as c:
-            c['attr1'] = 'value'
-            self.assertEqual('value', c['attr1'])
+class Test_persistence(TestCase, TempHome):
 
     def test_persistence(self):
         self.given_XDG_CONFIG_HOME()
 
-        with m.Config() as c:
-            c['list'] = [1, 'hello config']
-            c['unicode_dict'] = {'kéy': 'valué'}
+        c = m.load()
+        c['list'] = [1, 'hello config']
+        c['unicode_dict'] = {'kéy': 'valué'}
+        m.save(c)
 
-        with m.Config() as c:
-            self.assertEqual([1, 'hello config'], c['list'])
-            self.assertEqual({'kéy': 'valué'}, c['unicode_dict'])
-
-    def test_unchanged_config_is_not_persisted(self):
-        self.given_XDG_CONFIG_HOME()
-        with m.Config() as c:
-            c['overwritten'] = False
-
-        with m.Config() as c:
-            # overwrite config without Config() knowing about it
-            tech.fs.write_file(
-                m.get_path(m.CONFIG_FILE_NAME),
-                '{"overwritten": true}'
-            )
-            c['overwritten'] = False
-
-        # we expect that exiting from the with block above, the config
-        # is not persisted as it saw no modification to its values since loaded
-        with m.Config() as c:
-            self.assertTrue(c['overwritten'])
+        c = m.load()
+        self.assertEqual([1, 'hello config'], c['list'])
+        self.assertEqual({'kéy': 'valué'}, c['unicode_dict'])
