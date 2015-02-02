@@ -214,16 +214,16 @@ def print_mounts(directory):
         print('Package has no defined inputs, yet')
     else:
         print('Package inputs:')
-        MOUNTED = 'mounted'
-        NOT_MOUNTED = 'not mounted'
+        msg_mounted = 'mounted'
+        msg_not_mounted = 'not mounted'
         for input_nick in sorted(inputs):
             print(
                 '  {}: {}'
                 .format(
                     input_nick,
-                    MOUNTED
+                    msg_mounted
                     if workspace.is_mounted(input_nick)
-                    else NOT_MOUNTED
+                    else msg_not_mounted
                 )
             )
 
