@@ -28,8 +28,6 @@ uuid_translator = tech.uuid_translator.uuid_translator
 
 ERROR_EXIT = 1
 
-FIXME_PERSONAL_UUID = 'FIXME: personal-uuid'
-
 
 def die(msg):
     sys.stderr.write('ERROR: ')
@@ -56,7 +54,7 @@ def assert_may_be_valid_name(name):
 
     packages_db_file_name = config.get_path(config.PACKAGES_DB_FILE_NAME)
     with uuid_translator(packages_db_file_name) as t:
-        if t.has_name(scope=FIXME_PERSONAL_UUID, name=name):
+        if t.has_name(scope=config.get_personal_id(), name=name):
             die('"{}" is already used, rename it if you insist'.format(name))
 
 
@@ -73,7 +71,7 @@ def new(name):
     ws = Workspace(name)
     ws.create(package_uuid)
     with uuid_translator(packages_db_file_name) as t:
-        t.add(scope=FIXME_PERSONAL_UUID, name=name, uuid=package_uuid)
+        t.add(scope=config.get_personal_id(), name=name, uuid=package_uuid)
 
     print('Created {}'.format(name))
 

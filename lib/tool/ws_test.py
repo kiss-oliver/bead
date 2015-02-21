@@ -15,9 +15,6 @@ from ..pkg.workspace import Workspace
 from .. import pkg
 
 
-A_SCOPE = 'FIXME: personal-uuid'
-
-
 class Test_new(TestCase):  # noqa
 
     def test_first_workspace(self):
@@ -48,6 +45,10 @@ class Test_new(TestCase):  # noqa
     current_dir = None
 
     @property
+    def personal_id(self):
+        return config.get_personal_id()
+
+    @property
     def packages_db_file_name(self):
         return config.get_path(config.PACKAGES_DB_FILE_NAME)
 
@@ -71,8 +72,8 @@ class Test_new(TestCase):  # noqa
     def given_a_non_empty_uuid_name_map(self):
         config.ensure_config_dir()
         with self.uuid_translator as t:
-            t.add(scope=A_SCOPE, name='existing', uuid='test-uuid')
-            self.assertTrue(t.has_name(scope=A_SCOPE, name='existing'))
+            t.add(scope=self.personal_id, name='existing', uuid='test-uuid')
+            self.assertTrue(t.has_name(scope=self.personal_id, name='existing'))
 
     def when_new_is_called_with_nonexisting_name(self):
         m.new('new')
@@ -81,7 +82,7 @@ class Test_new(TestCase):  # noqa
         self.__stderr = fixtures.StringStream('stderr')
         self.useFixture(self.__stderr)
         with self.uuid_translator as t:
-            self.assertTrue(t.has_name(scope=A_SCOPE, name='existing'))
+            self.assertTrue(t.has_name(scope=self.personal_id, name='existing'))
         with fixtures.MonkeyPatch('sys.stderr', self.__stderr.stream):
             try:
                 m.new('existing')
@@ -99,10 +100,10 @@ class Test_new(TestCase):  # noqa
     def then_uuid_map_is_created_with_the_uuid_name_stored_in_it(self):
         self.assertTrue(os.path.isfile(self.packages_db_file_name))
         with self.uuid_translator as t:
-            self.assertTrue(t.has_name(scope=A_SCOPE, name='new'))
+            self.assertTrue(t.has_name(scope=self.personal_id, name='new'))
 
     def then_workspace_uuid_is_the_uuid_registered_for_name(self):
         with self.uuid_translator as t:
             self.assertEqual(
                 Workspace('new').meta[pkg.metakey.PACKAGE],
-                t.get_uuid(A_SCOPE, 'new'))
+                t.get_uuid(self.personal_id, 'new'))
