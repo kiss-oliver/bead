@@ -14,7 +14,7 @@ PACKAGES_DB_FILE_NAME = 'packages.sqlite3'
 XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
 
 # personal-uuid identifies *me* the user and differentiates from my peers
-KEY_PERSONAL_UUID = 'personal-uuid'
+KEY_PERSONAL_ID = 'personal-id'
 
 
 def get_config_dir_path():
@@ -33,12 +33,16 @@ def ensure_config_dir():
 
 
 def load():
-    try:
-        with open(get_path(CONFIG_FILE_NAME), 'r') as f:
+    config_path = get_path(CONFIG_FILE_NAME)
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
             return tech.persistence.load(f)
-    except IOError:
-        # TODO: return a valid configuration (e.g. personal-uuid pre=filled)
-        return {}
+
+    config = {
+        KEY_PERSONAL_ID: tech.identifier.uuid(),
+    }
+    save(config)
+    return config
 
 
 def save(config):
@@ -46,3 +50,8 @@ def save(config):
     tech.fs.ensure_directory(tech.fs.parent(config_path))
     with open(config_path, 'w') as f:
         tech.persistence.dump(config, f)
+
+
+def get_personal_id():
+    cfg = load()
+    return cfg[KEY_PERSONAL_ID]

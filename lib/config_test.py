@@ -67,3 +67,9 @@ class Test_persistence(TestCase, TempHome):
         c = m.load()
         self.assertEqual([1, 'hello config'], c['list'])
         self.assertEqual({'kéy': 'valué'}, c['unicode_dict'])
+
+    def test_personal_id(self):
+        self.given_XDG_CONFIG_HOME()
+        id1 = m.get_personal_id()
+        id2 = m.get_personal_id()
+        self.assertEqual(id1, id2)
