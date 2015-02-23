@@ -1,0 +1,46 @@
+☐ #17 test all commands
+  100% coverage for /tools/ (and potentially everything else)
+
+☐ personal config:
+  ☐ #10 names for packages
+    Commands `mount`, `develop` (and potentially more) should accept a package name in which case the package file is searched for and the latest version found is used
+
+  ☐ #9 personal config: directory to store newly created packages in
+    So that `pack` creates the package file in the configured directory instead of in `./temp`
+
+  ☐ #14 personal config: list of local directories having packages
+    Should replace the file `Workspace/.pkgmeta/repo`
+
+☐ #16 implement update command
+  update an input to have data from
+
+  - latest version of package
+  - a concrete version of the package
+  - another package
+
+☐ #22 metadata support for branch command
+  Similar to develop, but create a new package instead of version, yet somehow keep metadata about its ancestry.
+
+  This would enable
+
+  creating compatible fixes for old packages without confusing package timeline (although everything depending on the original would need to be branched to use the fix)
+  use of template packages (e.g. tool invocations already parametrized with some databases as dependencies)
+
+☐ #20 branding
+  The current name lib from librarian fits quite well, but it is widely used in programming with another meaning.
+
+  This project definitely has some similarity how books and periodicals are created with their identifiers being ISBN, ISSN.
+
+  The project name should imply one or more of:
+    - having resilience to manipulation
+    - having stable connections
+    - being peer to peer
+    - related to data
+    - similarity with press business
+    - relaxed workflow
+
+  Candidates:
+    - hare (from HAck REcord - trail of data hacks)
+    - hackpack
+    - Santa's Factory
+    - Santa's Workshop
