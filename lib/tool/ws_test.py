@@ -9,10 +9,11 @@ import fixtures
 
 import os
 from .. import tech
-uuid_translator = tech.uuid_translator.uuid_translator
 from .. import config
 from ..pkg.workspace import Workspace
 from .. import pkg
+
+uuid_translator = tech.uuid_translator.uuid_translator
 
 
 class Test_new(TestCase):  # noqa
@@ -73,7 +74,8 @@ class Test_new(TestCase):  # noqa
         config.ensure_config_dir()
         with self.uuid_translator as t:
             t.add(scope=self.personal_id, name='existing', uuid='test-uuid')
-            self.assertTrue(t.has_name(scope=self.personal_id, name='existing'))
+            self.assertTrue(
+                t.has_name(scope=self.personal_id, name='existing'))
 
     def when_new_is_called_with_nonexisting_name(self):
         m.new('new')
@@ -82,7 +84,8 @@ class Test_new(TestCase):  # noqa
         self.__stderr = fixtures.StringStream('stderr')
         self.useFixture(self.__stderr)
         with self.uuid_translator as t:
-            self.assertTrue(t.has_name(scope=self.personal_id, name='existing'))
+            self.assertTrue(
+                t.has_name(scope=self.personal_id, name='existing'))
         with fixtures.MonkeyPatch('sys.stderr', self.__stderr.stream):
             try:
                 m.new('existing')
