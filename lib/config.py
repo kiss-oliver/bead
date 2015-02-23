@@ -29,29 +29,32 @@ def get_path(config_file):
 
 
 def ensure_config_dir():
-    tech.fs.ensure_directory(get_config_dir_path())
+    '''Ensures that the configuration exists and is valid.
+
+    Creates the necessary files if needed.
+    '''
+    config_dir = get_config_dir_path()
+    tech.fs.ensure_directory(config_dir)
+    config_path = get_path(CONFIG_FILE_NAME)
+    if not os.path.exists(config_path):
+        config = {
+            KEY_PERSONAL_ID: tech.identifier.uuid(),
+        }
+        save(config)
 
 
 def load():
     config_path = get_path(CONFIG_FILE_NAME)
-    if os.path.exists(config_path):
-        with open(config_path, 'r') as f:
-            return tech.persistence.load(f)
-
-    config = {
-        KEY_PERSONAL_ID: tech.identifier.uuid(),
-    }
-    save(config)
-    return config
+    with open(config_path, 'r') as f:
+        return tech.persistence.load(f)
 
 
 def save(config):
     config_path = get_path(CONFIG_FILE_NAME)
-    tech.fs.ensure_directory(tech.fs.parent(config_path))
     with open(config_path, 'w') as f:
         tech.persistence.dump(config, f)
 
 
 def get_personal_id():
-    cfg = load()
-    return cfg[KEY_PERSONAL_ID]
+    config = load()
+    return config[KEY_PERSONAL_ID]

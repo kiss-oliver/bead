@@ -57,7 +57,7 @@ class Test_get_path(TestCase, TempHome):
 class Test_persistence(TestCase, TempHome):
 
     def test_persistence(self):
-        self.given_XDG_CONFIG_HOME()
+        self.given_a_valid_config_directory()
 
         c = m.load()
         c['list'] = [1, 'hello config']
@@ -69,7 +69,13 @@ class Test_persistence(TestCase, TempHome):
         self.assertEqual({'kéy': 'valué'}, c['unicode_dict'])
 
     def test_personal_id(self):
-        self.given_XDG_CONFIG_HOME()
+        self.given_a_valid_config_directory()
+
         id1 = m.get_personal_id()
+
         id2 = m.get_personal_id()
         self.assertEqual(id1, id2)
+
+    def given_a_valid_config_directory(self):
+        self.given_XDG_CONFIG_HOME()
+        m.ensure_config_dir()
