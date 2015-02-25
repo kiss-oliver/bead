@@ -13,7 +13,7 @@ class Test_command_line(TestCase):
 
         self.assertIn('something', result.files_created)
 
-        mounts_list = env.run('ws', 'mounts', cwd=env.cwd + '/something')
+        mounts_list = env.run('ws', 'status', cwd=env.cwd + '/something')
         self.assertIn('no defined inputs', mounts_list.stdout)
 
         pack_result = env.run('ws', 'pack', cwd=env.cwd + '/something')

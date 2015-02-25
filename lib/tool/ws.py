@@ -18,6 +18,11 @@ from ..pkg import metakey
 
 from .. import VERSION
 
+# TODO: consider using argparse directly (or argh?)
+# Reasons:
+#   - validate/create missing user config before all commands
+#   - one place to look for implemented commands
+
 main = Program('ws', VERSION)
 arg = main.arg
 command = main.command
@@ -84,6 +89,7 @@ def develop(name, package_file_name, mount=False):
     Package directory layout is created, but only the source files are
     extracted.
     '''
+    # TODO: #10 names for packages
     dir = Path(name)
     workspace = Workspace(dir)
 
@@ -124,6 +130,9 @@ def develop(name, package_file_name, mount=False):
 @command
 def pack():
     '''Create a new archive from the workspace'''
+    # TODO: #9 personal config: directory to store newly created packages in
+    # repo = get_store_repo()
+    # repo.store_workspace(Workspace(), timestamp())
     workspace = Workspace()
     ts = timestamp()
     zipfilename = (
@@ -141,6 +150,7 @@ def pack():
 
 
 def find_package(repo_dir, package_uuid, package_version):
+    # TODO: #14 personal config: list of local directories having packages
     for name in os.listdir(repo_dir):
         candidate = repo_dir / name
         try:
@@ -196,6 +206,7 @@ def mount(package, input_nick):
     '''
     Add data from another package to the input directory.
     '''
+    # TODO: #10 names for packages
     workspace = Workspace()
     if package is None:
         mount_input_nick(workspace, input_nick)
@@ -226,9 +237,9 @@ def print_mounts(directory):
             )
 
 
-@command('mounts')
-def mounts():
-    '''Show mount names and their status'''
+@command
+def status():
+    '''Show workspace status - name of package, mount names and their status'''
     print_mounts('.')
 
 
@@ -242,8 +253,9 @@ def delete_input(input_nick):
 @command
 @arg('package_file_name', nargs='?')
 def update(input_nick, package_file_name):
-    '''TODO: replace input with a newer version
+    '''Replace input with a newer version or different package.
     '''
+    # TODO: #16 implement update command
     pass
 
 
@@ -257,3 +269,9 @@ def nuke(directory):
     workspace = Workspace(directory)
     assert_valid_workspace(workspace)
     tech.fs.rmtree(os.path.abspath(directory))
+
+# TODO: rename commands
+# input add <name> (<package>|<file>)
+# input load <name>
+# input load --all
+# input delete <name>
