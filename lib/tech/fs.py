@@ -18,16 +18,16 @@ class Path(''.__class__):
 
     __truediv__ = __div__
 
+    @property
+    def parent(self):
+        return self.__class__(os.path.normpath(self / '..'))
+
 
 def ensure_directory(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
     assert os.path.isdir(path)
-
-
-def parent(path):
-    return Path(os.path.normpath(Path(path) / '..'))
 
 
 def write_file(path, content):

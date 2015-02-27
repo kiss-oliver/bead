@@ -31,14 +31,13 @@ class Test_get_config_dir_path(TestCase, TempHome):
     def test_is_relative_to_xdg_config_home(self):
         self.given_XDG_CONFIG_HOME()
 
-        # FIXME: tech.fs.parent -> Path.parent
         self.assertEqual(
-            self.xdg_config_home, tech.fs.parent(m.get_config_dir_path()))
+            self.xdg_config_home, m.get_config_dir_path().parent)
 
     def test_xdg_config_home_unset_then_is_relative_to_home(self):
         self.given_no_XDG_CONFIG_HOME()
         self.assertEqual(
-            self.home / '.config', tech.fs.parent(m.get_config_dir_path()))
+            self.home / '.config', m.get_config_dir_path().parent)
 
 
 class Test_get_path(TestCase, TempHome):

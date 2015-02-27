@@ -82,7 +82,7 @@ class Archive(object):
 
         assert not os.path.exists(destination)
 
-        with path.temp_dir(path.parent(destination)) as unzip_dir:
+        with path.temp_dir(destination.parent) as unzip_dir:
             self.zipfile.extract(zip_path, unzip_dir)
             os.rename(unzip_dir / zip_path, destination)
 
@@ -101,7 +101,7 @@ class Archive(object):
         ]
 
         if filelist:
-            with path.temp_dir(path.parent(destination)) as unzip_dir:
+            with path.temp_dir(destination.parent) as unzip_dir:
                 self.zipfile.extractall(unzip_dir, filelist)
                 os.rename(unzip_dir / zip_dir, destination)
         else:
