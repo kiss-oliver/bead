@@ -15,6 +15,8 @@ XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
 
 # personal-uuid identifies *me* the user and differentiates from my peers
 KEY_PERSONAL_ID = 'personal-id'
+KEY_REPOSITORIES = 'repositories'
+KEY_DEFAULT_STORE_REPOSITORY = 'default store repository'
 
 
 class Config(object):
@@ -42,6 +44,8 @@ class Config(object):
         if not os.path.exists(self.config_path):
             self.config = {
                 KEY_PERSONAL_ID: tech.identifier.uuid(),
+                KEY_REPOSITORIES: [],
+                KEY_DEFAULT_STORE_REPOSITORY: None,
             }
             self.save()
 
@@ -59,3 +63,15 @@ class Config(object):
     @property
     def personal_id(self):
         return self.config[KEY_PERSONAL_ID]
+
+    @property
+    def repositories(self):
+        return self.config[KEY_REPOSITORIES]
+
+    @property
+    def default_store_repository(self):
+        return self.config[KEY_DEFAULT_STORE_REPOSITORY]
+
+    @default_store_repository.setter
+    def default_store_repository(self, repository):
+        self.config[KEY_DEFAULT_STORE_REPOSITORY] = repository

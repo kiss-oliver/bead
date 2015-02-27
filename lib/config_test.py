@@ -54,15 +54,29 @@ class Test_path_to(TestCase, TempHome):
 
 class Test_persistence(TestCase, TempHome):
 
+    def test_newly_created_config(self):
+        self.given_a_valid_config_directory()
+
+        # load & check
+        cfg = m.Config()
+        self.assertEqual([], cfg.repositories)
+        self.assertIsNone(cfg.default_store_repository)
+
     def test_persistence(self):
         self.given_a_valid_config_directory()
 
         cfg = m.Config()
+        cfg.repositories.append('/repo1')
+        cfg.repositories.append('/repo2')
+        cfg.default_store_repository = '/repo3'
         c = cfg.config
         c['list'] = [1, 'hello config']
         c['unicode_dict'] = {'kéy': 'valué'}
         cfg.save()
 
+        cfg = m.Config()
+        self.assertEqual(['/repo1', '/repo2'], cfg.repositories)
+        self.assertEqual('/repo3', cfg.default_store_repository)
         c = m.Config().config
         self.assertEqual([1, 'hello config'], c['list'])
         self.assertEqual({'kéy': 'valué'}, c['unicode_dict'])
