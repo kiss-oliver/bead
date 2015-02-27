@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from .test import TestCase
-from . import tech
 from . import config as m
 import fixtures
 
