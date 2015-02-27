@@ -46,7 +46,7 @@ def assert_valid_workspace(workspace):
         die('{} is not a valid workspace'.format(workspace.directory))
 
 
-def assert_may_be_valid_name(name):
+def assert_may_be_valid_name(cfg, name):
     valid_syntax = (
         name
         and os.path.sep not in name
@@ -57,9 +57,9 @@ def assert_may_be_valid_name(name):
     if not valid_syntax:
         die('Invalid name "{}"'.format(name))
 
-    packages_db_file_name = config.get_path(config.PACKAGES_DB_FILE_NAME)
+    packages_db_file_name = cfg.path_to(config.PACKAGES_DB_FILE_NAME)
     with uuid_translator(packages_db_file_name) as t:
-        if t.has_name(scope=config.get_personal_id(), name=name):
+        if t.has_name(scope=cfg.personal_id, name=name):
             die('"{}" is already used, rename it if you insist'.format(name))
 
 
@@ -68,15 +68,15 @@ def new(name):
     '''
     Create new package directory layout.
     '''
-    config.ensure_config_dir()
-    assert_may_be_valid_name(name)
+    cfg = config.Config()
+    assert_may_be_valid_name(cfg, name)
 
     package_uuid = tech.identifier.uuid()
-    packages_db_file_name = config.get_path(config.PACKAGES_DB_FILE_NAME)
+    packages_db_file_name = cfg.path_to(config.PACKAGES_DB_FILE_NAME)
     ws = Workspace(name)
     ws.create(package_uuid)
     with uuid_translator(packages_db_file_name) as t:
-        t.add(scope=config.get_personal_id(), name=name, uuid=package_uuid)
+        t.add(scope=cfg.personal_id, name=name, uuid=package_uuid)
 
     print('Created {}'.format(name))
 

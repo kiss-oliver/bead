@@ -14,6 +14,7 @@ class TempHome(object):
     def given_no_XDG_CONFIG_HOME(self):
         self.useFixture(fixtures.EnvironmentVariable(m.XDG_CONFIG_HOME, None))
         self.home = self.new_temp_home_dir()
+        self.config = m.Config()
 
     def given_XDG_CONFIG_HOME(self):
         self.xdg_config_home = self.new_temp_dir()
@@ -23,33 +24,32 @@ class TempHome(object):
                 self.xdg_config_home
             )
         )
+        self.config = m.Config()
 
 
-class Test_get_config_dir_path(TestCase, TempHome):
+class Test_root(TestCase, TempHome):
 
     def test_is_relative_to_xdg_config_home(self):
         self.given_XDG_CONFIG_HOME()
-
-        self.assertEqual(
-            self.xdg_config_home, m.get_config_dir_path().parent)
+        self.assertEqual(self.xdg_config_home, self.config.root.parent)
 
     def test_xdg_config_home_unset_then_is_relative_to_home(self):
         self.given_no_XDG_CONFIG_HOME()
-        self.assertEqual(
-            self.home / '.config', m.get_config_dir_path().parent)
+        self.assertEqual(self.home / '.config', self.config.root.parent)
 
 
-class Test_get_path(TestCase, TempHome):
+class Test_path_to(TestCase, TempHome):
 
     def test_is_relative_to_config_dir1(self):
         self.given_no_XDG_CONFIG_HOME()
+
         self.assertEqual(
-            m.get_config_dir_path() / 'configfile', m.get_path('configfile'))
+            self.config.root / 'configfile', self.config.path_to('configfile'))
 
     def test_is_relative_to_config_dir2(self):
         self.given_XDG_CONFIG_HOME()
         self.assertEqual(
-            m.get_config_dir_path() / 'configfile', m.get_path('configfile'))
+            self.config.root / 'configfile', self.config.path_to('configfile'))
 
 
 class Test_persistence(TestCase, TempHome):
@@ -57,23 +57,23 @@ class Test_persistence(TestCase, TempHome):
     def test_persistence(self):
         self.given_a_valid_config_directory()
 
-        c = m.load()
+        cfg = m.Config()
+        c = cfg.config
         c['list'] = [1, 'hello config']
         c['unicode_dict'] = {'kéy': 'valué'}
-        m.save(c)
+        cfg.save()
 
-        c = m.load()
+        c = m.Config().config
         self.assertEqual([1, 'hello config'], c['list'])
         self.assertEqual({'kéy': 'valué'}, c['unicode_dict'])
 
     def test_personal_id(self):
         self.given_a_valid_config_directory()
 
-        id1 = m.get_personal_id()
+        id1 = m.Config().personal_id
 
-        id2 = m.get_personal_id()
+        id2 = m.Config().personal_id
         self.assertEqual(id1, id2)
 
     def given_a_valid_config_directory(self):
         self.given_XDG_CONFIG_HOME()
-        m.ensure_config_dir()

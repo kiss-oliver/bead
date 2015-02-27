@@ -44,14 +44,15 @@ class Test_new(TestCase):  # noqa
     __error_raised = False
     home = None
     current_dir = None
+    config = None
 
     @property
     def personal_id(self):
-        return config.get_personal_id()
+        return self.config.personal_id
 
     @property
     def packages_db_file_name(self):
-        return config.get_path(config.PACKAGES_DB_FILE_NAME)
+        return self.config.path_to(config.PACKAGES_DB_FILE_NAME)
 
     @property
     def uuid_translator(self):
@@ -66,12 +67,12 @@ class Test_new(TestCase):  # noqa
         orig_wd = os.getcwd()
         os.chdir(self.current_dir)
         self.addCleanup(os.chdir, orig_wd)
+        self.config = config.Config()
 
     def given_no_uuid_name_map(self):
-        pass
+        self.assertFalse(os.path.exists(self.packages_db_file_name))
 
     def given_a_non_empty_uuid_name_map(self):
-        config.ensure_config_dir()
         with self.uuid_translator as t:
             t.add(scope=self.personal_id, name='existing', uuid='test-uuid')
             self.assertTrue(
