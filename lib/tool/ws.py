@@ -5,6 +5,7 @@ from __future__ import print_function
 
 from mando.core import Program
 
+from abc import ABCMeta, abstractmethod
 import os
 import sys
 
@@ -79,6 +80,68 @@ def new(name):
         t.add(scope=cfg.personal_id, name=name, uuid=package_uuid)
 
     print('Created {}'.format(name))
+
+
+class Package(object):
+    '''
+    I am providing high-level access to a content of a data package.
+    '''
+
+    __metaclass__ = ABCMeta
+
+    package_uuid = str
+    version = str
+    timestamp = str  # ?
+
+    @abstractmethod
+    def export(self, exported_archive_path):
+        '''
+        I pack my content (everything!) as a zip-Archive to requested location.
+        '''
+        pass
+
+    def unpack_as_workspace(self, workspace_path):
+        pass
+
+    @abstractmethod
+    def unpack_data_to(self, path):
+        pass
+
+    @abstractmethod
+    def unpack_code_to(self, path):
+        pass
+
+    @abstractmethod
+    def unpack_meta_to(self, path):
+        pass
+
+
+class ArchivePackage(Package):
+    '''
+    I am providing high-level access to a content of an Archive.
+    '''
+
+    def __init__(self, archive_path):
+        pass
+
+
+class Repository(object):
+
+    def find_package(self, package_uuid, version=None):
+        # -> [Package]
+        pass
+
+    def find_newest(self, package_uuid):
+        # -> Package
+        pass
+
+    def store(self, workspace, timestamp):
+        # -> Package
+        pass
+
+
+class UserManagedDirectory(Repository):
+    pass
 
 
 @command
