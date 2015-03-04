@@ -106,3 +106,9 @@ class Archive(object):
                 os.rename(unzip_dir / zip_dir, destination)
         else:
             path.ensure_directory(destination)
+
+    def extract_code_to(self, destination):
+        self.extract_dir(layouts.Archive.CODE, destination)
+
+    def extract_data_to(self, destination):
+        self.extract_dir(layouts.Archive.DATA, destination)

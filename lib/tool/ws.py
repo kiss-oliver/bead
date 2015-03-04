@@ -91,7 +91,7 @@ class Package(object):
 
     package_uuid = str
     version = str
-    timestamp = str  # ?
+    timestamp_str = str
 
     @abstractmethod
     def export(self, exported_archive_path):
@@ -100,8 +100,10 @@ class Package(object):
         '''
         pass
 
-    def unpack_as_workspace(self, workspace_path):
-        pass
+    def unpack_to(self, workspace):
+        self.unpack_code_to(workspace.directory)
+        workspace.create_directories()
+        self.unpack_meta_to(workspace)
 
     @abstractmethod
     def unpack_data_to(self, path):
@@ -112,7 +114,7 @@ class Package(object):
         pass
 
     @abstractmethod
-    def unpack_meta_to(self, path):
+    def unpack_meta_to(self, workspace):
         pass
 
 
@@ -122,7 +124,55 @@ class ArchivePackage(Package):
     '''
 
     def __init__(self, archive_path):
+        self.__archive_path = archive_path
+        with self.archive as archive:
+            self.package_uuid = archive.uuid
+            self.version = archive.version
+            self.timestamp_str = archive.meta[metakey.PACKAGE_TIMESTAMP]
+
+    @property
+    def archive(self):
+        return archive.Archive(self.__archive_path)
+
+    def export(self, exported_archive_path):
         pass
+
+    def unpack_data_to(self, path):
+        pass
+
+    def unpack_code_to(self, path):
+        with self.archive as archive:
+            archive.extract_code_to(path)
+
+    def unpack_meta_to(self, workspace):
+        with self.archive as archive:
+            # FIXME: unpack_meta_to should not have any metadata rewrite
+            # workspace.meta = archive.meta
+
+            # extracted PKGMETA needs a rewrite as it contains
+            # different things in the development and archive format
+            inputs = archive.meta[metakey.INPUTS].items()
+            development_meta = {
+                metakey.PACKAGE: self.package_uuid,
+                metakey.INPUTS: {
+                    input_nick: {
+                        metakey.INPUT_MOUNTED: False,
+                        metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
+                        metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
+                    }
+                    for input_nick, spec in inputs
+                },
+            }
+            workspace.meta = development_meta
+
+    def unpack_to(self, workspace):
+        # FIXME: unpack_to is not expected to be replaced
+        super(ArchivePackage, self).unpack_to(workspace)
+        # this flat repo can be used to mount packages for demo purposes
+        # that is, until we have a proper repo
+        workspace.flat_repo = os.path.abspath(
+            os.path.dirname(self.__archive_path)
+        )
 
 
 class Repository(object):
@@ -155,31 +205,8 @@ def develop(name, package_file_name, mount=False):
     # TODO: #10 names for packages
     dir = Path(name)
     workspace = Workspace(dir)
-
-    with archive.Archive(package_file_name) as pkg:
-        pkg.extract_dir(layouts.Archive.CODE, dir)
-        workspace.create_directories()
-
-        # extracted PKGMETA needs a rewrite
-        # as it contains different things in the development and archive format
-        archive_meta = pkg.meta
-        development_meta = {
-            metakey.PACKAGE: archive_meta[metakey.PACKAGE],
-            metakey.INPUTS: {
-                input_nick: {
-                    metakey.INPUT_MOUNTED: False,
-                    metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
-                    metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
-                }
-                for input_nick, spec in archive_meta[metakey.INPUTS].items()
-            },
-        }
-        workspace.meta = development_meta
-        # this flat repo can be used to mount packages for demo purposes
-        # that is, until we have a proper repo
-        workspace.flat_repo = os.path.abspath(
-            os.path.dirname(package_file_name)
-        )
+    package = ArchivePackage(package_file_name)
+    package.unpack_to(workspace)
 
     assert workspace.is_valid
 
