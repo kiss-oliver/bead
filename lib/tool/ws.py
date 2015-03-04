@@ -313,6 +313,7 @@ def print_mounts(directory):
 @command
 def status():
     '''Show workspace status - name of package, mount names and their status'''
+    # TODO: print Package UUID
     print_mounts('.')
 
 
