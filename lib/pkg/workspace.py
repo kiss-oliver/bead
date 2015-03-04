@@ -150,7 +150,7 @@ class Workspace(object):
         try:
             self.add_input(input_nick, archive.uuid, archive.version)
             mount_dir = input_dir / input_nick
-            archive.extract_dir(layouts.Archive.DATA, mount_dir)
+            archive.extract_data_to(mount_dir)
             for f in fs.all_subpaths(mount_dir):
                 fs.make_readonly(f)
         finally:
