@@ -124,17 +124,14 @@ class Workspace(object):
         return input_nick in self.inputs
 
     def is_mounted(self, input_nick):
-        try:
-            return self.inputspecs[input_nick][metakey.INPUT_MOUNTED]
-        except KeyError:
-            return False
+        return os.path.isdir(
+            self.directory / layouts.Workspace.INPUT / input_nick)
 
     def add_input(self, input_nick, uuid, version):
         m = self.meta
         m[metakey.INPUTS][input_nick] = {
             metakey.INPUT_PACKAGE: uuid,
             metakey.INPUT_VERSION: version,
-            metakey.INPUT_MOUNTED: False
         }
         self.meta = m
 
@@ -147,11 +144,6 @@ class Workspace(object):
         del m[metakey.INPUTS][input_nick]
         self.meta = m
 
-    def mark_input_mounted(self, input_nick, mounted):
-        m = self.meta
-        m[metakey.INPUTS][input_nick][metakey.INPUT_MOUNTED] = mounted
-        self.meta = m
-
     def mount(self, input_nick, archive):
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
@@ -161,7 +153,6 @@ class Workspace(object):
             archive.extract_dir(layouts.Archive.DATA, mount_dir)
             for f in fs.all_subpaths(mount_dir):
                 fs.make_readonly(f)
-            self.mark_input_mounted(input_nick, True)
         finally:
             fs.make_readonly(input_dir)
 

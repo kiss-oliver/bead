@@ -36,10 +36,7 @@ INPUTS = 'inputs'
 
 INPUT_PACKAGE = 'package uuid'
 INPUT_VERSION = 'version uuid'
-INPUT_MOUNTED = 'mounted'
 
-# TODO: ***FUTURE***
-# INPUT_CHANNEL = 'upgrade channel uuid'
 
 # Archive meta:
 PACKAGE_TIMESTAMP = 'timestamp'
