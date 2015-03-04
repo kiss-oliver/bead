@@ -27,7 +27,7 @@ class Workspace:
     INPUT = Path('input')
     OUTPUT = Path('output')
     TEMP = Path('temp')
-    META = Path('.pafu')
+    META = Path('.santa')
 
     PKGMETA = META / 'package'
     REPO = META / 'repo'
