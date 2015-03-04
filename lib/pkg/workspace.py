@@ -37,13 +37,17 @@ class Workspace(object):
         )
 
     @property
+    def meta_path(self):
+        return self.directory / layouts.Workspace.PKGMETA
+
+    @property
     def meta(self):
-        with open(self.directory / layouts.Workspace.PKGMETA) as f:
+        with open(self.meta_path) as f:
             return persistence.load(f)
 
     @meta.setter
     def meta(self, meta):
-        with open(self.directory / layouts.Workspace.PKGMETA, 'wt') as f:
+        with open(self.meta_path, 'wt') as f:
             return persistence.dump(meta, f)
 
     @property
