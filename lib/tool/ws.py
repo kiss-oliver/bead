@@ -146,24 +146,7 @@ class ArchivePackage(Package):
 
     def unpack_meta_to(self, workspace):
         with self.archive as archive:
-            # FIXME: unpack_meta_to should not have any metadata rewrite
-            # workspace.meta = archive.meta
-
-            # extracted PKGMETA needs a rewrite as it contains
-            # different things in the development and archive format
-            inputs = archive.meta[metakey.INPUTS].items()
-            development_meta = {
-                metakey.PACKAGE: self.package_uuid,
-                metakey.INPUTS: {
-                    input_nick: {
-                        metakey.INPUT_MOUNTED: False,
-                        metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
-                        metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
-                    }
-                    for input_nick, spec in inputs
-                },
-            }
-            workspace.meta = development_meta
+            workspace.meta = archive.meta
 
     def unpack_to(self, workspace):
         # FIXME: unpack_to is not expected to be replaced
