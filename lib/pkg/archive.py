@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
+from copy import deepcopy
 import io
 import os
 import zipfile
@@ -21,7 +22,11 @@ path = tech.fs
 class Archive(object):
 
     def __init__(self, filename):
-        self.zipfile = zipfile.ZipFile(filename)
+        self.archive_filename = filename
+        self.zipfile = zipfile.ZipFile(self.archive_filename)
+        # .meta
+        with self.zipfile.open(layouts.Archive.PKGMETA) as f:
+            self._meta = persistence.load(io.TextIOWrapper(f))
 
     # with protocol - context manager
     def __enter__(self):
@@ -73,8 +78,7 @@ class Archive(object):
 
     @property
     def meta(self):
-        with self.zipfile.open(layouts.Archive.PKGMETA) as f:
-            return persistence.load(io.TextIOWrapper(f))
+        return deepcopy(self._meta)
 
     # -
     def extract_file(self, zip_path, destination):
