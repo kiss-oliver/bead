@@ -144,13 +144,13 @@ class Workspace(object):
         del m[metakey.INPUTS][input_nick]
         self.meta = m
 
-    def mount(self, input_nick, archive):
+    def mount(self, input_nick, package):
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
-            self.add_input(input_nick, archive.uuid, archive.version)
+            self.add_input(input_nick, package.package_uuid, package.version)
             mount_dir = input_dir / input_nick
-            archive.extract_data_to(mount_dir)
+            package.extract_data_to(mount_dir)
             for f in fs.all_subpaths(mount_dir):
                 fs.make_readonly(f)
         finally:

@@ -126,7 +126,7 @@ class ArchivePackage(Package):
     def __init__(self, archive_path):
         self.__archive_path = archive_path
         with self.archive as archive:
-            self.package_uuid = archive.uuid
+            self.package_uuid = archive.package_uuid
             self.version = archive.version
             self.timestamp_str = archive.meta[metakey.PACKAGE_TIMESTAMP]
 
@@ -174,7 +174,23 @@ class Repository(object):
 
 
 class UserManagedDirectory(Repository):
-    pass
+
+    # TODO: user maintained directory hierarchy
+
+    def __init__(self, directory):
+        self.directory = Path(directory)
+
+    def find_package(self, package_uuid, version=None):
+        # -> [Package]
+        for name in os.listdir(self.directory):
+            candidate = self.directory / name
+            try:
+                package = archive.Archive(candidate)
+                if package.package_uuid == package_uuid:
+                    if version in (None, package.version):
+                        return package
+            except:
+                pass
 
 
 @command
@@ -222,35 +238,23 @@ def pack():
     print('Package created at {}'.format(zipfilename))
 
 
-def find_package(repo_dir, package_uuid, package_version):
-    # TODO: #14 personal config: list of local directories having packages
-    for name in os.listdir(repo_dir):
-        candidate = repo_dir / name
-        try:
-            package = archive.Archive(candidate)
-            if package.uuid == package_uuid:
-                if package.version == package_version:
-                    return candidate
-        except:
-            pass
-
-
 def mount_input_nick(workspace, input_nick):
     assert workspace.has_input(input_nick)
     if not workspace.is_mounted(input_nick):
         spec = workspace.inputspecs[input_nick]
-        package_file_name = find_package(
-            Path(workspace.flat_repo),
+        # TODO: #14 personal config: list of local directories having packages
+        flat_repo = UserManagedDirectory(workspace.flat_repo)
+        package = flat_repo.find_package(
             spec[metakey.INPUT_PACKAGE],
             spec[metakey.INPUT_VERSION],
         )
-        if package_file_name is None:
+        if package is None:
             print(
                 'Could not find archive for {} - not mounted!'
                 .format(input_nick)
             )
             return
-        workspace.mount(input_nick, archive.Archive(package_file_name))
+        workspace.mount(input_nick, package)
         print('Mounted {}.'.format(input_nick))
 
 
