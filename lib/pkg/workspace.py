@@ -51,7 +51,7 @@ class Workspace(object):
             return persistence.dump(meta, f)
 
     @property
-    def package_uuid(self):
+    def uuid(self):
         return self.meta[metakey.PACKAGE]
 
     @property
@@ -70,7 +70,7 @@ class Workspace(object):
     def flat_repo(self, directory):
         fs.write_file(self.directory / layouts.Workspace.REPO, directory)
 
-    def create(self, package_uuid):
+    def create(self, uuid):
         '''
         Set up an empty project structure.
 
@@ -85,7 +85,7 @@ class Workspace(object):
         self.create_directories()
 
         pkgmeta = {
-            metakey.PACKAGE: package_uuid,
+            metakey.PACKAGE: uuid,
             metakey.INPUTS: {},
         }
         fs.write_file(
@@ -148,7 +148,7 @@ class Workspace(object):
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
-            self.add_input(input_nick, package.package_uuid, package.version)
+            self.add_input(input_nick, package.uuid, package.version)
             mount_dir = input_dir / input_nick
             package.extract_data_to(mount_dir)
             for f in fs.all_subpaths(mount_dir):

@@ -72,12 +72,12 @@ def new(name):
     cfg = config.Config()
     assert_may_be_valid_name(cfg, name)
 
-    package_uuid = tech.identifier.uuid()
+    uuid = tech.identifier.uuid()
     packages_db_file_name = cfg.path_to(config.PACKAGES_DB_FILE_NAME)
     ws = Workspace(name)
-    ws.create(package_uuid)
+    ws.create(uuid)
     with uuid_translator(packages_db_file_name) as t:
-        t.add(scope=cfg.personal_id, name=name, uuid=package_uuid)
+        t.add(scope=cfg.personal_id, name=name, uuid=uuid)
 
     print('Created {}'.format(name))
 
@@ -89,7 +89,7 @@ class Package(object):
 
     __metaclass__ = ABCMeta
 
-    package_uuid = str
+    uuid = str
     version = str
     timestamp_str = str
 
@@ -126,7 +126,7 @@ class ArchivePackage(Package):
     def __init__(self, archive_path):
         self.__archive_path = archive_path
         with self.archive as archive:
-            self.package_uuid = archive.package_uuid
+            self.uuid = archive.uuid
             self.version = archive.version
             self.timestamp_str = archive.meta[metakey.PACKAGE_TIMESTAMP]
 
@@ -160,11 +160,11 @@ class ArchivePackage(Package):
 
 class Repository(object):
 
-    def find_package(self, package_uuid, version=None):
+    def find_package(self, uuid, version=None):
         # -> [Package]
         pass
 
-    def find_newest(self, package_uuid):
+    def find_newest(self, uuid):
         # -> Package
         pass
 
@@ -180,13 +180,13 @@ class UserManagedDirectory(Repository):
     def __init__(self, directory):
         self.directory = Path(directory)
 
-    def find_package(self, package_uuid, version=None):
+    def find_package(self, uuid, version=None):
         # -> [Package]
         for name in os.listdir(self.directory):
             candidate = self.directory / name
             try:
                 package = archive.Archive(candidate)
-                if package.package_uuid == package_uuid:
+                if package.uuid == uuid:
                     if version in (None, package.version):
                         return package
             except:

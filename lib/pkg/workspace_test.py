@@ -33,10 +33,10 @@ class Test_create(TestCase):
         self.when_initialized()
         self.then_workspace_has_no_inputs()
 
-    def test_has_specified_package_uuid(self):
+    def test_has_specified_uuid(self):
         self.given_an_empty_directory()
         self.when_initialized()
-        self.then_workspace_has_the_specified_package_uuid()
+        self.then_workspace_has_the_specified_uuid()
 
     # implementation
 
@@ -59,8 +59,8 @@ class Test_create(TestCase):
         self.assertFalse(self.workspace.has_input('pkg1'))
         self.assertFalse(self.workspace.is_mounted('pkg1'))
 
-    def then_workspace_has_the_specified_package_uuid(self):
-        self.assertEquals(A_PACKAGE_UUID, self.workspace.package_uuid)
+    def then_workspace_has_the_specified_uuid(self):
+        self.assertEquals(A_PACKAGE_UUID, self.workspace.uuid)
 
 
 class Test_pack(TestCase):

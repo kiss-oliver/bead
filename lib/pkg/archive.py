@@ -68,7 +68,7 @@ class Archive(object):
             return securehash.file(f, zipinfo.file_size)
 
     @property
-    def package_uuid(self):
+    def uuid(self):
         return self.meta[metakey.PACKAGE]
 
     @property
