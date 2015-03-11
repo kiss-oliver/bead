@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from copy import deepcopy
+import functools
 import io
 import os
 import zipfile
@@ -23,17 +24,28 @@ class Archive(object):
 
     def __init__(self, filename):
         self.archive_filename = filename
-        self.zipfile = zipfile.ZipFile(self.archive_filename)
-        # .meta
-        with self.zipfile.open(layouts.Archive.PKGMETA) as f:
-            self._meta = persistence.load(io.TextIOWrapper(f))
+        self.zipfile = None
+        self._meta = self._load_meta()
+
+    def __zipfile_user(method):
+        # method is called with the zipfile opened
+        @functools.wraps(method)
+        def f(self, *args, **kwargs):
+            if self.zipfile:
+                return method(self, *args, **kwargs)
+            try:
+                with zipfile.ZipFile(self.archive_filename) as self.zipfile:
+                    return method(self, *args, **kwargs)
+            finally:
+                self.zipfile = None
+        return f
 
     # with protocol - context manager
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.zipfile.close()
+        pass
 
     # -
     @property
@@ -67,6 +79,7 @@ class Archive(object):
         return valid
 
     @property
+    @__zipfile_user
     def version(self):
         zipinfo = self.zipfile.getinfo(layouts.Archive.CHECKSUMS)
         with self.zipfile.open(zipinfo) as f:
@@ -78,9 +91,17 @@ class Archive(object):
 
     @property
     def meta(self):
+        # create a copy, so that returned meta can be modified without causing
+        # harm to this Archive instance
         return deepcopy(self._meta)
 
     # -
+    @__zipfile_user
+    def _load_meta(self):
+        with self.zipfile.open(layouts.Archive.PKGMETA) as f:
+            return persistence.load(io.TextIOWrapper(f))
+
+    @__zipfile_user
     def extract_file(self, zip_path, destination):
         '''Extract zip_path from zipfile to destination'''
 
@@ -90,6 +111,7 @@ class Archive(object):
             self.zipfile.extract(zip_path, unzip_dir)
             os.rename(unzip_dir / zip_path, destination)
 
+    @__zipfile_user
     def extract_dir(self, zip_dir, destination):
         '''
         Extract all files from zipfile under zip_dir to destination.
