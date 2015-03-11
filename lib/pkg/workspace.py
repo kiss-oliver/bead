@@ -150,7 +150,7 @@ class Workspace(object):
         try:
             self.add_input(input_nick, package.uuid, package.version)
             mount_dir = input_dir / input_nick
-            package.extract_data_to(mount_dir)
+            package.unpack_data_to(mount_dir)
             for f in fs.all_subpaths(mount_dir):
                 fs.make_readonly(f)
         finally:

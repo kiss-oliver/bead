@@ -9,6 +9,7 @@ import io
 import os
 import zipfile
 
+from .package import Package
 from .. import tech
 from . import layouts
 from . import metakey
@@ -20,7 +21,7 @@ persistence = tech.persistence
 path = tech.fs
 
 
-class Archive(object):
+class Archive(Package):
 
     def __init__(self, filename):
         self.archive_filename = filename
@@ -40,11 +41,11 @@ class Archive(object):
                 self.zipfile = None
         return f
 
-    # with protocol - context manager
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
+    def export(self, exported_archive_path):
+        '''
+        I pack my content (everything!) as a zip-Archive to requested location.
+        '''
+        # FIXME: Implement Archive.export
         pass
 
     # -
@@ -87,7 +88,11 @@ class Archive(object):
 
     @property
     def uuid(self):
-        return self.meta[metakey.PACKAGE]
+        return self._meta[metakey.PACKAGE]
+
+    @property
+    def timestamp_str(self):
+        return self._meta[metakey.PACKAGE_TIMESTAMP]
 
     @property
     def meta(self):
@@ -133,8 +138,11 @@ class Archive(object):
         else:
             path.ensure_directory(destination)
 
-    def extract_code_to(self, destination):
+    def unpack_code_to(self, destination):
         self.extract_dir(layouts.Archive.CODE, destination)
 
-    def extract_data_to(self, destination):
+    def unpack_data_to(self, destination):
         self.extract_dir(layouts.Archive.DATA, destination)
+
+    def unpack_meta_to(self, workspace):
+        workspace.meta = self.meta

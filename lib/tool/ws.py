@@ -89,10 +89,9 @@ class ArchivePackage(Package):
 
     def __init__(self, archive_path):
         self.__archive_path = archive_path
-        with self.archive as archive:
-            self.uuid = archive.uuid
-            self.version = archive.version
-            self.timestamp_str = archive.meta[metakey.PACKAGE_TIMESTAMP]
+        self.uuid = self.archive.uuid
+        self.version = self.archive.version
+        self.timestamp_str = self.archive.meta[metakey.PACKAGE_TIMESTAMP]
 
     @property
     def archive(self):
@@ -105,12 +104,10 @@ class ArchivePackage(Package):
         pass
 
     def unpack_code_to(self, path):
-        with self.archive as archive:
-            archive.extract_code_to(path)
+        self.archive.unpack_code_to(path)
 
     def unpack_meta_to(self, workspace):
-        with self.archive as archive:
-            workspace.meta = archive.meta
+        workspace.meta = self.archive.meta
 
     def unpack_to(self, workspace):
         # FIXME: unpack_to is not expected to be replaced

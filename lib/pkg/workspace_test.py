@@ -114,8 +114,8 @@ class Test_pack(TestCase):
         self.assertIn('meta/checksums', files)
 
     def then_archive_is_valid_package(self):
-        with Archive(self.__zipfile) as pkg:
-            self.assertTrue(pkg.is_valid)
+        pkg = Archive(self.__zipfile)
+        self.assertTrue(pkg.is_valid)
 
 
 def make_package(path, filespecs):
