@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
+from appdirs import user_config_dir
 import os
 from . import PACKAGE
 from . import tech
@@ -11,7 +12,6 @@ Path = tech.fs.Path
 
 CONFIG_FILE_NAME = 'config.json'
 PACKAGES_DB_FILE_NAME = 'packages.sqlite3'
-XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
 
 # personal-uuid identifies *me* the user and differentiates from my peers
 KEY_PERSONAL_ID = 'personal-id'
@@ -25,16 +25,10 @@ class Config(object):
     config_path = str
 
     def __init__(self):
-        self.root = self._get_config_dir_path()
+        self.root = Path(user_config_dir(PACKAGE))
         self.config_path = self.path_to(CONFIG_FILE_NAME)
         self._ensure_config_dir()
         self.config = self.load()
-
-    def _get_config_dir_path(self):
-        home_config = Path(os.path.expanduser('~/.config'))
-        config_path = (
-            Path(os.environ.get(XDG_CONFIG_HOME, home_config)) / PACKAGE)
-        return config_path
 
     def _ensure_config_dir(self):
         # Ensures that the configuration exists and is valid.

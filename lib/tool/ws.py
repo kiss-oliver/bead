@@ -11,7 +11,6 @@ import sys
 from .. import config
 from .. import tech
 
-from ..pkg.package import Package
 from ..pkg.workspace import Workspace
 from ..pkg.archive import Archive
 from ..pkg import layouts
