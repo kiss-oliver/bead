@@ -13,7 +13,7 @@ from .. import tech
 
 from ..pkg.package import Package
 from ..pkg.workspace import Workspace
-from ..pkg import archive
+from ..pkg.archive import Archive
 from ..pkg import layouts
 from ..pkg import metakey
 
@@ -82,43 +82,6 @@ def new(name):
     print('Created {}'.format(name))
 
 
-class ArchivePackage(Package):
-    '''
-    I am providing high-level access to a content of an Archive.
-    '''
-
-    def __init__(self, archive_path):
-        self.__archive_path = archive_path
-        self.uuid = self.archive.uuid
-        self.version = self.archive.version
-        self.timestamp_str = self.archive.meta[metakey.PACKAGE_TIMESTAMP]
-
-    @property
-    def archive(self):
-        return archive.Archive(self.__archive_path)
-
-    def export(self, exported_archive_path):
-        pass
-
-    def unpack_data_to(self, path):
-        pass
-
-    def unpack_code_to(self, path):
-        self.archive.unpack_code_to(path)
-
-    def unpack_meta_to(self, workspace):
-        workspace.meta = self.archive.meta
-
-    def unpack_to(self, workspace):
-        # FIXME: unpack_to is not expected to be replaced
-        super(ArchivePackage, self).unpack_to(workspace)
-        # this flat repo can be used to mount packages for demo purposes
-        # that is, until we have a proper repo
-        workspace.flat_repo = os.path.abspath(
-            os.path.dirname(self.__archive_path)
-        )
-
-
 class Repository(object):
 
     def find_package(self, uuid, version=None):
@@ -146,7 +109,7 @@ class UserManagedDirectory(Repository):
         for name in os.listdir(self.directory):
             candidate = self.directory / name
             try:
-                package = archive.Archive(candidate)
+                package = Archive(candidate)
                 if package.uuid == uuid:
                     if version in (None, package.version):
                         return package
@@ -165,8 +128,14 @@ def develop(name, package_file_name, mount=False):
     # TODO: #10 names for packages
     dir = Path(name)
     workspace = Workspace(dir)
-    package = ArchivePackage(package_file_name)
+    package = Archive(package_file_name)
     package.unpack_to(workspace)
+
+    # FIXME: flat repo can be used to mount packages for demo purposes
+    # that is, until we have a proper repo
+    workspace.flat_repo = os.path.abspath(
+        os.path.dirname(package_file_name)
+    )
 
     assert workspace.is_valid
 
@@ -227,7 +196,7 @@ def mount_all(workspace):
 
 def mount_archive(workspace, input_nick, package_file_name):
     assert not workspace.has_input(input_nick)
-    workspace.mount(input_nick, archive.Archive(package_file_name))
+    workspace.mount(input_nick, Archive(package_file_name))
     print('{} mounted on {}.'.format(package_file_name, input_nick))
 
 
