@@ -13,8 +13,6 @@ from .. import config
 from ..pkg.workspace import Workspace
 from .. import pkg
 
-uuid_translator = tech.uuid_translator.uuid_translator
-
 
 class Test_new(TestCase):  # noqa
 
@@ -53,10 +51,6 @@ class Test_new(TestCase):  # noqa
     @property
     def packages_db_file_name(self):
         return self.config.path_to(config.PACKAGES_DB_FILE_NAME)
-
-    @property
-    def uuid_translator(self):
-        return uuid_translator(self.packages_db_file_name)
 
     def setUp(self):  # noqa
         super(Test_new, self).setUp()

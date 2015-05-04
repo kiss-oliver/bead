@@ -29,7 +29,6 @@ command = main.command
 
 Path = tech.fs.Path
 timestamp = tech.timestamp.timestamp
-uuid_translator = tech.uuid_translator.uuid_translator
 
 ERROR_EXIT = 1
 
