@@ -9,15 +9,18 @@ import omlite
 from .translations import Peer, Translation
 
 
+MEMORY = ':memory:'
+
+
 def connect(db_path):
-    existing = os.path.exists(db_path)
+    existing = db_path != MEMORY and os.path.exists(db_path)
     omlite.db.connect(db_path)
 
     try:
         if not existing:
             initialize_new_db()
     except:
-        omlite.db.connect(':memory:')
+        omlite.db.connect(MEMORY)
         # remove newly created, but partially initialized database
         os.remove(db_path)
         raise
