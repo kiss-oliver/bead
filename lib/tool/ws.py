@@ -8,7 +8,6 @@ from mando.core import Program
 import os
 import sys
 
-from .. import config
 from .. import tech
 
 from ..pkg.workspace import Workspace
@@ -17,6 +16,8 @@ from ..pkg import layouts
 from ..pkg import metakey
 
 from .. import VERSION
+from ..translations import Peer, add_translation
+
 
 # TODO: consider using argparse directly (or argh?)
 # Reasons:
@@ -45,7 +46,7 @@ def assert_valid_workspace(workspace):
         die('{} is not a valid workspace'.format(workspace.directory))
 
 
-def assert_may_be_valid_name(cfg, name):
+def assert_may_be_valid_name(name):
     valid_syntax = (
         name
         and os.path.sep not in name
@@ -56,10 +57,8 @@ def assert_may_be_valid_name(cfg, name):
     if not valid_syntax:
         die('Invalid name "{}"'.format(name))
 
-    packages_db_file_name = cfg.path_to(config.PACKAGES_DB_FILE_NAME)
-    with uuid_translator(packages_db_file_name) as t:
-        if t.has_name(scope=cfg.personal_id, name=name):
-            die('"{}" is already used, rename it if you insist'.format(name))
+    if Peer.self().knows_about(name):
+        die('"{}" is already used, rename it if you insist'.format(name))
 
 
 @command
@@ -67,15 +66,12 @@ def new(name):
     '''
     Create new package directory layout.
     '''
-    cfg = config.Config()
-    assert_may_be_valid_name(cfg, name)
+    assert_may_be_valid_name(name)
 
     uuid = tech.identifier.uuid()
-    packages_db_file_name = cfg.path_to(config.PACKAGES_DB_FILE_NAME)
     ws = Workspace(name)
     ws.create(uuid)
-    with uuid_translator(packages_db_file_name) as t:
-        t.add(scope=cfg.personal_id, name=name, uuid=uuid)
+    add_translation(name, uuid)
 
     print('Created {}'.format(name))
 

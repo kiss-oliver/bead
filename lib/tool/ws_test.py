@@ -9,15 +9,15 @@ import fixtures
 
 import os
 from .. import tech
-from .. import config
 from ..pkg.workspace import Workspace
 from .. import pkg
-
+from .. import db
+from ..translations import add_translation, Peer
 
 class Test_new(TestCase):  # noqa
 
     def test_first_workspace(self):
-        self.given_no_uuid_name_map()
+        self.given_an_empty_uuid_name_map()
         self.when_new_is_called_with_nonexisting_name()
         self.then_uuid_map_is_created_with_the_uuid_name_stored_in_it()
 
@@ -42,15 +42,10 @@ class Test_new(TestCase):  # noqa
     __error_raised = False
     home = None
     current_dir = None
-    config = None
 
     @property
     def personal_id(self):
-        return self.config.personal_id
-
-    @property
-    def packages_db_file_name(self):
-        return self.config.path_to(config.PACKAGES_DB_FILE_NAME)
+        return Peer.self().id
 
     def setUp(self):  # noqa
         super(Test_new, self).setUp()
@@ -61,16 +56,14 @@ class Test_new(TestCase):  # noqa
         orig_wd = os.getcwd()
         os.chdir(self.current_dir)
         self.addCleanup(os.chdir, orig_wd)
-        self.config = config.Config()
 
-    def given_no_uuid_name_map(self):
-        self.assertFalse(os.path.exists(self.packages_db_file_name))
+    def given_an_empty_uuid_name_map(self):
+        db.connect(db.MEMORY)
 
     def given_a_non_empty_uuid_name_map(self):
-        with self.uuid_translator as t:
-            t.add(scope=self.personal_id, name='existing', uuid='test-uuid')
-            self.assertTrue(
-                t.has_name(scope=self.personal_id, name='existing'))
+        self.given_an_empty_uuid_name_map()
+        add_translation('existing', 'test-uuid')
+        self.assertTrue(Peer.self().knows_about('existing'))
 
     def when_new_is_called_with_nonexisting_name(self):
         m.new('new')
@@ -78,9 +71,7 @@ class Test_new(TestCase):  # noqa
     def when_new_is_called_with_already_existing_name(self):
         self.__stderr = fixtures.StringStream('stderr')
         self.useFixture(self.__stderr)
-        with self.uuid_translator as t:
-            self.assertTrue(
-                t.has_name(scope=self.personal_id, name='existing'))
+        self.assertTrue(Peer.self().knows_about('existing'))
         with fixtures.MonkeyPatch('sys.stderr', self.__stderr.stream):
             try:
                 m.new('existing')
@@ -96,12 +87,9 @@ class Test_new(TestCase):  # noqa
         self.assertTrue(Workspace('new').is_valid)
 
     def then_uuid_map_is_created_with_the_uuid_name_stored_in_it(self):
-        self.assertTrue(os.path.isfile(self.packages_db_file_name))
-        with self.uuid_translator as t:
-            self.assertTrue(t.has_name(scope=self.personal_id, name='new'))
+        self.assertTrue(Peer.self().knows_about('new'))
 
     def then_workspace_uuid_is_the_uuid_registered_for_name(self):
-        with self.uuid_translator as t:
-            self.assertEqual(
-                Workspace('new').meta[pkg.metakey.PACKAGE],
-                t.get_uuid(self.personal_id, 'new'))
+        self.assertEqual(
+            Workspace('new').meta[pkg.metakey.PACKAGE],
+            Peer.self().get_translation('new').package_uuid)
