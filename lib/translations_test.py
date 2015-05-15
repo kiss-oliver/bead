@@ -3,8 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import unittest
-
+from .test import TestCase
 import omlite
 
 from .translations import (
@@ -13,9 +12,10 @@ from .translations import (
 from .db import initialize_new_db
 
 
-class TestCase(unittest.TestCase):
+class TestCase(TestCase):
 
     def setUp(self):
+        super(TestCase, self).setUp()
         self.new_db()
 
     def new_db(self):
