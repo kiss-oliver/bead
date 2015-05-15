@@ -276,7 +276,8 @@ def nuke(directory):
 
 
 def initialize_env():
-    config_dir = appdirs.user_config_dir(PACKAGE)
+    config_dir = appdirs.user_config_dir(
+        PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
     try:
         os.makedirs(config_dir)
     except OSError:
