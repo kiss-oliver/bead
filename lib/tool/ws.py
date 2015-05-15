@@ -274,6 +274,25 @@ def nuke(directory):
 # input load --all
 # input delete <name>
 
+# TODO: names/translations management commands
+# - import peer filename
+# - rename-peer old-name new-name
+# - delete-peer name
+#
+# - export [--peer name] filename
+# - rename-package old-name new-name
+# - delete-package package-name
+# - lift peer:name [local-name]
+#
+# TODO: parse package-name: [[peer]:]name[@version] (already implemented: https://gist.github.com/krisztianfekete/25f972c70d1cdbd19b9d#file-new-py)
+
+# TODO: repository management
+# - list-repos
+# - add-repo repo
+# - delete-repo repo-ref
+# - set-output-repo repo-ref
+# where repo-ref is either an id or its path
+
 
 def initialize_env():
     config_dir = appdirs.user_config_dir(
