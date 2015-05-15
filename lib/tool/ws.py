@@ -3,7 +3,9 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from mando.core import Program
+import appdirs
+from argh import ArghParser
+from argh.decorators import arg, named
 
 import os
 import sys
@@ -14,19 +16,11 @@ from ..pkg.workspace import Workspace
 from ..pkg.archive import Archive
 from ..pkg import layouts
 from ..pkg import metakey
+from .. import db
 
-from .. import VERSION
+from .. import PACKAGE, VERSION
 from ..translations import Peer, add_translation
 
-
-# TODO: consider using argparse directly (or argh?)
-# Reasons:
-#   - validate/create missing user config before all commands
-#   - one place to look for implemented commands
-
-main = Program('ws', VERSION)
-arg = main.arg
-command = main.command
 
 Path = tech.fs.Path
 timestamp = tech.timestamp.timestamp
@@ -61,7 +55,7 @@ def assert_may_be_valid_name(name):
         die('"{}" is already used, rename it if you insist'.format(name))
 
 
-@command
+# @command
 def new(name):
     '''
     Create new package directory layout.
@@ -111,7 +105,7 @@ class UserManagedDirectory(Repository):
                 pass
 
 
-@command
+# @command
 def develop(name, package_file_name, mount=False):
     '''
     Unpack a package as a source tree.
@@ -140,7 +134,7 @@ def develop(name, package_file_name, mount=False):
     print_mounts(directory=dir)
 
 
-@command
+# @command
 def pack():
     '''Create a new archive from the workspace'''
     # TODO: #9 personal config: directory to store newly created packages in
@@ -182,7 +176,8 @@ def mount_input_nick(workspace, input_nick):
         print('Mounted {}.'.format(input_nick))
 
 
-@command('mount-all')
+# @command('mount-all')
+@named('mount-all')
 def mount_all(workspace):
     for input_nick in workspace.inputs:
         mount_input_nick(workspace, input_nick)
@@ -194,7 +189,7 @@ def mount_archive(workspace, input_nick, package_file_name):
     print('{} mounted on {}.'.format(package_file_name, input_nick))
 
 
-@command
+# @command
 @arg(
     'package', nargs='?', metavar='PACKAGE',
     help='package to mount data from'
@@ -238,21 +233,22 @@ def print_mounts(directory):
             )
 
 
-@command
+# @command
 def status():
     '''Show workspace status - name of package, mount names and their status'''
     # TODO: print Package UUID
     print_mounts('.')
 
 
-@command('delete-input')
+# @command('delete-input')
+@named('delete-input')
 def delete_input(input_nick):
     '''Forget input'''
     Workspace().delete_input(input_nick)
     print('Input {} is deleted.'.format(input_nick))
 
 
-@command
+# @command
 @arg('package_file_name', nargs='?')
 def update(input_nick, package_file_name):
     '''Replace input with a newer version or different package.
@@ -261,7 +257,7 @@ def update(input_nick, package_file_name):
     pass
 
 
-@command
+# @command
 @arg(
     'directory', nargs='?', default='.',
     help='workspace directory (default: %(default)s)'
@@ -277,3 +273,42 @@ def nuke(directory):
 # input load <name>
 # input load --all
 # input delete <name>
+
+
+def initialize_env():
+    config_dir = appdirs.user_config_dir(PACKAGE)
+    try:
+        os.makedirs(config_dir)
+    except OSError:
+        assert os.path.isdir(config_dir)
+    db_path = os.path.join(config_dir, 'config.sqlite')
+    db.connect(db_path)
+
+
+def make_argument_parser():
+    parser = ArghParser(prog=__name__)
+    parser.add_argument('--version', action='version', version=VERSION)
+    parser.add_commands(
+        [
+            new,
+            develop,
+            pack,
+            mount_all,
+            mount,
+            status,
+            delete_input,
+            update,
+            nuke
+        ])
+    return parser
+
+
+def main():
+    initialize_env()
+    parser = make_argument_parser()
+    parser.dispatch()
+    # TODO verify exit status
+
+
+if __name__ == '__main__':
+    main()
