@@ -193,7 +193,3 @@ class Test_export_import(TestCase):
         self.assertRaises(LookupError, peer.get_translation, 'name3')
         # package named by me is still available
         Peer.self().get_translation('untouchable')
-
-
-if __name__ == '__main__':
-    unittest.main()

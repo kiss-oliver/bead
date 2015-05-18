@@ -8,11 +8,11 @@ from . import ws as m
 import fixtures
 
 import os
-from .. import tech
 from ..pkg.workspace import Workspace
 from .. import pkg
 from .. import db
 from ..translations import add_translation, Peer
+
 
 class Test_new(TestCase):  # noqa
 

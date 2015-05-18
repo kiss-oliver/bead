@@ -284,7 +284,10 @@ def nuke(directory):
 # - delete-package package-name
 # - lift peer:name [local-name]
 #
-# TODO: parse package-name: [[peer]:]name[@version] (already implemented: https://gist.github.com/krisztianfekete/25f972c70d1cdbd19b9d#file-new-py)
+# TODO: parse package-name
+# format: [[peer]:]name[@version]
+# already implemented:
+# https://gist.github.com/krisztianfekete/25f972c70d1cdbd19b9d#file-new-py
 
 # TODO: repository management
 # - list-repos
