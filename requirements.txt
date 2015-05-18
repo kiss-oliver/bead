@@ -1,3 +1,4 @@
 appdirs==1.4.0
 argh==0.26.1
+--allow-external omlite
 git+https://github.com/krisztianfekete/omlite#egg=omlite
