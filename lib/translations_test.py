@@ -34,15 +34,6 @@ class TestCase(TestCase):
             (t2.id, t2.peer_id, t2.name, t2.package_uuid),
         )
 
-    def new_temp_filename(self):
-        # FIXME: new_temp_filename
-        import tempfile, atexit, os
-        fd, name = tempfile.mkstemp()
-        os.close(fd)
-        os.unlink(name)
-        atexit.register(os.unlink, name)
-        return name
-
 
 class Test_Peer(TestCase):
 

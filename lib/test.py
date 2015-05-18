@@ -7,6 +7,8 @@ import testtools
 import fixtures
 
 from . import tech
+import os
+import tempfile
 
 
 class TestCase(testtools.TestCase):
@@ -21,3 +23,10 @@ class TestCase(testtools.TestCase):
         path = tech.fs.Path(self.useFixture(fixtures.TempHomeDir()).path)
         self.addCleanup(tech.fs.rmtree, path, ignore_errors=True)
         return path
+
+    def new_temp_filename(self):
+        fd, name = tempfile.mkstemp()
+        os.close(fd)
+        os.unlink(name)
+        self.addCleanup(os.unlink, name)
+        return name
