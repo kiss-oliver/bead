@@ -297,9 +297,7 @@ def nuke(directory):
 # where repo-ref is either an id or its path
 
 
-def initialize_env():
-    config_dir = appdirs.user_config_dir(
-        PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
+def initialize_env(config_dir):
     try:
         os.makedirs(config_dir)
     except OSError:
@@ -326,11 +324,17 @@ def make_argument_parser():
     return parser
 
 
-def main():
-    initialize_env()
+def cli(config_dir, argv):
+    initialize_env(config_dir)
     parser = make_argument_parser()
-    parser.dispatch()
+    parser.dispatch(argv)
     # TODO verify exit status
+
+
+def main():
+    config_dir = appdirs.user_config_dir(
+        PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
+    cli(config_dir, sys.argv[1:])
 
 
 if __name__ == '__main__':
