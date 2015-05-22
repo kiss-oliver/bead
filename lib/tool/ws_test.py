@@ -3,15 +3,52 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase
+from ..test import TestCase, TempDir
 from . import ws as m
 import fixtures
 
 import os
+import re
 from ..pkg.workspace import Workspace
 from .. import pkg
 from .. import db
 from ..translations import add_translation, Peer
+
+
+class Robot(fixtures.Fixture):
+    '''
+    Represents a fake user.
+
+    Have a temporary environment with temporary config and working directory.
+    '''
+
+    def setUp(self):
+        super(Robot, self).setUp()
+        self.base_dir = self.useFixture(TempDir()).path
+
+    def cleanUp(self):
+        super(Robot, self).cleanUp()
+        self.base_dir = None
+
+    @property
+    def config_dir(self):
+        return self.base_dir / 'config'
+
+    @property
+    def home(self):
+        return self.base_dir / 'home'
+
+    def ws(self, *args):
+        '''
+        Imitate calling the ws tool with the given args
+        '''
+        m.cli(self.config_dir, args)
+
+    def files(self, pattern='.*'):
+        return [
+            self.base_dir / filename
+            for filename in os.listdir(self.base_dir)
+            if re.fullmatch(pattern, filename)]
 
 
 class Test_new(TestCase):  # noqa
