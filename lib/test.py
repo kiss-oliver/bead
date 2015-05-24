@@ -9,6 +9,7 @@ import fixtures
 from . import tech
 import os
 import tempfile
+import glued
 
 
 class TempDir(fixtures.Fixture):
@@ -20,7 +21,10 @@ class TempDir(fixtures.Fixture):
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
 
-class TestCase(testtools.TestCase):
+TestCase = glued.glue_test_methods(testtools.TestCase)
+
+
+class TestCase(TestCase):
 
     def new_temp_dir(self):
         return self.useFixture(TempDir()).path
