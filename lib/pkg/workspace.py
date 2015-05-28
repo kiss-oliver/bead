@@ -21,7 +21,7 @@ fs = tech.fs
 
 class Workspace(object):
 
-    def __init__(self, directory='.'):
+    def __init__(self, directory):
         self.directory = fs.Path(os.path.abspath(directory))
 
     @property

@@ -28,6 +28,26 @@ timestamp = tech.timestamp.timestamp
 ERROR_EXIT = 1
 
 
+def opt_workspace(func):
+    '''
+    define `workspace` as option, defaulting to current directory
+    '''
+    decorate = arg(
+        '--workspace', dest='workspace_directory', default='.',
+        help='workspace directory (default: current directory)')
+    return decorate(func)
+
+
+def arg_workspace(func):
+    '''
+    define `workspace` argument, defaulting to current directory
+    '''
+    decorate = arg(
+        'workspace_directory', nargs='?', default='.', metavar='workspace',
+        help='workspace directory (default: current directory)')
+    return decorate(func)
+
+
 def die(msg):
     sys.stderr.write('ERROR: ')
     sys.stderr.write(msg)
@@ -67,7 +87,7 @@ def new(name):
     ws.create(uuid)
     add_translation(name, uuid)
 
-    print('Created {}'.format(name))
+    print('Created {}'.format(workspace.package_name))
 
 
 class Repository(object):
@@ -135,15 +155,16 @@ def develop(name, package_file_name, mount=False):
 
 
 # @command
-def pack():
+@opt_workspace
+def pack(workspace_directory='.'):
     '''Create a new archive from the workspace'''
     # TODO: #9 personal config: directory to store newly created packages in
     # repo = get_store_repo()
     # repo.store_workspace(Workspace(), timestamp())
-    workspace = Workspace()
+    workspace = Workspace(workspace_directory)
     ts = timestamp()
     zipfilename = (
-        Path('.') / layouts.Workspace.TEMP / (
+        workspace.directory / layouts.Workspace.TEMP / (
             '{package}_{timestamp}.zip'
             .format(
                 package=workspace.package_name,
@@ -198,12 +219,13 @@ def mount_archive(workspace, input_nick, package_file_name):
     'input_nick', metavar='NAME',
     help='data will be mounted under "input/%(metavar)s"'
 )
-def mount(package, input_nick):
+@opt_workspace
+def mount(package, input_nick, workspace_directory='.'):
     '''
     Add data from another package to the input directory.
     '''
+    workspace = Workspace(workspace_directory)
     # TODO: #10 names for packages
-    workspace = Workspace()
     if package is None:
         mount_input_nick(workspace, input_nick)
     else:
@@ -242,9 +264,11 @@ def status():
 
 # @command('delete-input')
 @named('delete-input')
-def delete_input(input_nick):
+@opt_workspace
+def delete_input(input_nick, workspace_directory='.'):
     '''Forget input'''
-    Workspace().delete_input(input_nick)
+    workspace = Workspace(workspace_directory)
+    workspace.delete_input(input_nick)
     print('Input {} is deleted.'.format(input_nick))
 
 
@@ -258,15 +282,13 @@ def update(input_nick, package_file_name):
 
 
 # @command
-@arg(
-    'directory', nargs='?', default='.',
-    help='workspace directory (default: %(default)s)'
-)
-def nuke(directory):
+@arg_workspace
+def nuke(workspace_directory):
     '''Delete the workspace, inluding data, code and documentation'''
-    workspace = Workspace(directory)
+    workspace = Workspace(workspace_directory)
     assert_valid_workspace(workspace)
-    tech.fs.rmtree(os.path.abspath(directory))
+    tech.fs.rmtree(workspace.directory)
+
 
 # TODO: rename commands
 # input add <name> (<package>|<file>)
