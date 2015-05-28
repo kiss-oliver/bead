@@ -7,12 +7,50 @@ from ..test import TestCase, TempDir
 from . import ws as m
 import fixtures
 
+import contextlib
 import os
 import re
 from ..pkg.workspace import Workspace
 from .. import pkg
 from .. import db
+from .. import tech
 from ..translations import add_translation, Peer
+Path = tech.fs.Path
+
+
+@contextlib.contextmanager
+def chdir(directory):
+    cwd = os.getcwd()
+    try:
+        os.chdir(directory)
+        yield
+    finally:
+        os.chdir(cwd)
+
+
+class CaptureStdStream(fixtures.Fixture):
+
+    def __init__(self, stream):
+        assert stream.startswith('sys.std')
+        super(CaptureStdStream, self).__init__()
+        self.stream = stream
+
+    def setUp(self):
+        super(CaptureStdStream, self).setUp()
+        stdout = self.useFixture(fixtures.StringStream(self.stream)).stream
+        self.useFixture(fixtures.MonkeyPatch(self.stream, stdout))
+
+    @property
+    def text(self):
+        return self.getDetails()[self.stream].as_text()
+
+
+def CaptureStdout():
+    return CaptureStdStream('sys.stdout')
+
+
+def CaptureStderr():
+    return CaptureStdStream('sys.stderr')
 
 
 class Robot(fixtures.Fixture):
@@ -25,6 +63,8 @@ class Robot(fixtures.Fixture):
     def setUp(self):
         super(Robot, self).setUp()
         self.base_dir = self.useFixture(TempDir()).path
+        os.makedirs(self.home)
+        self.cd(self.home)
 
     def cleanUp(self):
         super(Robot, self).cleanUp()
@@ -38,17 +78,32 @@ class Robot(fixtures.Fixture):
     def home(self):
         return self.base_dir / 'home'
 
+    def cd(self, dir):
+        '''
+        Change to directory
+        '''
+        if os.path.isabs(dir):
+            self.cwd = dir
+        else:
+            self.cwd = Path(os.path.normpath(self.cwd / dir))
+        assert os.path.isdir(self.cwd)
+
     def ws(self, *args):
         '''
         Imitate calling the ws tool with the given args
         '''
-        m.cli(self.config_dir, args)
+        with fixtures.EnvironmentVariable('HOME', self.home):
+            with chdir(self.cwd):
+                with CaptureStdout() as stdout, CaptureStderr() as stderr:
+                    self.retval = m.cli(self.config_dir, args)
+                    self.stdout = stdout.text
+                    self.stderr = stderr.text
 
     def files(self, pattern='.*'):
         return [
-            self.base_dir / filename
-            for filename in os.listdir(self.base_dir)
-            if re.fullmatch(pattern, filename)]
+            self.cwd / filename
+            for filename in os.listdir(self.cwd)
+            if re.match(pattern, filename)]
 
 
 class Test_new(TestCase):  # noqa
@@ -130,3 +185,34 @@ class Test_new(TestCase):  # noqa
         self.assertEqual(
             Workspace('new').meta[pkg.metakey.PACKAGE],
             Peer.self().get_translation('new').package_uuid)
+
+
+class Test_command_line(TestCase):
+
+    # fixtures
+    def alice(self):
+        return self.useFixture(Robot())
+
+    def bob(self):
+        return self.useFixture(Robot())
+
+    # tests
+    def test(self, alice):
+        print(alice.home)
+
+        alice.ws('new', 'something')
+        print('stdout', alice.stdout)
+        print('retval', alice.retval)
+
+        alice.cd('something')
+        print(alice.cwd)
+        print(alice.files())
+
+        alice.cd('..')
+        print(alice.cwd)
+        print('files', alice.files())
+
+        alice.ws('nuke', 'something')
+        print('files', alice.files())
+
+        # assert False
