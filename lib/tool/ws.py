@@ -33,8 +33,9 @@ def opt_workspace(func):
     define `workspace` as option, defaulting to current directory
     '''
     decorate = arg(
-        '--workspace', dest='workspace_directory', default='.',
-        help='workspace directory (default: current directory)')
+        '--workspace', dest='workspace_directory', metavar='DIRECTORY',
+        default='.',
+        help='workspace directory')
     return decorate(func)
 
 
@@ -43,8 +44,9 @@ def arg_workspace(func):
     define `workspace` argument, defaulting to current directory
     '''
     decorate = arg(
-        'workspace_directory', nargs='?', default='.', metavar='workspace',
-        help='workspace directory (default: current directory)')
+        'workspace_directory', nargs='?', metavar='WORKSPACE',
+        default='.',
+        help='workspace directory')
     return decorate(func)
 
 
