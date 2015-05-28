@@ -48,6 +48,16 @@ def arg_workspace(func):
     return decorate(func)
 
 
+def arg_new_workspace(func):
+    '''
+    define mandatory `workspace` argument (without default)
+    '''
+    decorate = arg(
+        'workspace', type=Workspace,
+        help='workspace directory')
+    return decorate(func)
+
+
 def die(msg):
     sys.stderr.write('ERROR: ')
     sys.stderr.write(msg)
@@ -76,17 +86,17 @@ def assert_may_be_valid_name(name):
 
 
 # @command
-def new(name):
+@arg_new_workspace
+def new(workspace):
     '''
     Create new package directory layout.
     '''
-    assert_may_be_valid_name(name)
-
     uuid = tech.identifier.uuid()
-    ws = Workspace(name)
-    ws.create(uuid)
-    add_translation(name, uuid)
 
+    assert_may_be_valid_name(workspace.package_name)
+    add_translation(workspace.package_name, uuid)
+
+    workspace.create(uuid)
     print('Created {}'.format(workspace.package_name))
 
 
@@ -126,7 +136,8 @@ class UserManagedDirectory(Repository):
 
 
 # @command
-def develop(name, package_file_name, mount=False):
+@arg_new_workspace
+def develop(workspace, package_file_name, mount=False):
     '''
     Unpack a package as a source tree.
 
@@ -134,8 +145,8 @@ def develop(name, package_file_name, mount=False):
     extracted.
     '''
     # TODO: #10 names for packages
-    dir = Path(name)
-    workspace = Workspace(dir)
+    dir = workspace.directory
+
     package = Archive(package_file_name)
     package.unpack_to(workspace)
 

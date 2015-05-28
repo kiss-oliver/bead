@@ -103,7 +103,7 @@ class Test_new(TestCase):  # noqa
         self.assertTrue(Peer.self().knows_about('existing'))
 
     def when_new_is_called_with_nonexisting_name(self):
-        m.new('new')
+        m.new(Workspace('new'))
 
     def when_new_is_called_with_already_existing_name(self):
         self.__stderr = fixtures.StringStream('stderr')
@@ -111,7 +111,7 @@ class Test_new(TestCase):  # noqa
         self.assertTrue(Peer.self().knows_about('existing'))
         with fixtures.MonkeyPatch('sys.stderr', self.__stderr.stream):
             try:
-                m.new('existing')
+                m.new(Workspace('existing'))
             except SystemExit:
                 self.__error_raised = True
 
