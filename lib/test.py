@@ -21,6 +21,15 @@ class TempDir(fixtures.Fixture):
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
 
+class TempHomeDir(fixtures.Fixture):
+
+    def setUp(self):
+        super(TempHomeDir, self).setUp()
+        self.path = tech.fs.Path(self.useFixture(fixtures.TempHomeDir()).path)
+        # we need our own rmtree, that can remove read only files as well
+        self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
+
+
 TestCase = glued.glue_test_methods(testtools.TestCase)
 
 
@@ -30,9 +39,7 @@ class TestCase(TestCase):
         return self.useFixture(TempDir()).path
 
     def new_temp_home_dir(self):
-        path = tech.fs.Path(self.useFixture(fixtures.TempHomeDir()).path)
-        self.addCleanup(tech.fs.rmtree, path, ignore_errors=True)
-        return path
+        return self.useFixture(TempHomeDir()).path
 
     def new_temp_filename(self):
         fd, name = tempfile.mkstemp()
