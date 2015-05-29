@@ -4,12 +4,12 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from ..test import TestCase, TempDir
+from testtools.content import text_content
 from . import ws as m
 import fixtures
 
 import contextlib
 import os
-import re
 from ..pkg.workspace import Workspace
 from .. import pkg
 from .. import db
@@ -78,14 +78,20 @@ class Robot(fixtures.Fixture):
     def home(self):
         return self.base_dir / 'home'
 
+    def _path(self, path):
+        '''
+        Convert relative paths to absolute paths
+        '''
+        if os.path.isabs(path):
+            return path
+        else:
+            return Path(os.path.normpath(self.cwd / path))
+
     def cd(self, dir):
         '''
         Change to directory
         '''
-        if os.path.isabs(dir):
-            self.cwd = dir
-        else:
-            self.cwd = Path(os.path.normpath(self.cwd / dir))
+        self.cwd = self._path(dir)
         assert os.path.isdir(self.cwd)
 
     def ws(self, *args):
@@ -99,11 +105,11 @@ class Robot(fixtures.Fixture):
                     self.stdout = stdout.text
                     self.stderr = stderr.text
 
-    def files(self, pattern='.*'):
+    def ls(self, directory=None):
+        directory = self._path(directory or self.cwd)
         return [
-            self.cwd / filename
-            for filename in os.listdir(self.cwd)
-            if re.match(pattern, filename)]
+            directory / filename
+            for filename in os.listdir(directory)]
 
 
 class Test_new(TestCase):  # noqa
@@ -190,29 +196,44 @@ class Test_new(TestCase):  # noqa
 class Test_command_line(TestCase):
 
     # fixtures
-    def alice(self):
+    def robot(self):
         return self.useFixture(Robot())
 
-    def bob(self):
-        return self.useFixture(Robot())
+    def ws(self, robot):
+        return robot.ws
+
+    def cd(self, robot):
+        return robot.cd
+
+    def ls(self, robot):
+        return robot.ls
 
     # tests
-    def test(self, alice):
-        print(alice.home)
+    def test(self, robot, ws, cd, ls):
+        self.addDetail('home', text_content(robot.home))
 
-        alice.ws('new', 'something')
-        print('stdout', alice.stdout)
-        print('retval', alice.retval)
+        ws('new', 'something')
+        self.assertIn('something', robot.stdout)
 
-        alice.cd('something')
-        print(alice.cwd)
-        print(alice.files())
+        cd('something')
+        ws('status')
+        self.assertIn('no defined inputs', robot.stdout)
 
-        alice.cd('..')
-        print(alice.cwd)
-        print('files', alice.files())
+        ws('pack')
+        package, = ls('temp')
 
-        alice.ws('nuke', 'something')
-        print('files', alice.files())
+        cd('..')
+        ws('develop', 'something-develop', package)
+        self.assertIn(robot.cwd / 'something-develop', ls())
 
-        # assert False
+        cd('something-develop')
+        ws('mount', package, 'older-self')
+        ws('status')
+        self.assertNotIn('no defined inputs', robot.stdout)
+        self.assertIn('older-self', robot.stdout)
+
+        ws('nuke', robot.cwd.parent / 'something')
+        ws('nuke')
+
+        cd('..')
+        self.assertEqual([], ls(robot.home))
