@@ -9,7 +9,7 @@ import fixtures
 from . import tech
 import os
 import tempfile
-import glued
+import arglinker
 
 
 class TempDir(fixtures.Fixture):
@@ -30,7 +30,7 @@ class TempHomeDir(fixtures.Fixture):
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
 
-TestCase = glued.glue_test_methods(testtools.TestCase)
+TestCase = arglinker.add_test_linker(testtools.TestCase)
 
 
 class TestCase(TestCase):

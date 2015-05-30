@@ -5,5 +5,5 @@ six==1.9.0
 unittest2==0.8.0
 testtools==1.5.0
 nose==1.3.3
---allow-external glued
-git+https://github.com/krisztianfekete/glued#egg=glued
+--allow-external arglinker
+git+https://github.com/krisztianfekete/arglinker#egg=arglinker
