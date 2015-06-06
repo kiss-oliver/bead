@@ -9,6 +9,7 @@ import fixtures
 from . import tech
 import os
 import tempfile
+import arglinker
 
 
 class TempDir(fixtures.Fixture):
@@ -20,15 +21,25 @@ class TempDir(fixtures.Fixture):
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
 
-class TestCase(testtools.TestCase):
+class TempHomeDir(fixtures.Fixture):
+
+    def setUp(self):
+        super(TempHomeDir, self).setUp()
+        self.path = tech.fs.Path(self.useFixture(fixtures.TempHomeDir()).path)
+        # we need our own rmtree, that can remove read only files as well
+        self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
+
+
+TestCase = arglinker.add_test_linker(testtools.TestCase)
+
+
+class TestCase(TestCase):
 
     def new_temp_dir(self):
         return self.useFixture(TempDir()).path
 
     def new_temp_home_dir(self):
-        path = tech.fs.Path(self.useFixture(fixtures.TempHomeDir()).path)
-        self.addCleanup(tech.fs.rmtree, path, ignore_errors=True)
-        return path
+        return self.useFixture(TempHomeDir()).path
 
     def new_temp_filename(self):
         fd, name = tempfile.mkstemp()
