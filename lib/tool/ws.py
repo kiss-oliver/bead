@@ -7,6 +7,7 @@ import appdirs
 from argh import ArghParser
 from argh.decorators import arg, named
 
+import functools
 import os
 import sys
 
@@ -161,7 +162,7 @@ def develop(workspace, package_file_name, mount=False):
     assert workspace.is_valid
 
     if mount:
-        mount_all(workspace)
+        load_inputs(workspace)
 
     print('Extracted source into {}'.format(dir))
     print_mounts(directory=dir)
@@ -210,9 +211,10 @@ def mount_input_nick(workspace, input_nick):
         print('Mounted {}.'.format(input_nick))
 
 
-# @command('mount-all')
-@named('mount-all')
-def mount_all(workspace):
+# @command('input load')
+@named('load')
+def load_inputs(workspace):
+    """Put all defined input data in place."""
     for input_nick in workspace.inputs:
         mount_input_nick(workspace, input_nick)
 
@@ -223,17 +225,24 @@ def mount_archive(workspace, input_nick, package_file_name):
     print('{} mounted on {}.'.format(package_file_name, input_nick))
 
 
-# @command
-@arg(
-    'package', nargs='?', metavar='PACKAGE',
-    help='package to mount data from'
-)
-@arg(
-    'input_nick', metavar='NAME',
-    help='data will be mounted under "input/%(metavar)s"'
-)
-@opt_workspace
-def mount(package, input_nick, workspace_directory='.'):
+def mount_cmd(name):
+    @named(name)
+    @arg(
+        'package', nargs='?', metavar='PACKAGE',
+        help='package to mount data from'
+    )
+    @arg(
+        'input_nick', metavar='NAME',
+        help='data will be mounted under "input/%(metavar)s"'
+    )
+    @opt_workspace
+    @functools.wraps(_mount)
+    def func(package, input_nick, workspace_directory='.'):
+        return _mount(package, input_nick, workspace_directory)
+    return func
+
+
+def _mount(package, input_nick, workspace_directory='.'):
     '''
     Add data from another package to the input directory.
     '''
@@ -275,19 +284,20 @@ def status():
     print_mounts('.')
 
 
-# @command('delete-input')
-@named('delete-input')
+# @command('input delete')
+@named('delete')
 @opt_workspace
 def delete_input(input_nick, workspace_directory='.'):
-    '''Forget input'''
+    '''Forget all about input'''
     workspace = Workspace(workspace_directory)
     workspace.delete_input(input_nick)
     print('Input {} is deleted.'.format(input_nick))
 
 
-# @command
+# @command('input update')
+@named('update')
 @arg('package_file_name', nargs='?')
-def update(input_nick, package_file_name):
+def update_input(input_nick, package_file_name):
     '''Replace input with a newer version or different package.
     '''
     # TODO: #16 implement update command
@@ -302,12 +312,6 @@ def nuke(workspace_directory):
     assert_valid_workspace(workspace)
     tech.fs.rmtree(workspace.directory)
 
-
-# TODO: rename commands
-# input add <name> (<package>|<file>)
-# input load <name>
-# input load --all
-# input delete <name>
 
 # TODO: names/translations management commands
 # - import peer filename
@@ -349,13 +353,24 @@ def make_argument_parser():
             new,
             develop,
             pack,
-            mount_all,
-            mount,
+            mount_cmd('mount'),
             status,
-            delete_input,
-            update,
+            update_input,
             nuke
         ])
+    # FIXME: ArghParser.add_subcommands
+    parser.add_commands(
+        [
+            load_inputs,
+            mount_cmd('add'),  # add_input
+            delete_input,
+            update_input,
+        ],
+        namespace='input',
+        namespace_kwargs=dict(
+            title='INPUT SUBCOMMAND TITLE',
+            help='INPUT SUBCOMMAND HELP',
+        ))
     return parser
 
 
