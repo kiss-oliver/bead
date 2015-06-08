@@ -7,7 +7,6 @@ import appdirs
 from argh import ArghParser
 from argh.decorators import arg, named
 
-import functools
 import os
 import sys
 
@@ -372,7 +371,7 @@ def make_argument_parser():
             named('update')(update_input),
             nuke
         ])
-    # FIXME: ArghParser.add_subcommands  
+    # FIXME: ArghParser.add_subcommands
     # https://github.com/neithere/argh/issues/88
     parser.add_commands(
         [

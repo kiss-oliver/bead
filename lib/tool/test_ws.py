@@ -259,7 +259,7 @@ class Test_shared_repo(TestCase):
         tmp = self.new_temp_dir()
         ws = Workspace(tmp / 'ws')
         ws.create('pkg-uuid')
-        package_archive =  tmp / 'package.zip'
+        package_archive = tmp / 'package.zip'
         ws.pack(package_archive, timestamp)
         return package_archive
 
@@ -294,13 +294,13 @@ class Test_shared_repo(TestCase):
             FileContains('''Alice's new data'''))
 
         # second input directory not changed
-        # self.assertThat(
-        #     bob.cwd / 'input/alicepkg2',
-        #     Not(DirContains('datafile')))
+        self.assertThat(
+            bob.cwd / 'input/alicepkg2',
+            Not(DirContains('datafile')))
 
-        # # update all inputs
-        # bob.ws('update')
+        # update all inputs
+        bob.ws('update')
 
-        # self.assertThat(
-        #     bob.cwd / 'input/alicepkg2/datafile',
-        #     FileContains('''Alice's new data'''))
+        self.assertThat(
+            bob.cwd / 'input/alicepkg2/datafile',
+            FileContains('''Alice's new data'''))
