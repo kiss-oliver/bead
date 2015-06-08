@@ -261,7 +261,7 @@ class Test_shared_repo(TestCase):
         robot.ws('repo', 'add', 'alicerepo', repo)
         return robot
 
-    # @xfail
+    @xfail
     # unittest, green dies here, unittest2, testtools stops after this
     def test_update(self, alice, bob, package):
         alice.ws('new', 'alicepkg')
@@ -270,7 +270,3 @@ class Test_shared_repo(TestCase):
         bob.ws('new', 'bobpkg')
         bob.cd('bobpkg')
         bob.ws('input', 'add', 'alicepkg', os.listdir())
-
-    @xfail
-    def test_x1(self):
-        self.fail('x')
