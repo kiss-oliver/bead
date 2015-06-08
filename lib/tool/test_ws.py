@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase, TempDir
+from ..test import TestCase, TempDir, xfail
 from testtools.content import text_content
 from . import ws as m
 import fixtures
@@ -238,3 +238,39 @@ class Test_command_line(TestCase):
 
         cd('..')
         self.assertEqual([], ls(robot.home))
+
+
+class Test_shared_repo(TestCase):
+
+    # fixtures
+    def repo(self):
+        return self.new_temp_dir()
+
+    def package(self):
+        # create a package archive and return its path
+        pass
+
+    def alice(self, repo):
+        robot = self.useFixture(Robot())
+        robot.ws('repo', 'add', 'bobrepo', repo)
+        robot.ws('set', 'output', 'repo')
+        return robot
+
+    def bob(self, repo):
+        robot = self.useFixture(Robot())
+        robot.ws('repo', 'add', 'alicerepo', repo)
+        return robot
+
+    # @xfail
+    # unittest, green dies here, unittest2, testtools stops after this
+    def test_update(self, alice, bob, package):
+        alice.ws('new', 'alicepkg')
+        alice.cd('alicepkg')
+        alice.pack()
+        bob.ws('new', 'bobpkg')
+        bob.cd('bobpkg')
+        bob.ws('input', 'add', 'alicepkg', os.listdir())
+
+    @xfail
+    def test_x1(self):
+        self.fail('x')
