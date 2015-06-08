@@ -5,6 +5,7 @@ from __future__ import print_function
 
 from ..test import TestCase, TempDir, xfail
 from testtools.content import text_content
+from testtools.matchers import FileContains, DirContains, Not
 from . import ws as m
 import fixtures
 
@@ -16,6 +17,7 @@ from .. import db
 from .. import tech
 from ..translations import add_translation, Peer
 Path = tech.fs.Path
+timestamp = tech.timestamp.timestamp
 
 
 @contextlib.contextmanager
@@ -110,6 +112,10 @@ class Robot(fixtures.Fixture):
         return [
             directory / filename
             for filename in os.listdir(directory)]
+
+    def write_file(self, path, content):
+        filepath = path if os.path.isabs(path) else self.cwd / path
+        tech.fs.write_file(filepath, content)
 
 
 class Test_new(TestCase):  # noqa
@@ -246,14 +252,20 @@ class Test_shared_repo(TestCase):
     def repo(self):
         return self.new_temp_dir()
 
-    def package(self):
-        # create a package archive and return its path
-        pass
+    def timestamp(self):
+        return timestamp()
+
+    def package(self, timestamp):
+        tmp = self.new_temp_dir()
+        ws = Workspace(tmp / 'ws')
+        ws.create('pkg-uuid')
+        package_archive =  tmp / 'package.zip'
+        ws.pack(package_archive, timestamp)
+        return package_archive
 
     def alice(self, repo):
         robot = self.useFixture(Robot())
         robot.ws('repo', 'add', 'bobrepo', repo)
-        robot.ws('set', 'output', 'repo')
         return robot
 
     def bob(self, repo):
@@ -262,11 +274,33 @@ class Test_shared_repo(TestCase):
         return robot
 
     @xfail
-    # unittest, green dies here, unittest2, testtools stops after this
     def test_update(self, alice, bob, package):
-        alice.ws('new', 'alicepkg')
-        alice.cd('alicepkg')
-        alice.pack()
         bob.ws('new', 'bobpkg')
         bob.cd('bobpkg')
-        bob.ws('input', 'add', 'alicepkg', os.listdir())
+        bob.ws('input', 'add', 'alicepkg1', package)
+        bob.ws('input', 'add', 'alicepkg2', package)
+
+        alice.ws('develop', 'alicepkg', package)
+        alice.cd('alicepkg')
+        alice.ls()
+        alice.write_file('output/datafile', '''Alice's new data''')
+        alice.ws('pack')
+
+        # update only one input
+        bob.ws('update', 'alicepkg1')
+
+        self.assertThat(
+            bob.cwd / 'input/alicepkg1/datafile',
+            FileContains('''Alice's new data'''))
+
+        # second input directory not changed
+        # self.assertThat(
+        #     bob.cwd / 'input/alicepkg2',
+        #     Not(DirContains('datafile')))
+
+        # # update all inputs
+        # bob.ws('update')
+
+        # self.assertThat(
+        #     bob.cwd / 'input/alicepkg2/datafile',
+        #     FileContains('''Alice's new data'''))
