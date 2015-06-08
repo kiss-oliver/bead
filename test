@@ -1,0 +1,8 @@
+#!/bin/sh
+cd $(dirname "$0")
+
+[ -d test-env ] || make test-env || exit 1
+. test-env/bin/activate
+
+pwd
+exec green lib "$@"
