@@ -20,6 +20,7 @@ from .. import db
 
 from .. import PACKAGE, VERSION
 from ..translations import Peer, add_translation
+from ..repos import UserManagedDirectory
 
 
 Path = tech.fs.Path
@@ -100,41 +101,6 @@ def new(workspace):
 
     workspace.create(uuid)
     print('Created {}'.format(workspace.package_name))
-
-
-class Repository(object):
-
-    def find_package(self, uuid, version=None):
-        # -> [Package]
-        pass
-
-    def find_newest(self, uuid):
-        # -> Package
-        pass
-
-    def store(self, workspace, timestamp):
-        # -> Package
-        pass
-
-
-class UserManagedDirectory(Repository):
-
-    # TODO: user maintained directory hierarchy
-
-    def __init__(self, directory):
-        self.directory = Path(directory)
-
-    def find_package(self, uuid, version=None):
-        # -> [Package]
-        for name in os.listdir(self.directory):
-            candidate = self.directory / name
-            try:
-                package = Archive(candidate)
-                if package.uuid == uuid:
-                    if version in (None, package.version):
-                        return package
-            except:
-                pass
 
 
 # @command
