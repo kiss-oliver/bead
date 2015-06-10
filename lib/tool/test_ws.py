@@ -114,8 +114,8 @@ class Robot(fixtures.Fixture):
             for filename in os.listdir(directory)]
 
     def write_file(self, path, content):
-        filepath = path if os.path.isabs(path) else self.cwd / path
-        tech.fs.write_file(filepath, content)
+        assert not os.path.isabs(path)
+        tech.fs.write_file(self.cwd / path, content)
 
 
 class Test_new(TestCase):  # noqa
