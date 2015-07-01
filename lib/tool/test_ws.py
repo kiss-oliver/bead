@@ -170,7 +170,7 @@ class Test_new(TestCase):  # noqa
         self.assertTrue(Peer.self().knows_about('existing'))
 
     def when_new_is_called_with_nonexisting_name(self):
-        with self.useFixture(CaptureStdout()):
+        with CaptureStdout():
             m.new(Workspace('new'))
 
     def when_new_is_called_with_already_existing_name(self):
