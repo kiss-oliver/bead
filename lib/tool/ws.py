@@ -9,18 +9,18 @@ from argh.decorators import arg, named
 
 import os
 import sys
+import omlite  # TODO: move direct omlite dependencies out
 
 from .. import tech
 
 from ..pkg.workspace import Workspace
 from ..pkg.archive import Archive
-from ..pkg import layouts
 from ..pkg import metakey
 from .. import db
 
 from .. import PACKAGE, VERSION
 from ..translations import Peer, add_translation
-from ..repos import UserManagedDirectory
+from ..repos import Repository
 
 
 Path = tech.fs.Path
@@ -31,7 +31,7 @@ ERROR_EXIT = 1
 
 def opt_workspace(func):
     '''
-    define `workspace` as option, defaulting to current directory
+    Define `workspace` as option, defaulting to current directory
     '''
     decorate = arg(
         '--workspace', dest='workspace_directory', metavar='DIRECTORY',
@@ -42,7 +42,7 @@ def opt_workspace(func):
 
 def arg_workspace(func):
     '''
-    define `workspace` argument, defaulting to current directory
+    Define `workspace` argument, defaulting to current directory
     '''
     decorate = arg(
         'workspace_directory', nargs='?', metavar='WORKSPACE',
@@ -53,7 +53,7 @@ def arg_workspace(func):
 
 def arg_new_workspace(func):
     '''
-    define mandatory `workspace` argument (without default)
+    Define mandatory `workspace` argument (without default)
     '''
     decorate = arg(
         'workspace', type=Workspace,
@@ -136,24 +136,16 @@ def develop(workspace, package_file_name, mount=False):
 # @command
 @opt_workspace
 def pack(workspace_directory='.'):
-    '''Create a new archive from the workspace'''
+    '''
+    Create a new archive from the workspace
+    '''
     # TODO: #9 personal config: directory to store newly created packages in
-    # repo = get_store_repo()
-    # repo.store_workspace(Workspace(), timestamp())
     workspace = Workspace(workspace_directory)
-    ts = timestamp()
-    zipfilename = (
-        workspace.directory / layouts.Workspace.TEMP / (
-            '{package}_{timestamp}.zip'
-            .format(
-                package=workspace.package_name,
-                timestamp=ts,
-            )
-        )
-    )
-    workspace.pack(zipfilename, timestamp=ts)
-
-    print('Package created at {}'.format(zipfilename))
+    ALL = '1 == 1'
+    repos = list(omlite.filter(Repository, ALL))
+    assert len(repos) == 1, 'Only one repo supported at the moment :('
+    repo = repos[0]
+    repo.store(workspace, timestamp())
 
 
 def mount_input_nick(workspace, input_nick):
@@ -161,24 +153,28 @@ def mount_input_nick(workspace, input_nick):
     if not workspace.is_mounted(input_nick):
         spec = workspace.inputspecs[input_nick]
         # TODO: #14 personal config: list of local directories having packages
-        flat_repo = UserManagedDirectory(workspace.flat_repo)
-        package = flat_repo.find_package(
+        flat_repo = Repository(workspace.flat_repo)
+        packages = flat_repo.find_packages(
             spec[metakey.INPUT_PACKAGE],
             spec[metakey.INPUT_VERSION],
         )
-        if package is None:
+        if packages is None:
             print(
                 'Could not find archive for {} - not mounted!'
                 .format(input_nick)
             )
             return
+        assert len(packages) == 1
+        package = packages[0]
         workspace.mount(input_nick, package)
         print('Mounted {}.'.format(input_nick))
 
 
 # @command('input load')
 def load_inputs(workspace):
-    """Put all defined input data in place."""
+    '''
+    Put all defined input data in place.
+    '''
     for input_nick in workspace.inputs:
         mount_input_nick(workspace, input_nick)
 
@@ -231,7 +227,7 @@ def print_mounts(directory):
     assert_valid_workspace(workspace)
     inputs = workspace.inputs
     if not inputs:
-        print('Package has no defined inputs, yet')
+        print('Package has no defined inputs')
     else:
         print('Package inputs:')
         msg_mounted = 'mounted'
@@ -250,7 +246,8 @@ def print_mounts(directory):
 
 # @command
 def status():
-    '''Show workspace status - name of package, mount names and their status
+    '''
+    Show workspace status - name of package, mount names and their status
     '''
     # TODO: print Package UUID
     print_mounts('.')
@@ -269,27 +266,55 @@ def delete_input(input_nick, workspace_directory='.'):
 # @command('input update')
 @arg_input_nick
 @arg('package_file_name', nargs='?', help='package to load input data from')
-def update_input(input_nick, package_file_name):
-    '''Replace input with a newer version or different package.
+@opt_workspace
+def update_input(input_nick, package_file_name, workspace_directory='.'):
     '''
-    # TODO: #16 implement update command
-    pass
+    Replace input with a newer version or different package.
+    '''
+    workspace = Workspace(workspace_directory)
+    spec = workspace.inputspecs[input_nick]
+    if package_file_name:
+        newest = Archive(package_file_name)
+    else:
+        uuid = spec[metakey.INPUT_PACKAGE]
+        # find newest package
+        newest = None
+        ALL = '1 == 1'
+        repos = omlite.filter(Repository, ALL)  # FIXME: implement omlite.all
+        for repo in repos:
+            package = repo.find_newest(uuid)
+            if package is not None:
+                if newest is None or newest.timestamp < package.timestamp:
+                    newest = package
+        # XXX: check if found package is newer than currently mounted?
+
+    if newest is None:
+        print('No package found!!!')
+    else:
+        workspace.unmount(input_nick)
+        workspace.mount(input_nick, newest)
+        print('Mounted {}.'.format(input_nick))
 
 
 # @command
 @arg_workspace
 def nuke(workspace_directory):
-    '''Delete the workspace, inluding data, code and documentation'''
+    '''
+    Delete the workspace, inluding data, code and documentation
+    '''
     workspace = Workspace(workspace_directory)
     assert_valid_workspace(workspace)
     tech.fs.rmtree(workspace.directory)
 
 
 def add_repo(name, directory):
-    '''Define a repository
+    '''
+    Define a repository
     '''
     # TODO
-    pass
+    repo = Repository(name, directory)
+    omlite.save(repo)
+    print('repo {} saved'.format(repo))
 
 
 # TODO: names/translations management commands

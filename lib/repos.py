@@ -7,7 +7,6 @@ from __future__ import print_function
 import os
 
 from omlite import storable_pk_netaddrtime_uuid1 as storable
-from omlite import sql_constraint
 from omlite import Field
 import omlite
 
@@ -20,6 +19,7 @@ TEXT_FIELD = Field('VARCHAR NOT NULL')
 UUID_FIELD = Field('VARCHAR NOT NULL')
 
 
+@omlite.table_name('repositories')
 @storable
 class Repository(object):
 
@@ -27,32 +27,22 @@ class Repository(object):
     name = TEXT_FIELD
     location = TEXT_FIELD
 
+    # TODO: user maintained directory hierarchy
+
     def __init__(self, name=None, location=None):
         self.location = location
         self.name = name
-        self._impl = UserManagedDirectory()
 
-    def find_package(self, uuid, version=None):
-        # -> [Package]
-        return self._impl.find_package(self, uuid, version)
+    @property
+    def directory(self):
+        '''
+        Location as a Path.
 
-    def find_newest(self, uuid):
-        # -> Package
-        return self._impl.find_newest(self, uuid)
+        Valid only for local repositories.
+        '''
+        return Path(self.location)
 
-    def store(self, workspace, timestamp):
-        # -> Package
-        return self._impl.store(self, workspace, timestamp)
-
-
-class UserManagedDirectory(Repository):
-
-    # TODO: user maintained directory hierarchy
-
-    def __init__(self, directory):
-        self.directory = Path(directory)
-
-    def find_package(self, uuid, version=None):
+    def find_packages(self, uuid, version=None):
         # -> [Package]
         for name in os.listdir(self.directory):
             candidate = self.directory / name
@@ -60,8 +50,32 @@ class UserManagedDirectory(Repository):
                 package = Archive(candidate)
                 if package.uuid == uuid:
                     if version in (None, package.version):
-                        return package
+                        yield package
             except:
+                # ignore invalid packages
+                # XXX - we should log them
                 pass
+
+    def find_newest(self, uuid):
+        # -> Package
+        newest = None
+        for package in self.find_packages(uuid):
+            if newest is None or package.timestamp > newest.timestamp:
+                newest = package
+        return newest
+
+    def store(self, workspace, timestamp):
+        # -> Package
+        zipfilename = (
+            self.directory / (
+                '{package}_{timestamp}.zip'
+                .format(
+                    package=workspace.package_name,
+                    timestamp=timestamp,
+                )
+            )
+        )
+        workspace.pack(zipfilename, timestamp=timestamp)
+        return Archive(zipfilename)
 
 # FIXME: remove workspace.flat_repo

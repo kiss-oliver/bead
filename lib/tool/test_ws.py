@@ -215,8 +215,11 @@ class Test_command_line(TestCase):
     def ls(self, robot):
         return robot.ls
 
+    def repo_dir(self):
+        return self.new_temp_dir()
+
     # tests
-    def test(self, robot, ws, cd, ls):
+    def test(self, robot, ws, cd, ls, repo_dir):
         self.addDetail('home', text_content(robot.home))
 
         ws('new', 'something')
@@ -226,8 +229,11 @@ class Test_command_line(TestCase):
         ws('status')
         self.assertIn('no defined inputs', robot.stdout)
 
+        ws('repo', 'add', 'default', repo_dir)
         ws('pack')
-        package, = ls('temp')
+
+        # FIXME: replace package as filename with package name
+        package, = ls(repo_dir)
 
         cd('..')
         ws('develop', 'something-develop', package)
@@ -273,7 +279,7 @@ class Test_shared_repo(TestCase):
         robot.ws('repo', 'add', 'alicerepo', repo)
         return robot
 
-    @xfail
+    # @xfail
     def test_update(self, alice, bob, package):
         bob.ws('new', 'bobpkg')
         bob.cd('bobpkg')
