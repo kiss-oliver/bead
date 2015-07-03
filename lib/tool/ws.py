@@ -347,6 +347,12 @@ def initialize_env(config_dir):
     db.connect(db_path)
 
 
+INPUT_SUBCOMMAND_TITLE = 'INPUT_SUBCOMMAND_TITLE'
+INPUT_SUBCOMMAND_HELP = 'INPUT_SUBCOMMAND_HELP'
+REPO_SUBCOMMAND_TITLE = 'REPO_SUBCOMMAND_TITLE'
+REPO_SUBCOMMAND_HELP = 'REPO_SUBCOMMAND_HELP'
+
+
 def make_argument_parser():
     parser = ArghParser(prog=__name__)
     parser.add_argument('--version', action='version', version=VERSION)
@@ -371,8 +377,8 @@ def make_argument_parser():
         ],
         namespace='input',
         namespace_kwargs=dict(
-            title='INPUT SUBCOMMAND TITLE',
-            help='INPUT SUBCOMMAND HELP',
+            title=INPUT_SUBCOMMAND_TITLE,
+            help=INPUT_SUBCOMMAND_HELP,
         ))
     parser.add_commands(
         [
@@ -383,8 +389,8 @@ def make_argument_parser():
         ],
         namespace='repo',
         namespace_kwargs=dict(
-            title='REPO SUBCOMMAND TITLE',
-            help='REPO SUBCOMMAND HELP',
+            title=REPO_SUBCOMMAND_TITLE,
+            help=REPO_SUBCOMMAND_HELP,
         ))
     return parser
 
