@@ -78,4 +78,15 @@ class Repository(object):
         workspace.pack(zipfilename, timestamp=timestamp)
         return Archive(zipfilename)
 
-# FIXME: remove workspace.flat_repo
+
+def get_all():
+    '''
+    Iterator over Repositories
+    '''
+    ALL = '1 == 1'
+    return omlite.filter(Repository, ALL)  # FIXME: implement omlite.all
+
+
+def add(name, directory):
+    repo = Repository(name, directory)
+    omlite.save(repo)

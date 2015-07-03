@@ -9,7 +9,6 @@ from argh.decorators import arg, named
 
 import os
 import sys
-import omlite  # TODO: move direct omlite dependencies out
 
 from .. import tech
 
@@ -20,7 +19,7 @@ from .. import db
 
 from .. import PACKAGE, VERSION
 from ..translations import Peer, add_translation
-from ..repos import Repository
+from .. import repos
 
 
 Path = tech.fs.Path
@@ -118,12 +117,6 @@ def develop(workspace, package_file_name, mount=False):
     package = Archive(package_file_name)
     package.unpack_to(workspace)
 
-    # FIXME: flat repo can be used to mount packages for demo purposes
-    # that is, until we have a proper repo
-    workspace.flat_repo = os.path.abspath(
-        os.path.dirname(package_file_name)
-    )
-
     assert workspace.is_valid
 
     if mount:
@@ -141,10 +134,9 @@ def pack(workspace_directory='.'):
     '''
     # TODO: #9 personal config: directory to store newly created packages in
     workspace = Workspace(workspace_directory)
-    ALL = '1 == 1'
-    repos = list(omlite.filter(Repository, ALL))
-    assert len(repos) == 1, 'Only one repo supported at the moment :('
-    repo = repos[0]
+    repositories = list(repos.get_all())
+    assert len(repositories) == 1, 'Only one repo supported at the moment :('
+    repo = repositories[0]
     repo.store(workspace, timestamp())
 
 
@@ -153,21 +145,20 @@ def mount_input_nick(workspace, input_nick):
     if not workspace.is_mounted(input_nick):
         spec = workspace.inputspecs[input_nick]
         # TODO: #14 personal config: list of local directories having packages
-        flat_repo = Repository(workspace.flat_repo)
-        packages = flat_repo.find_packages(
-            spec[metakey.INPUT_PACKAGE],
-            spec[metakey.INPUT_VERSION],
-        )
-        if packages is None:
-            print(
-                'Could not find archive for {} - not mounted!'
-                .format(input_nick)
-            )
-            return
-        assert len(packages) == 1
-        package = packages[0]
-        workspace.mount(input_nick, package)
-        print('Mounted {}.'.format(input_nick))
+        uuid = spec[metakey.INPUT_PACKAGE]
+        version = spec[metakey.INPUT_VERSION]
+        for repo in repos.get_all():
+            packages = list(repo.find_packages(uuid, version))
+            if packages:
+                assert len(packages) == 1
+                package = packages[0]
+                workspace.mount(input_nick, package)
+                print('Mounted {}.'.format(input_nick))
+                return
+
+        print(
+            'Could not find archive for {} - not mounted!'
+            .format(input_nick))
 
 
 # @command('input load')
@@ -291,9 +282,7 @@ def update_input(workspace, input_nick, package_file_name=None):
         uuid = spec[metakey.INPUT_PACKAGE]
         # find newest package
         newest = None
-        ALL = '1 == 1'
-        repos = omlite.filter(Repository, ALL)  # FIXME: implement omlite.all
-        for repo in repos:
+        for repo in repos.get_all():
             package = repo.find_newest(uuid)
             if package is not None:
                 if newest is None or newest.timestamp < package.timestamp:
@@ -329,10 +318,8 @@ def add_repo(name, directory):
     '''
     Define a repository
     '''
-    # TODO
-    repo = Repository(name, directory)
-    omlite.save(repo)
-    print('repo {} saved'.format(repo))
+    repos.add(name, directory)
+    print('Repo "{}" is introduced'.format(name))
 
 
 # TODO: names/translations management commands

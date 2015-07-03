@@ -62,14 +62,6 @@ class Workspace(object):
     def inputs(self):
         return self.inputspecs.keys()
 
-    @property
-    def flat_repo(self):
-        return fs.read_file(self.directory / layouts.Workspace.REPO)
-
-    @flat_repo.setter
-    def flat_repo(self, directory):
-        fs.write_file(self.directory / layouts.Workspace.REPO, directory)
-
     def create(self, uuid):
         '''
         Set up an empty project structure.
@@ -92,7 +84,6 @@ class Workspace(object):
             dir / layouts.Workspace.PKGMETA,
             persistence.dumps(pkgmeta)
         )
-        self.flat_repo = '..'
 
         assert self.is_valid
 
