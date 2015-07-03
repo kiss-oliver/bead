@@ -257,9 +257,11 @@ def delete_input(input_nick, workspace=CurrentDirWorkspace()):
 @opt_workspace
 def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
     '''
-    When no input NAME is given, update all inputs to the newest version of the same package.
+    When no input NAME is given:
+        update all inputs to the newest version of all packages.
 
-    When input NAME is given replace that input with a newer version or different package.
+    When input NAME is given:
+        replace that input with a newer version or different package.
     '''
     if input_nick is None:
         update_all_inputs(workspace)
