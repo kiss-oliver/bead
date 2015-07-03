@@ -306,13 +306,16 @@ def nuke(workspace):
     tech.fs.rmtree(workspace.directory)
 
 
-# TODO
 def add_repo(name, directory):
     '''
     Define a repository
     '''
-    repos.add(name, directory)
-    print('Repo "{}" is introduced'.format(name))
+    try:
+        repos.add(name, directory)
+        print('Repo "{}" is introduced'.format(name))
+    except ValueError as e:
+        print('ERROR:', *e.args)
+        print('Check the parameters: both name and directory must be unique!')
 
 
 # TODO: names/translations management commands

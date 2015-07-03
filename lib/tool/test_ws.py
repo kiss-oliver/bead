@@ -6,7 +6,7 @@ from __future__ import print_function
 from ..test import TestCase, TempDir
 # from ..test import xfail
 from testtools.content import text_content
-from testtools.matchers import FileContains, DirContains, Not
+from testtools.matchers import FileContains, DirContains, Not, Contains
 from . import ws as m
 import fixtures
 
@@ -310,3 +310,30 @@ class Test_shared_repo(TestCase):
         self.assertThat(
             bob.cwd / 'input/alicepkg2/datafile',
             FileContains('''Alice's new data'''))
+
+
+class Test_repositories(TestCase):
+
+    # fixtures
+    def robot(self):
+        return self.useFixture(Robot())
+
+    # tests
+    def test_add_multiple(self, robot):
+        robot.ws('repo', 'add', 'name1', 'dir1')
+        robot.ws('repo', 'add', 'name2', 'dir2')
+        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+
+    def test_add_with_same_name_fails(self, robot):
+        robot.ws('repo', 'add', 'name', 'dir1')
+        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+
+        robot.ws('repo', 'add', 'name', 'dir2')
+        self.assertThat(robot.stdout, Contains('ERROR'))
+
+    def test_add_same_directory_twice_fails(self, robot):
+        robot.ws('repo', 'add', 'name1', 'dir')
+        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+
+        robot.ws('repo', 'add', 'name2', 'dir')
+        self.assertThat(robot.stdout, Contains('ERROR'))

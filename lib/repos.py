@@ -19,6 +19,8 @@ TEXT_FIELD = Field('VARCHAR NOT NULL')
 UUID_FIELD = Field('VARCHAR NOT NULL')
 
 
+@omlite.sql_constraint('UNIQUE (name)')
+@omlite.sql_constraint('UNIQUE (location)')
 @omlite.table_name('repositories')
 @storable
 class Repository(object):
@@ -89,4 +91,7 @@ def get_all():
 
 def add(name, directory):
     repo = Repository(name, directory)
-    omlite.save(repo)
+    try:
+        omlite.save(repo)
+    except omlite.IntegrityError as e:
+        raise ValueError(e)
