@@ -185,14 +185,16 @@ def mount_archive(workspace, input_nick, package_file_name):
     print('{} mounted on {}.'.format(package_file_name, input_nick))
 
 
+INPUT_NICK_HELP = (
+    'name of input,'
+    + ' its workspace relative location is "input/%(metavar)s"')
+INPUT_NICK_METAVAR = 'NAME'
+
+
 def arg_input_nick(func):
-    func = arg(
-        'input_nick', metavar='NAME',
-        help=(
-            'input NAME,'
-            + ' its workspace relative location is "input/%(metavar)s"')
-    )(func)
-    return func
+    add_arg = arg(
+        'input_nick', metavar=INPUT_NICK_METAVAR, help=INPUT_NICK_HELP)
+    return add_arg(func)
 
 
 @arg(
@@ -264,14 +266,24 @@ def delete_input(input_nick, workspace_directory='.'):
 
 
 # @command('input update')
-@arg_input_nick
-@arg('package_file_name', nargs='?', help='package to load input data from')
+@arg(
+    'input_nick', metavar=INPUT_NICK_METAVAR, nargs='?', help=INPUT_NICK_HELP)
+@arg('package_file_name', metavar='PACKAGE', nargs='?', help='package to load input data from')
 @opt_workspace
-def update_input(input_nick, package_file_name, workspace_directory='.'):
+def update_command(input_nick, package_file_name, workspace_directory='.'):
     '''
-    Replace input with a newer version or different package.
+    When no input NAME is given, update all inputs to the newest version of the same package.
+
+    When input NAME is given replace that input with a newer version or different package.
     '''
     workspace = Workspace(workspace_directory)
+    if input_nick is None:
+        update_all_inputs(workspace)
+    else:
+        update_input(workspace, input_nick, package_file_name)
+
+
+def update_input(workspace, input_nick, package_file_name=None):
     spec = workspace.inputspecs[input_nick]
     if package_file_name:
         newest = Archive(package_file_name)
@@ -294,6 +306,12 @@ def update_input(input_nick, package_file_name, workspace_directory='.'):
         workspace.unmount(input_nick)
         workspace.mount(input_nick, newest)
         print('Mounted {}.'.format(input_nick))
+
+
+def update_all_inputs(workspace):
+    for input_nick in workspace.inputs:
+        update_input(workspace, input_nick)
+    print('All inputs are up to date.')
 
 
 # @command
@@ -359,7 +377,7 @@ def make_argument_parser():
             pack,
             mount,
             status,
-            named('update')(update_input),
+            named('update')(update_command),
             nuke
         ])
     # FIXME: ArghParser.add_subcommands
@@ -369,7 +387,7 @@ def make_argument_parser():
             named('load')(load_inputs),
             named('add')(add_input),
             named('delete')(delete_input),
-            named('update')(update_input),
+            named('update')(update_command),
         ],
         namespace='input',
         namespace_kwargs=dict(

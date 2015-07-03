@@ -3,7 +3,8 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase, TempDir, xfail
+from ..test import TestCase, TempDir
+# from ..test import xfail
 from testtools.content import text_content
 from testtools.matchers import FileContains, DirContains, Not
 from . import ws as m
@@ -279,7 +280,6 @@ class Test_shared_repo(TestCase):
         robot.ws('repo', 'add', 'alicerepo', repo)
         return robot
 
-    # @xfail
     def test_update(self, alice, bob, package):
         bob.ws('new', 'bobpkg')
         bob.cd('bobpkg')
