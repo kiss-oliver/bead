@@ -27,6 +27,9 @@ timestamp = tech.timestamp.timestamp
 
 ERROR_EXIT = 1
 
+WORKSPACE_HELP = 'workspace directory'
+WORKSPACE_METAVAR = 'DIRECTORY'
+
 
 def opt_workspace(func):
     '''
@@ -35,7 +38,7 @@ def opt_workspace(func):
     decorate = arg(
         '--workspace', dest='workspace_directory', metavar='DIRECTORY',
         default='.',
-        help='workspace directory')
+        help=WORKSPACE_HELP)
     return decorate(func)
 
 
@@ -44,9 +47,9 @@ def arg_workspace(func):
     Define `workspace` argument, defaulting to current directory
     '''
     decorate = arg(
-        'workspace_directory', nargs='?', metavar='WORKSPACE',
+        'workspace_directory', nargs='?', metavar=WORKSPACE_METAVAR,
         default='.',
-        help='workspace directory')
+        help=WORKSPACE_HELP)
     return decorate(func)
 
 
@@ -55,8 +58,8 @@ def arg_new_workspace(func):
     Define mandatory `workspace` argument (without default)
     '''
     decorate = arg(
-        'workspace', type=Workspace,
-        help='workspace directory')
+        'workspace', type=Workspace, metavar=WORKSPACE_METAVAR,
+        help=WORKSPACE_HELP)
     return decorate(func)
 
 
@@ -144,7 +147,6 @@ def mount_input_nick(workspace, input_nick):
     assert workspace.has_input(input_nick)
     if not workspace.is_mounted(input_nick):
         spec = workspace.inputspecs[input_nick]
-        # TODO: #14 personal config: list of local directories having packages
         uuid = spec[metakey.INPUT_PACKAGE]
         version = spec[metakey.INPUT_VERSION]
         for repo in repos.get_all():
@@ -183,14 +185,16 @@ INPUT_NICK_METAVAR = 'NAME'
 
 
 def arg_input_nick(func):
-    add_arg = arg(
+    decorate = arg(
         'input_nick', metavar=INPUT_NICK_METAVAR, help=INPUT_NICK_HELP)
-    return add_arg(func)
+    return decorate(func)
 
 
-@arg(
-    'package', metavar='PACKAGE',
-    help='package to mount data from')
+PACKAGE_METAVAR = 'PACKAGE'
+PACKAGE_MOUNT_HELP = 'package to mount data from'
+
+
+@arg('package', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
 @arg_input_nick
 @opt_workspace
 def add_input(input_nick, package, workspace_directory='.'):
@@ -198,9 +202,7 @@ def add_input(input_nick, package, workspace_directory='.'):
 
 
 @arg_input_nick
-@arg(
-    'package', nargs='?', metavar='PACKAGE',
-    help='package to mount data from')
+@arg('package', nargs='?', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
 @opt_workspace
 def mount(package, input_nick, workspace_directory='.'):
     '''
@@ -259,9 +261,9 @@ def delete_input(input_nick, workspace_directory='.'):
 # @command('input update')
 @arg(
     'input_nick', metavar=INPUT_NICK_METAVAR, nargs='?', help=INPUT_NICK_HELP)
-@arg('package_file_name', metavar='PACKAGE', nargs='?', help='package to load input data from')
+@arg('package', metavar=PACKAGE_METAVAR, nargs='?', help=PACKAGE_MOUNT_HELP)
 @opt_workspace
-def update_command(input_nick, package_file_name, workspace_directory='.'):
+def update_command(input_nick, package, workspace_directory='.'):
     '''
     When no input NAME is given, update all inputs to the newest version of the same package.
 
@@ -271,7 +273,7 @@ def update_command(input_nick, package_file_name, workspace_directory='.'):
     if input_nick is None:
         update_all_inputs(workspace)
     else:
-        update_input(workspace, input_nick, package_file_name)
+        update_input(workspace, input_nick, package)
 
 
 def update_input(workspace, input_nick, package_file_name=None):
@@ -314,6 +316,7 @@ def nuke(workspace_directory):
     tech.fs.rmtree(workspace.directory)
 
 
+# TODO
 def add_repo(name, directory):
     '''
     Define a repository
