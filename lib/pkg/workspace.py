@@ -19,10 +19,10 @@ securehash = tech.securehash
 fs = tech.fs
 
 
-class Workspace(object):
+class AbstractWorkspace(object):
 
-    def __init__(self, directory):
-        self.directory = fs.Path(os.path.abspath(directory))
+    # directory of workspace - subclasses need to specify it
+    directory = None
 
     @property
     def is_valid(self):
@@ -161,6 +161,20 @@ class Workspace(object):
             fs.rmtree(input_dir / input_nick)
         finally:
             fs.make_readonly(input_dir)
+
+
+class Workspace(AbstractWorkspace):
+
+    def __init__(self, directory):
+        super(Workspace, self).__init__()
+        self.directory = fs.Path(os.path.abspath(directory))
+
+
+class CurrentDirWorkspace(AbstractWorkspace):
+
+    @property
+    def directory(self):
+        return fs.Path(os.path.abspath(os.getcwd()))
 
 
 class _ZipCreator(object):

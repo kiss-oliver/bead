@@ -12,7 +12,7 @@ import sys
 
 from .. import tech
 
-from ..pkg.workspace import Workspace
+from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
 from ..pkg import metakey
 from .. import db
@@ -36,8 +36,8 @@ def opt_workspace(func):
     Define `workspace` as option, defaulting to current directory
     '''
     decorate = arg(
-        '--workspace', dest='workspace_directory', metavar='DIRECTORY',
-        default='.',
+        '--workspace', metavar=WORKSPACE_METAVAR,
+        type=Workspace, default=CurrentDirWorkspace(),
         help=WORKSPACE_HELP)
     return decorate(func)
 
@@ -47,8 +47,8 @@ def arg_workspace(func):
     Define `workspace` argument, defaulting to current directory
     '''
     decorate = arg(
-        'workspace_directory', nargs='?', metavar=WORKSPACE_METAVAR,
-        default='.',
+        'workspace', nargs='?', metavar=WORKSPACE_METAVAR,
+        type=Workspace, default=CurrentDirWorkspace(),
         help=WORKSPACE_HELP)
     return decorate(func)
 
@@ -131,12 +131,11 @@ def develop(workspace, package_file_name, mount=False):
 
 # @command
 @opt_workspace
-def pack(workspace_directory='.'):
+def pack(workspace=CurrentDirWorkspace()):
     '''
     Create a new archive from the workspace
     '''
     # TODO: #9 personal config: directory to store newly created packages in
-    workspace = Workspace(workspace_directory)
     repositories = list(repos.get_all())
     assert len(repositories) == 1, 'Only one repo supported at the moment :('
     repo = repositories[0]
@@ -197,18 +196,17 @@ PACKAGE_MOUNT_HELP = 'package to mount data from'
 @arg('package', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
 @arg_input_nick
 @opt_workspace
-def add_input(input_nick, package, workspace_directory='.'):
-    return mount(package, input_nick, workspace_directory)
+def add_input(input_nick, package, workspace=CurrentDirWorkspace()):
+    return mount(package, input_nick, workspace)
 
 
 @arg_input_nick
 @arg('package', nargs='?', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
 @opt_workspace
-def mount(package, input_nick, workspace_directory='.'):
+def mount(package, input_nick, workspace=CurrentDirWorkspace()):
     '''
     Add data from another package to the input directory.
     '''
-    workspace = Workspace(workspace_directory)
     # TODO: #10 names for packages
     if package is None:
         mount_input_nick(workspace, input_nick)
@@ -251,9 +249,8 @@ def status():
 # @command('input delete')
 @arg_input_nick
 @opt_workspace
-def delete_input(input_nick, workspace_directory='.'):
+def delete_input(input_nick, workspace=CurrentDirWorkspace()):
     '''Forget all about input'''
-    workspace = Workspace(workspace_directory)
     workspace.delete_input(input_nick)
     print('Input {} is deleted.'.format(input_nick))
 
@@ -263,13 +260,12 @@ def delete_input(input_nick, workspace_directory='.'):
     'input_nick', metavar=INPUT_NICK_METAVAR, nargs='?', help=INPUT_NICK_HELP)
 @arg('package', metavar=PACKAGE_METAVAR, nargs='?', help=PACKAGE_MOUNT_HELP)
 @opt_workspace
-def update_command(input_nick, package, workspace_directory='.'):
+def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
     '''
     When no input NAME is given, update all inputs to the newest version of the same package.
 
     When input NAME is given replace that input with a newer version or different package.
     '''
-    workspace = Workspace(workspace_directory)
     if input_nick is None:
         update_all_inputs(workspace)
     else:
@@ -307,11 +303,10 @@ def update_all_inputs(workspace):
 
 # @command
 @arg_workspace
-def nuke(workspace_directory):
+def nuke(workspace):
     '''
     Delete the workspace, inluding data, code and documentation
     '''
-    workspace = Workspace(workspace_directory)
     assert_valid_workspace(workspace)
     tech.fs.rmtree(workspace.directory)
 
