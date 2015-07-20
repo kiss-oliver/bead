@@ -110,19 +110,19 @@ EXPORT_VERSION = 'version 1'
 EXPORT_META_ID = 1
 
 
-def _export_meta_class(db):
+def _export_metadata_class(db):
     @omlite.database(db)
     @sql_constraint('CHECK (id == {})'.format(EXPORT_META_ID))
     @omlite.table_name('meta')
     @storable
-    class Meta(object):
+    class Metadata(object):
         ''' A single row table describing what is exported and how
         '''
         id = UUID_FIELD
         peer_id = UUID_FIELD
         version = TEXT_FIELD
         # date_exported?
-    return Meta
+    return Metadata
 
 
 def _exported_translation_class(db):
@@ -159,9 +159,9 @@ class Exporter(object):
         self.filename = filename
 
     def _init_export_db(self, export_db):
-        Meta = _export_meta_class(export_db)
-        omlite.create_table(Meta)
-        meta = Meta()
+        Metadata = _export_metadata_class(export_db)
+        omlite.create_table(Metadata)
+        meta = Metadata()
         meta.id = EXPORT_META_ID
         meta.version = EXPORT_VERSION
         meta.peer_id = self.peer.id
@@ -208,8 +208,8 @@ class Importer(object):
             omlite.create(translation)
 
     def _get_peer_to_import(self, db):
-        Meta = _export_meta_class(db)
-        meta = omlite.get(Meta, EXPORT_META_ID)
+        Metadata = _export_metadata_class(db)
+        meta = omlite.get(Metadata, EXPORT_META_ID)
         assert meta.version == EXPORT_VERSION
         imported_peer = Peer()
         imported_peer.id = meta.peer_id

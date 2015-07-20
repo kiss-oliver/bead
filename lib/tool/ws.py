@@ -7,20 +7,19 @@ import appdirs
 from argh import ArghParser
 from argh.decorators import arg, named
 
-import functools
 import os
 import sys
 
 from .. import tech
 
-from ..pkg.workspace import Workspace
+from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
-from ..pkg import layouts
 from ..pkg import metakey
 from .. import db
 
 from .. import PACKAGE, VERSION
 from ..translations import Peer, add_translation
+from .. import repos
 
 
 Path = tech.fs.Path
@@ -28,36 +27,39 @@ timestamp = tech.timestamp.timestamp
 
 ERROR_EXIT = 1
 
+WORKSPACE_HELP = 'workspace directory'
+WORKSPACE_METAVAR = 'DIRECTORY'
+
 
 def opt_workspace(func):
     '''
-    define `workspace` as option, defaulting to current directory
+    Define `workspace` as option, defaulting to current directory
     '''
     decorate = arg(
-        '--workspace', dest='workspace_directory', metavar='DIRECTORY',
-        default='.',
-        help='workspace directory')
+        '--workspace', metavar=WORKSPACE_METAVAR,
+        type=Workspace, default=CurrentDirWorkspace(),
+        help=WORKSPACE_HELP)
     return decorate(func)
 
 
 def arg_workspace(func):
     '''
-    define `workspace` argument, defaulting to current directory
+    Define `workspace` argument, defaulting to current directory
     '''
     decorate = arg(
-        'workspace_directory', nargs='?', metavar='WORKSPACE',
-        default='.',
-        help='workspace directory')
+        'workspace', nargs='?', metavar=WORKSPACE_METAVAR,
+        type=Workspace, default=CurrentDirWorkspace(),
+        help=WORKSPACE_HELP)
     return decorate(func)
 
 
 def arg_new_workspace(func):
     '''
-    define mandatory `workspace` argument (without default)
+    Define mandatory `workspace` argument (without default)
     '''
     decorate = arg(
-        'workspace', type=Workspace,
-        help='workspace directory')
+        'workspace', type=Workspace, metavar=WORKSPACE_METAVAR,
+        help=WORKSPACE_HELP)
     return decorate(func)
 
 
@@ -103,41 +105,6 @@ def new(workspace):
     print('Created {}'.format(workspace.package_name))
 
 
-class Repository(object):
-
-    def find_package(self, uuid, version=None):
-        # -> [Package]
-        pass
-
-    def find_newest(self, uuid):
-        # -> Package
-        pass
-
-    def store(self, workspace, timestamp):
-        # -> Package
-        pass
-
-
-class UserManagedDirectory(Repository):
-
-    # TODO: user maintained directory hierarchy
-
-    def __init__(self, directory):
-        self.directory = Path(directory)
-
-    def find_package(self, uuid, version=None):
-        # -> [Package]
-        for name in os.listdir(self.directory):
-            candidate = self.directory / name
-            try:
-                package = Archive(candidate)
-                if package.uuid == uuid:
-                    if version in (None, package.version):
-                        return package
-            except:
-                pass
-
-
 # @command
 @arg_new_workspace
 def develop(workspace, package_file_name, mount=False):
@@ -153,12 +120,6 @@ def develop(workspace, package_file_name, mount=False):
     package = Archive(package_file_name)
     package.unpack_to(workspace)
 
-    # FIXME: flat repo can be used to mount packages for demo purposes
-    # that is, until we have a proper repo
-    workspace.flat_repo = os.path.abspath(
-        os.path.dirname(package_file_name)
-    )
-
     assert workspace.is_valid
 
     if mount:
@@ -170,51 +131,42 @@ def develop(workspace, package_file_name, mount=False):
 
 # @command
 @opt_workspace
-def pack(workspace_directory='.'):
-    '''Create a new archive from the workspace'''
+def pack(workspace=CurrentDirWorkspace()):
+    '''
+    Create a new archive from the workspace
+    '''
     # TODO: #9 personal config: directory to store newly created packages in
-    # repo = get_store_repo()
-    # repo.store_workspace(Workspace(), timestamp())
-    workspace = Workspace(workspace_directory)
-    ts = timestamp()
-    zipfilename = (
-        workspace.directory / layouts.Workspace.TEMP / (
-            '{package}_{timestamp}.zip'
-            .format(
-                package=workspace.package_name,
-                timestamp=ts,
-            )
-        )
-    )
-    workspace.pack(zipfilename, timestamp=ts)
-
-    print('Package created at {}'.format(zipfilename))
+    repositories = list(repos.get_all())
+    assert len(repositories) == 1, 'Only one repo supported at the moment :('
+    repo = repositories[0]
+    repo.store(workspace, timestamp())
 
 
 def mount_input_nick(workspace, input_nick):
     assert workspace.has_input(input_nick)
     if not workspace.is_mounted(input_nick):
         spec = workspace.inputspecs[input_nick]
-        # TODO: #14 personal config: list of local directories having packages
-        flat_repo = UserManagedDirectory(workspace.flat_repo)
-        package = flat_repo.find_package(
-            spec[metakey.INPUT_PACKAGE],
-            spec[metakey.INPUT_VERSION],
-        )
-        if package is None:
-            print(
-                'Could not find archive for {} - not mounted!'
-                .format(input_nick)
-            )
-            return
-        workspace.mount(input_nick, package)
-        print('Mounted {}.'.format(input_nick))
+        uuid = spec[metakey.INPUT_PACKAGE]
+        version = spec[metakey.INPUT_VERSION]
+        for repo in repos.get_all():
+            packages = list(repo.find_packages(uuid, version))
+            if packages:
+                assert len(packages) == 1
+                package = packages[0]
+                workspace.mount(input_nick, package)
+                print('Mounted {}.'.format(input_nick))
+                return
+
+        print(
+            'Could not find archive for {} - not mounted!'
+            .format(input_nick))
 
 
 # @command('input load')
-@named('load')
 def load_inputs(workspace):
-    """Put all defined input data in place."""
+    '''
+    Put all defined input data in place.
+    '''
     for input_nick in workspace.inputs:
         mount_input_nick(workspace, input_nick)
 
@@ -225,28 +177,36 @@ def mount_archive(workspace, input_nick, package_file_name):
     print('{} mounted on {}.'.format(package_file_name, input_nick))
 
 
-def mount_cmd(name):
-    @named(name)
-    @arg(
-        'package', nargs='?', metavar='PACKAGE',
-        help='package to mount data from'
-    )
-    @arg(
-        'input_nick', metavar='NAME',
-        help='data will be mounted under "input/%(metavar)s"'
-    )
-    @opt_workspace
-    @functools.wraps(_mount)
-    def func(package, input_nick, workspace_directory='.'):
-        return _mount(package, input_nick, workspace_directory)
-    return func
+INPUT_NICK_HELP = (
+    'name of input,'
+    + ' its workspace relative location is "input/%(metavar)s"')
+INPUT_NICK_METAVAR = 'NAME'
 
 
-def _mount(package, input_nick, workspace_directory='.'):
+def arg_input_nick(func):
+    decorate = arg(
+        'input_nick', metavar=INPUT_NICK_METAVAR, help=INPUT_NICK_HELP)
+    return decorate(func)
+
+
+PACKAGE_METAVAR = 'PACKAGE'
+PACKAGE_MOUNT_HELP = 'package to mount data from'
+
+
+@arg('package', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
+@arg_input_nick
+@opt_workspace
+def add_input(input_nick, package, workspace=CurrentDirWorkspace()):
+    return mount(package, input_nick, workspace)
+
+
+@arg_input_nick
+@arg('package', nargs='?', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
+@opt_workspace
+def mount(package, input_nick, workspace=CurrentDirWorkspace()):
     '''
     Add data from another package to the input directory.
     '''
-    workspace = Workspace(workspace_directory)
     # TODO: #10 names for packages
     if package is None:
         mount_input_nick(workspace, input_nick)
@@ -260,57 +220,104 @@ def print_mounts(directory):
     assert_valid_workspace(workspace)
     inputs = workspace.inputs
     if not inputs:
-        print('Package has no defined inputs, yet')
+        print('Package has no defined inputs')
     else:
         print('Package inputs:')
-        msg_mounted = 'mounted'
-        msg_not_mounted = 'not mounted'
         for input_nick in sorted(inputs):
-            print(
-                '  {}: {}'
-                .format(
-                    input_nick,
-                    msg_mounted
-                    if workspace.is_mounted(input_nick)
-                    else msg_not_mounted
-                )
-            )
+            if workspace.is_mounted(input_nick):
+                status_msg = 'mounted'
+            else:
+                status_msg = 'not mounted'
+            msg = '  {}: {}'.format(input_nick, status_msg)
+            print(msg)
 
 
 # @command
 def status():
-    '''Show workspace status - name of package, mount names and their status'''
+    '''
+    Show workspace status - name of package, mount names and their status
+    '''
     # TODO: print Package UUID
     print_mounts('.')
 
 
 # @command('input delete')
-@named('delete')
+@arg_input_nick
 @opt_workspace
-def delete_input(input_nick, workspace_directory='.'):
+def delete_input(input_nick, workspace=CurrentDirWorkspace()):
     '''Forget all about input'''
-    workspace = Workspace(workspace_directory)
     workspace.delete_input(input_nick)
     print('Input {} is deleted.'.format(input_nick))
 
 
 # @command('input update')
-@named('update')
-@arg('package_file_name', nargs='?')
-def update_input(input_nick, package_file_name):
-    '''Replace input with a newer version or different package.
+@arg(
+    'input_nick', metavar=INPUT_NICK_METAVAR, nargs='?', help=INPUT_NICK_HELP)
+@arg('package', metavar=PACKAGE_METAVAR, nargs='?', help=PACKAGE_MOUNT_HELP)
+@opt_workspace
+def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
     '''
-    # TODO: #16 implement update command
-    pass
+    When no input NAME is given:
+        update all inputs to the newest version of all packages.
+
+    When input NAME is given:
+        replace that input with a newer version or different package.
+    '''
+    if input_nick is None:
+        update_all_inputs(workspace)
+    else:
+        update_input(workspace, input_nick, package)
+
+
+def update_input(workspace, input_nick, package_file_name=None):
+    spec = workspace.inputspecs[input_nick]
+    if package_file_name:
+        newest = Archive(package_file_name)
+    else:
+        uuid = spec[metakey.INPUT_PACKAGE]
+        # find newest package
+        newest = None
+        for repo in repos.get_all():
+            package = repo.find_newest(uuid)
+            if package is not None:
+                if newest is None or newest.timestamp < package.timestamp:
+                    newest = package
+        # XXX: check if found package is newer than currently mounted?
+
+    if newest is None:
+        print('No package found!!!')
+    else:
+        workspace.unmount(input_nick)
+        workspace.mount(input_nick, newest)
+        print('Mounted {}.'.format(input_nick))
+
+
+def update_all_inputs(workspace):
+    for input_nick in workspace.inputs:
+        update_input(workspace, input_nick)
+    print('All inputs are up to date.')
 
 
 # @command
 @arg_workspace
-def nuke(workspace_directory):
-    '''Delete the workspace, inluding data, code and documentation'''
-    workspace = Workspace(workspace_directory)
+def nuke(workspace):
+    '''
+    Delete the workspace, inluding data, code and documentation
+    '''
     assert_valid_workspace(workspace)
     tech.fs.rmtree(workspace.directory)
+
+
+def add_repo(name, directory):
+    '''
+    Define a repository
+    '''
+    try:
+        repos.add(name, directory)
+        print('Repo "{}" is introduced'.format(name))
+    except ValueError as e:
+        print('ERROR:', *e.args)
+        print('Check the parameters: both name and directory must be unique!')
 
 
 # TODO: names/translations management commands
@@ -345,6 +352,12 @@ def initialize_env(config_dir):
     db.connect(db_path)
 
 
+INPUT_SUBCOMMAND_TITLE = 'INPUT_SUBCOMMAND_TITLE'
+INPUT_SUBCOMMAND_HELP = 'INPUT_SUBCOMMAND_HELP'
+REPO_SUBCOMMAND_TITLE = 'REPO_SUBCOMMAND_TITLE'
+REPO_SUBCOMMAND_HELP = 'REPO_SUBCOMMAND_HELP'
+
+
 def make_argument_parser():
     parser = ArghParser(prog=__name__)
     parser.add_argument('--version', action='version', version=VERSION)
@@ -353,23 +366,36 @@ def make_argument_parser():
             new,
             develop,
             pack,
-            mount_cmd('mount'),
+            mount,
             status,
-            update_input,
+            named('update')(update_command),
             nuke
         ])
     # FIXME: ArghParser.add_subcommands
+    # https://github.com/neithere/argh/issues/88
     parser.add_commands(
         [
-            load_inputs,
-            mount_cmd('add'),  # add_input
-            delete_input,
-            update_input,
+            named('load')(load_inputs),
+            named('add')(add_input),
+            named('delete')(delete_input),
+            named('update')(update_command),
         ],
         namespace='input',
         namespace_kwargs=dict(
-            title='INPUT SUBCOMMAND TITLE',
-            help='INPUT SUBCOMMAND HELP',
+            title=INPUT_SUBCOMMAND_TITLE,
+            help=INPUT_SUBCOMMAND_HELP,
+        ))
+    parser.add_commands(
+        [
+            named('add')(add_repo),
+            # list_repos,
+            # delete_repo,
+            # add_token_to_repo
+        ],
+        namespace='repo',
+        namespace_kwargs=dict(
+            title=REPO_SUBCOMMAND_TITLE,
+            help=REPO_SUBCOMMAND_HELP,
         ))
     return parser
 

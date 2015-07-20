@@ -7,6 +7,7 @@ import os
 
 import omlite
 from .translations import Peer, Translation
+from .repos import Repository
 
 
 MEMORY = ':memory:'
@@ -30,10 +31,14 @@ def initialize_new_db():
     '''
     Initialize a new empty database, that is already connected to by omlite.
     '''
+    # peers and their naming
     omlite.create_table(Peer)
     omlite.create_table(Translation)
 
     _create_self()
+
+    # repositories
+    omlite.create_table(Repository)
 
 
 def _create_self():

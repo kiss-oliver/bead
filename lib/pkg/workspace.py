@@ -19,10 +19,10 @@ securehash = tech.securehash
 fs = tech.fs
 
 
-class Workspace(object):
+class AbstractWorkspace(object):
 
-    def __init__(self, directory):
-        self.directory = fs.Path(os.path.abspath(directory))
+    # directory of workspace - subclasses need to specify it
+    directory = None
 
     @property
     def is_valid(self):
@@ -62,14 +62,6 @@ class Workspace(object):
     def inputs(self):
         return self.inputspecs.keys()
 
-    @property
-    def flat_repo(self):
-        return fs.read_file(self.directory / layouts.Workspace.REPO)
-
-    @flat_repo.setter
-    def flat_repo(self, directory):
-        fs.write_file(self.directory / layouts.Workspace.REPO, directory)
-
     def create(self, uuid):
         '''
         Set up an empty project structure.
@@ -92,7 +84,6 @@ class Workspace(object):
             dir / layouts.Workspace.PKGMETA,
             persistence.dumps(pkgmeta)
         )
-        self.flat_repo = '..'
 
         assert self.is_valid
 
@@ -117,7 +108,8 @@ class Workspace(object):
         _ZipCreator().create(zipfilename, self, timestamp)
 
     def has_input(self, input_nick):
-        '''Is there an input defined for input_nick?
+        '''
+        Is there an input defined for input_nick?
 
         NOTE: it is not necessarily mounted!
         '''
@@ -136,7 +128,6 @@ class Workspace(object):
         self.meta = m
 
     def delete_input(self, input_nick):
-        # XXX should be merged into unmount?
         assert self.has_input(input_nick)
         if self.is_mounted(input_nick):
             self.unmount(input_nick)
@@ -145,6 +136,9 @@ class Workspace(object):
         self.meta = m
 
     def mount(self, input_nick, package):
+        '''
+        Make output data files in package available under input directory
+        '''
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
@@ -157,14 +151,30 @@ class Workspace(object):
             fs.make_readonly(input_dir)
 
     def unmount(self, input_nick):
+        '''
+        Remove files for given input
+        '''
         assert self.has_input(input_nick)
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
             fs.rmtree(input_dir / input_nick)
-            self.mark_input_mounted(input_nick, False)
         finally:
             fs.make_readonly(input_dir)
+
+
+class Workspace(AbstractWorkspace):
+
+    def __init__(self, directory):
+        super(Workspace, self).__init__()
+        self.directory = fs.Path(os.path.abspath(directory))
+
+
+class CurrentDirWorkspace(AbstractWorkspace):
+
+    @property
+    def directory(self):
+        return fs.Path(os.path.abspath(os.getcwd()))
 
 
 class _ZipCreator(object):
