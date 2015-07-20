@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from ..tech.timestamp import time_from_timestamp
 
 
 class Package(object):
@@ -11,6 +12,10 @@ class Package(object):
     uuid = str
     version = str
     timestamp_str = str
+
+    @property
+    def timestamp(self):
+        return time_from_timestamp(self.timestamp_str)
 
     @abstractmethod
     def export(self, exported_archive_path):

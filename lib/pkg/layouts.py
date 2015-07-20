@@ -30,4 +30,3 @@ class Workspace:
     META = Path('.santa')
 
     PKGMETA = META / 'package'
-    REPO = META / 'repo'

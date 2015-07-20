@@ -3,9 +3,10 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase, TempDir, xfail
+from ..test import TestCase, TempDir
+# from ..test import xfail
 from testtools.content import text_content
-from testtools.matchers import FileContains, DirContains, Not
+from testtools.matchers import FileContains, DirContains, Not, Contains
 from . import ws as m
 import fixtures
 
@@ -114,8 +115,8 @@ class Robot(fixtures.Fixture):
             for filename in os.listdir(directory)]
 
     def write_file(self, path, content):
-        filepath = path if os.path.isabs(path) else self.cwd / path
-        tech.fs.write_file(filepath, content)
+        assert not os.path.isabs(path)
+        tech.fs.write_file(self.cwd / path, content)
 
 
 class Test_new(TestCase):  # noqa
@@ -170,7 +171,7 @@ class Test_new(TestCase):  # noqa
         self.assertTrue(Peer.self().knows_about('existing'))
 
     def when_new_is_called_with_nonexisting_name(self):
-        with self.useFixture(CaptureStdout()):
+        with CaptureStdout():
             m.new(Workspace('new'))
 
     def when_new_is_called_with_already_existing_name(self):
@@ -215,8 +216,11 @@ class Test_command_line(TestCase):
     def ls(self, robot):
         return robot.ls
 
+    def repo_dir(self):
+        return self.new_temp_dir()
+
     # tests
-    def test(self, robot, ws, cd, ls):
+    def test(self, robot, ws, cd, ls, repo_dir):
         self.addDetail('home', text_content(robot.home))
 
         ws('new', 'something')
@@ -226,8 +230,11 @@ class Test_command_line(TestCase):
         ws('status')
         self.assertIn('no defined inputs', robot.stdout)
 
+        ws('repo', 'add', 'default', repo_dir)
         ws('pack')
-        package, = ls('temp')
+
+        # FIXME: replace package as filename with package name
+        package, = ls(repo_dir)
 
         cd('..')
         ws('develop', 'something-develop', package)
@@ -273,7 +280,6 @@ class Test_shared_repo(TestCase):
         robot.ws('repo', 'add', 'alicerepo', repo)
         return robot
 
-    @xfail
     def test_update(self, alice, bob, package):
         bob.ws('new', 'bobpkg')
         bob.cd('bobpkg')
@@ -304,3 +310,30 @@ class Test_shared_repo(TestCase):
         self.assertThat(
             bob.cwd / 'input/alicepkg2/datafile',
             FileContains('''Alice's new data'''))
+
+
+class Test_repositories(TestCase):
+
+    # fixtures
+    def robot(self):
+        return self.useFixture(Robot())
+
+    # tests
+    def test_add_multiple(self, robot):
+        robot.ws('repo', 'add', 'name1', 'dir1')
+        robot.ws('repo', 'add', 'name2', 'dir2')
+        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+
+    def test_add_with_same_name_fails(self, robot):
+        robot.ws('repo', 'add', 'name', 'dir1')
+        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+
+        robot.ws('repo', 'add', 'name', 'dir2')
+        self.assertThat(robot.stdout, Contains('ERROR'))
+
+    def test_add_same_directory_twice_fails(self, robot):
+        robot.ws('repo', 'add', 'name1', 'dir')
+        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+
+        robot.ws('repo', 'add', 'name2', 'dir')
+        self.assertThat(robot.stdout, Contains('ERROR'))
