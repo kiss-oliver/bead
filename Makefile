@@ -12,6 +12,10 @@ env: clean
 	virtualenv env
 	. env/bin/activate; pip install -e .
 
+test-env: clean
+	virtualenv test-env
+	. test-env/bin/activate; pip install -rtest_requirements.txt -rrequirements.txt -e .
+
 test-env2: clean
 	virtualenv2 test-env2
 	. test-env2/bin/activate; pip install -rtest_requirements.txt -rrequirements.txt -e .

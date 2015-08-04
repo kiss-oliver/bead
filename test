@@ -1,8 +1,8 @@
 #!/bin/sh
 cd $(dirname "$0")
 
-[ -d test-env2 ] || make test-env2 || exit 1
-. test-env2/bin/activate
+[ -d test-env ] || make test-env || exit 1
+. test-env/bin/activate
 
 pwd
 exec green lib "$@"
