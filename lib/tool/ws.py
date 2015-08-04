@@ -325,6 +325,7 @@ def list_repos():
     List repositories
     '''
     repositories = repos.get_all()
+
     def print_repo(repo):
         print('{0.name}: {0.location}'.format(repo))
     try:
