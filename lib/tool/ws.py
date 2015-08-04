@@ -320,6 +320,25 @@ def add_repo(name, directory):
         print('Check the parameters: both name and directory must be unique!')
 
 
+def list_repos():
+    '''
+    List repositories
+    '''
+    repositories = repos.get_all()
+    def print_repo(repo):
+        print('{0.name}: {0.location}'.format(repo))
+    try:
+        repo = next(repositories)
+    except StopIteration:
+        print('There are no defined repositories')
+    else:
+        print('Repositories:')
+        print('-------------')
+        print_repo(repo)
+        for repo in repositories:
+            print_repo(repo)
+
+
 # TODO: names/translations management commands
 # - import peer filename
 # - rename-peer old-name new-name
@@ -388,7 +407,7 @@ def make_argument_parser():
     parser.add_commands(
         [
             named('add')(add_repo),
-            # list_repos,
+            named('list')(list_repos),
             # delete_repo,
             # add_token_to_repo
         ],

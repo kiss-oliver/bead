@@ -319,10 +319,21 @@ class Test_repositories(TestCase):
         return self.useFixture(Robot())
 
     # tests
+    def test_list_when_there_are_no_repos(self, robot):
+        robot.ws('repo', 'list')
+        self.assertThat(
+            robot.stdout, Contains('There are no defined repositories'))
+
     def test_add_multiple(self, robot):
         robot.ws('repo', 'add', 'name1', 'dir1')
         robot.ws('repo', 'add', 'name2', 'dir2')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
+
+        robot.ws('repo', 'list')
+        self.assertThat(robot.stdout, Contains('name1'))
+        self.assertThat(robot.stdout, Contains('name2'))
+        self.assertThat(robot.stdout, Contains('dir1'))
+        self.assertThat(robot.stdout, Contains('dir2'))
 
     def test_add_with_same_name_fails(self, robot):
         robot.ws('repo', 'add', 'name', 'dir1')
