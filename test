@@ -5,4 +5,5 @@ cd $(dirname "$0")
 . test-env/bin/activate
 
 pwd
+flake8 lib
 exec green lib "$@"
