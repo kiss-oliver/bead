@@ -312,28 +312,67 @@ class Test_shared_repo(TestCase):
             FileContains('''Alice's new data'''))
 
 
-class Test_repositories(TestCase):
+class Test_repo_commands(TestCase):
 
     # fixtures
     def robot(self):
         return self.useFixture(Robot())
 
+    def dir1(self, robot):
+        os.makedirs(robot.cwd / 'dir1')
+        return 'dir1'
+
+    def dir2(self, robot):
+        os.makedirs(robot.cwd / 'dir2')
+        return 'dir2'
+
     # tests
-    def test_add_multiple(self, robot):
+    def test_list_when_there_are_no_repos(self, robot):
+        robot.ws('repo', 'list')
+        self.assertThat(
+            robot.stdout, Contains('There are no defined repositories'))
+
+    def test_add_non_existing_directory_fails(self, robot):
+        robot.ws('repo', 'add', 'notadded', 'non-existing')
+        self.assertThat(robot.stdout, Contains('ERROR'))
+        self.assertThat(robot.stdout, Not(Contains('notadded')))
+
+    def test_add_multiple(self, robot, dir1, dir2):
         robot.ws('repo', 'add', 'name1', 'dir1')
         robot.ws('repo', 'add', 'name2', 'dir2')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
-    def test_add_with_same_name_fails(self, robot):
+        robot.ws('repo', 'list')
+        self.assertThat(robot.stdout, Contains('name1'))
+        self.assertThat(robot.stdout, Contains('name2'))
+        self.assertThat(robot.stdout, Contains('dir1'))
+        self.assertThat(robot.stdout, Contains('dir2'))
+
+    def test_add_with_same_name_fails(self, robot, dir1, dir2):
         robot.ws('repo', 'add', 'name', 'dir1')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
         robot.ws('repo', 'add', 'name', 'dir2')
         self.assertThat(robot.stdout, Contains('ERROR'))
 
-    def test_add_same_directory_twice_fails(self, robot):
-        robot.ws('repo', 'add', 'name1', 'dir')
+    def test_add_same_directory_twice_fails(self, robot, dir1):
+        robot.ws('repo', 'add', 'name1', dir1)
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
-        robot.ws('repo', 'add', 'name2', 'dir')
+        robot.ws('repo', 'add', 'name2', dir1)
         self.assertThat(robot.stdout, Contains('ERROR'))
+
+    def test_forget_repo(self, robot, dir1, dir2):
+        robot.ws('repo', 'add', 'repo-to-delete', dir1)
+        robot.ws('repo', 'add', 'another-repo', dir2)
+
+        robot.ws('repo', 'forget', 'repo-to-delete')
+        self.assertThat(robot.stdout, Contains('forgotten'))
+
+        robot.ws('repo', 'list')
+        self.assertThat(robot.stdout, Not(Contains('repo-to-delete')))
+        self.assertThat(robot.stdout, Contains('another-repo'))
+
+    def test_forget_nonexisting_repo(self, robot):
+        robot.ws('repo', 'forget', 'non-existing')
+        self.assertThat(robot.stdout, Contains('WARNING'))

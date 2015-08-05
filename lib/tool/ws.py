@@ -312,12 +312,45 @@ def add_repo(name, directory):
     '''
     Define a repository
     '''
+    if not os.path.isdir(directory):
+        print('ERROR: "{}" is not an existing directory!'.format(directory))
+        return
+    location = os.path.abspath(directory)
     try:
-        repos.add(name, directory)
+        repos.add(name, location)
         print('Repo "{}" is introduced'.format(name))
     except ValueError as e:
         print('ERROR:', *e.args)
         print('Check the parameters: both name and directory must be unique!')
+
+
+def list_repos():
+    '''
+    List repositories
+    '''
+    repositories = repos.get_all()
+
+    def print_repo(repo):
+        print('{0.name}: {0.location}'.format(repo))
+    try:
+        repo = next(repositories)
+    except StopIteration:
+        print('There are no defined repositories')
+    else:
+        # XXX use tabulate?
+        print('Repositories:')
+        print('-------------')
+        print_repo(repo)
+        for repo in repositories:
+            print_repo(repo)
+
+
+def forget_repo(name):
+    if repos.is_known(name):
+        repos.forget(name)
+        print('Repository "{}" is forgotten'.format(name))
+    else:
+        print('WARNING: no repository defined with "{}"'.format(name))
 
 
 # TODO: names/translations management commands
@@ -334,13 +367,6 @@ def add_repo(name, directory):
 # format: [[peer]:]name[@version]
 # already implemented:
 # https://gist.github.com/krisztianfekete/25f972c70d1cdbd19b9d#file-new-py
-
-# TODO: repository management
-# - list-repos
-# - add-repo repo
-# - delete-repo repo-ref
-# - set-output-repo repo-ref
-# where repo-ref is either an id or its path
 
 
 def initialize_env(config_dir):
@@ -388,8 +414,8 @@ def make_argument_parser():
     parser.add_commands(
         [
             named('add')(add_repo),
-            # list_repos,
-            # delete_repo,
+            named('list')(list_repos),
+            named('forget')(forget_repo),
             # add_token_to_repo
         ],
         namespace='repo',

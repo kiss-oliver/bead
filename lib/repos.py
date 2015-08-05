@@ -81,6 +81,18 @@ class Repository(object):
         return Archive(zipfilename)
 
 
+def get(name):
+    '''
+    Return repository having :name or None.
+    '''
+    for repo in omlite.filter(Repository, 'name=?', name):
+        return repo
+
+
+def is_known(name):
+    return get(name) is not None
+
+
 def get_all():
     '''
     Iterator over Repositories
@@ -95,3 +107,8 @@ def add(name, directory):
         omlite.save(repo)
     except omlite.IntegrityError as e:
         raise ValueError(e)
+
+
+def forget(name):
+    repo = get(name)
+    omlite.delete(repo)
