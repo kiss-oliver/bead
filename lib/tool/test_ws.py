@@ -312,7 +312,7 @@ class Test_shared_repo(TestCase):
             FileContains('''Alice's new data'''))
 
 
-class Test_repositories(TestCase):
+class Test_repo_commands(TestCase):
 
     # fixtures
     def robot(self):
@@ -361,3 +361,18 @@ class Test_repositories(TestCase):
 
         robot.ws('repo', 'add', 'name2', dir1)
         self.assertThat(robot.stdout, Contains('ERROR'))
+
+    def test_forget_repo(self, robot, dir1, dir2):
+        robot.ws('repo', 'add', 'repo-to-delete', dir1)
+        robot.ws('repo', 'add', 'another-repo', dir2)
+
+        robot.ws('repo', 'forget', 'repo-to-delete')
+        self.assertThat(robot.stdout, Contains('forgotten'))
+
+        robot.ws('repo', 'list')
+        self.assertThat(robot.stdout, Not(Contains('repo-to-delete')))
+        self.assertThat(robot.stdout, Contains('another-repo'))
+
+    def test_forget_nonexisting_repo(self, robot):
+        robot.ws('repo', 'forget', 'non-existing')
+        self.assertThat(robot.stdout, Contains('WARNING'))

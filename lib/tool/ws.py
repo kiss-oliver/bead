@@ -345,6 +345,14 @@ def list_repos():
             print_repo(repo)
 
 
+def forget_repo(name):
+    if repos.is_known(name):
+        repos.forget(name)
+        print('Repository "{}" is forgotten'.format(name))
+    else:
+        print('WARNING: no repository defined with "{}"'.format(name))
+
+
 # TODO: names/translations management commands
 # - import peer filename
 # - rename-peer old-name new-name
@@ -359,13 +367,6 @@ def list_repos():
 # format: [[peer]:]name[@version]
 # already implemented:
 # https://gist.github.com/krisztianfekete/25f972c70d1cdbd19b9d#file-new-py
-
-# TODO: repository management
-# - list-repos
-# - add-repo repo
-# - delete-repo repo-ref
-# - set-output-repo repo-ref
-# where repo-ref is either an id or its path
 
 
 def initialize_env(config_dir):
@@ -414,7 +415,7 @@ def make_argument_parser():
         [
             named('add')(add_repo),
             named('list')(list_repos),
-            # delete_repo,
+            named('forget')(forget_repo),
             # add_token_to_repo
         ],
         namespace='repo',
