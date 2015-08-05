@@ -318,6 +318,14 @@ class Test_repositories(TestCase):
     def robot(self):
         return self.useFixture(Robot())
 
+    def dir1(self, robot):
+        os.makedirs(robot.cwd / 'dir1')
+        return 'dir1'
+
+    def dir2(self, robot):
+        os.makedirs(robot.cwd / 'dir2')
+        return 'dir2'
+
     # tests
     def test_list_when_there_are_no_repos(self, robot):
         robot.ws('repo', 'list')
@@ -329,11 +337,7 @@ class Test_repositories(TestCase):
         self.assertThat(robot.stdout, Contains('ERROR'))
         self.assertThat(robot.stdout, Not(Contains('notadded')))
 
-    def test_add_multiple(self, robot):
-        # prepare repo dirs
-        os.makedirs(robot.cwd / 'dir1')
-        os.makedirs(robot.cwd / 'dir2')
-
+    def test_add_multiple(self, robot, dir1, dir2):
         robot.ws('repo', 'add', 'name1', 'dir1')
         robot.ws('repo', 'add', 'name2', 'dir2')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
@@ -344,23 +348,16 @@ class Test_repositories(TestCase):
         self.assertThat(robot.stdout, Contains('dir1'))
         self.assertThat(robot.stdout, Contains('dir2'))
 
-    def test_add_with_same_name_fails(self, robot):
-        # prepare repo dirs
-        os.makedirs(robot.cwd / 'dir1')
-        os.makedirs(robot.cwd / 'dir2')
-
+    def test_add_with_same_name_fails(self, robot, dir1, dir2):
         robot.ws('repo', 'add', 'name', 'dir1')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
         robot.ws('repo', 'add', 'name', 'dir2')
         self.assertThat(robot.stdout, Contains('ERROR'))
 
-    def test_add_same_directory_twice_fails(self, robot):
-        # prepare repo dirs
-        os.makedirs(robot.cwd / 'dir')
-
-        robot.ws('repo', 'add', 'name1', 'dir')
+    def test_add_same_directory_twice_fails(self, robot, dir1):
+        robot.ws('repo', 'add', 'name1', dir1)
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
-        robot.ws('repo', 'add', 'name2', 'dir')
+        robot.ws('repo', 'add', 'name2', dir1)
         self.assertThat(robot.stdout, Contains('ERROR'))
