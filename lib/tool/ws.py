@@ -312,8 +312,12 @@ def add_repo(name, directory):
     '''
     Define a repository
     '''
+    if not os.path.isdir(directory):
+        print('ERROR: "{}" is not an existing directory!'.format(directory))
+        return
+    location = os.path.abspath(directory)
     try:
-        repos.add(name, directory)
+        repos.add(name, location)
         print('Repo "{}" is introduced'.format(name))
     except ValueError as e:
         print('ERROR:', *e.args)

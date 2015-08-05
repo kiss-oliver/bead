@@ -324,7 +324,15 @@ class Test_repositories(TestCase):
         self.assertThat(
             robot.stdout, Contains('There are no defined repositories'))
 
+    def test_add_non_existing_directory_fails(self, robot):
+        robot.ws('repo', 'add', 'notadded', 'non-existing')
+        self.assertIn('ERROR', robot.stdout)
+
     def test_add_multiple(self, robot):
+        # prepare repo dirs
+        os.makedirs(robot.cwd / 'dir1')
+        os.makedirs(robot.cwd / 'dir2')
+
         robot.ws('repo', 'add', 'name1', 'dir1')
         robot.ws('repo', 'add', 'name2', 'dir2')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
@@ -336,6 +344,10 @@ class Test_repositories(TestCase):
         self.assertThat(robot.stdout, Contains('dir2'))
 
     def test_add_with_same_name_fails(self, robot):
+        # prepare repo dirs
+        os.makedirs(robot.cwd / 'dir1')
+        os.makedirs(robot.cwd / 'dir2')
+
         robot.ws('repo', 'add', 'name', 'dir1')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
@@ -343,6 +355,9 @@ class Test_repositories(TestCase):
         self.assertThat(robot.stdout, Contains('ERROR'))
 
     def test_add_same_directory_twice_fails(self, robot):
+        # prepare repo dirs
+        os.makedirs(robot.cwd / 'dir')
+
         robot.ws('repo', 'add', 'name1', 'dir')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
