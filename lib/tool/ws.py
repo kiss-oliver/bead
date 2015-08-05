@@ -337,6 +337,7 @@ def list_repos():
     except StopIteration:
         print('There are no defined repositories')
     else:
+        # XXX use tabulate?
         print('Repositories:')
         print('-------------')
         print_repo(repo)
