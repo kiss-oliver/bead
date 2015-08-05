@@ -120,8 +120,8 @@ class Test_Translation(TestCase):
             LookupError, omlite.get, Peer, self.peer1.id)
         self.assertRaises(
             LookupError, omlite.get, Translation, self.translation1.id)
-        peer_names = [t.name for t in omlite.filter(Peer, '1 == 1')]
-        pkg_names = [t.name for t in omlite.filter(Translation, '1 == 1')]
+        peer_names = [t.name for t in omlite.get_all(Peer)]
+        pkg_names = [t.name for t in omlite.get_all(Translation)]
         self.assertEqual(set(['', 'peer 2']), set(peer_names))
         self.assertEqual(set(['translation 2']), set(pkg_names))
 

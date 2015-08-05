@@ -97,8 +97,7 @@ def get_all():
     '''
     Iterator over Repositories
     '''
-    ALL = '1 == 1'
-    return omlite.filter(Repository, ALL)  # FIXME: implement omlite.all
+    return omlite.get_all(Repository)
 
 
 def add(name, directory):

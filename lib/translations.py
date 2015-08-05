@@ -201,8 +201,7 @@ class Importer(object):
         omlite.create(imported_peer)
 
         ExportedTranslation = _exported_translation_class(import_db)
-        exported_translations = omlite.filter(ExportedTranslation, '1 == 1')
-        for exported_translation in exported_translations:
+        for exported_translation in omlite.get_all(ExportedTranslation):
             translation = exported_translation.to_translation()
             translation.peer_id = imported_peer.id
             omlite.create(translation)
