@@ -326,7 +326,8 @@ class Test_repositories(TestCase):
 
     def test_add_non_existing_directory_fails(self, robot):
         robot.ws('repo', 'add', 'notadded', 'non-existing')
-        self.assertIn('ERROR', robot.stdout)
+        self.assertThat(robot.stdout, Contains('ERROR'))
+        self.assertThat(robot.stdout, Not(Contains('notadded')))
 
     def test_add_multiple(self, robot):
         # prepare repo dirs
