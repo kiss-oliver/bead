@@ -133,7 +133,7 @@ def develop(workspace, package_file_name, mount=False):
 @opt_workspace
 def pack(workspace=CurrentDirWorkspace()):
     '''
-    Create a new archive from the workspace
+    Create a new archive from the workspace.
     '''
     # TODO: #9 personal config: directory to store newly created packages in
     repositories = list(repos.get_all())
@@ -235,7 +235,7 @@ def print_mounts(directory):
 # @command
 def status():
     '''
-    Show workspace status - name of package, mount names and their status
+    Show workspace status - name of package, mount names and their status.
     '''
     # TODO: print Package UUID
     print_mounts('.')
@@ -245,7 +245,9 @@ def status():
 @arg_input_nick
 @opt_workspace
 def delete_input(input_nick, workspace=CurrentDirWorkspace()):
-    '''Forget all about input'''
+    '''
+    Forget all about input.
+    '''
     workspace.delete_input(input_nick)
     print('Input {} is deleted.'.format(input_nick))
 
@@ -302,7 +304,7 @@ def update_all_inputs(workspace):
 @arg_workspace
 def nuke(workspace):
     '''
-    Delete the workspace, inluding data, code and documentation
+    Delete the workspace, inluding data, code and documentation.
     '''
     assert_valid_workspace(workspace)
     tech.fs.rmtree(workspace.directory)
@@ -310,7 +312,7 @@ def nuke(workspace):
 
 def add_repo(name, directory):
     '''
-    Define a repository
+    Define a repository.
     '''
     if not os.path.isdir(directory):
         print('ERROR: "{}" is not an existing directory!'.format(directory))
@@ -318,7 +320,7 @@ def add_repo(name, directory):
     location = os.path.abspath(directory)
     try:
         repos.add(name, location)
-        print('Repo "{}" is introduced'.format(name))
+        print('Will remember repo {}'.format(name))
     except ValueError as e:
         print('ERROR:', *e.args)
         print('Check the parameters: both name and directory must be unique!')
@@ -326,7 +328,7 @@ def add_repo(name, directory):
 
 def list_repos():
     '''
-    List repositories
+    List repositories.
     '''
     repositories = repos.get_all()
 
@@ -346,6 +348,9 @@ def list_repos():
 
 
 def forget_repo(name):
+    '''
+    Remove the named repository from the repositories known by the tool.
+    '''
     if repos.is_known(name):
         repos.forget(name)
         print('Repository "{}" is forgotten'.format(name))
