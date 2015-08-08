@@ -178,6 +178,7 @@ class CurrentDirWorkspace(AbstractWorkspace):
 
 
 class _ZipCreator(object):
+    # FIXME: add zip comment with pointers to this software
 
     def __init__(self):
         self.hashes = {}
