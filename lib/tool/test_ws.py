@@ -376,3 +376,34 @@ class Test_repo_commands(TestCase):
     def test_forget_nonexisting_repo(self, robot):
         robot.ws('repo', 'forget', 'non-existing')
         self.assertThat(robot.stdout, Contains('WARNING'))
+
+
+class Test_package_references(TestCase):
+
+    # fixtures
+    def robot(self):
+        '''
+        I am a robot user with a repo
+        '''
+        robot = self.useFixture(Robot())
+        repo_dir = robot.cwd / 'repo'
+        os.makedirs(repo_dir)
+        robot.ws('repo', 'add', 'repo', repo_dir)
+        return robot
+
+    def pkg_a(self, robot):
+        package_name = 'pkg_a'
+        robot.ws('new', package_name)
+        robot.cd(package_name)
+        robot.write_file('something', package_name)
+        robot.ws('pack')
+        robot.cd('..')
+        robot.ws('nuke', package_name)
+        return package_name
+
+    # tests
+    def test_develop_by_name(self, robot, pkg_a):
+        robot.ws('develop', pkg_a)
+
+        self.assertTrue(Workspace(robot.cwd / pkg_a).is_valid)
+        self.assertThat(robot.cwd / pkg_a / 'something', FileContains(pkg_a))

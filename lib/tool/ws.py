@@ -105,9 +105,21 @@ def new(workspace):
     print('Created {}'.format(workspace.package_name))
 
 
+def find_packages(uuid, matching=lambda package: True):
+    for repo in repos.get_all():
+        for package in repo.find_packages(uuid):
+            if matching(package):
+                yield package
+
+
 # @command
-@arg_new_workspace
-def develop(package_file_name, workspace, mount=False):
+@arg(
+    'workspace', nargs='?', type=Workspace, default=None,
+    metavar=WORKSPACE_METAVAR, help='workspace directory')
+@arg(
+    'package_ref',
+    metavar='PACKAGE', help='package name or file name')
+def develop(package_ref, workspace, mount=False):
     '''
     Unpack a package as a source tree.
 
@@ -115,9 +127,25 @@ def develop(package_file_name, workspace, mount=False):
     extracted.
     '''
     # TODO: #10 names for packages
+    if os.path.isfile(package_ref):
+        package = Archive(package_ref)
+        if workspace is None:
+            workspace = Workspace(
+                os.path.basename(os.path.splitext(package_ref)[0]))
+    else:
+        from ..pkg.spec import parse
+        package_spec = parse(package_ref)
+        peer = Peer.by_name(package_spec.peer)
+        package_translation = peer.get_translation(package_spec.name)
+        uuid = package_translation.package_uuid
+        # TODO: give find_packages a matcher for the version part
+        packages = list(find_packages(uuid))
+        assert len(packages) <= 1, 'TODO: select latest package version'
+        package = packages[0]
+        if workspace is None:
+            workspace = Workspace(package_spec.name)
     dir = workspace.directory
 
-    package = Archive(package_file_name)
     package.unpack_to(workspace)
 
     assert workspace.is_valid
