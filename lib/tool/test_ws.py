@@ -237,7 +237,7 @@ class Test_command_line(TestCase):
         package, = ls(repo_dir)
 
         cd('..')
-        ws('develop', 'something-develop', package)
+        ws('develop', package, 'something-develop')
         self.assertIn(robot.cwd / 'something-develop', ls())
 
         cd('something-develop')
@@ -286,7 +286,7 @@ class Test_shared_repo(TestCase):
         bob.ws('input', 'add', 'alicepkg1', package)
         bob.ws('input', 'add', 'alicepkg2', package)
 
-        alice.ws('develop', 'alicepkg', package)
+        alice.ws('develop', package, 'alicepkg')
         alice.cd('alicepkg')
         alice.ls()
         alice.write_file('output/datafile', '''Alice's new data''')

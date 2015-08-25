@@ -107,7 +107,7 @@ def new(workspace):
 
 # @command
 @arg_new_workspace
-def develop(workspace, package_file_name, mount=False):
+def develop(package_file_name, workspace, mount=False):
     '''
     Unpack a package as a source tree.
 
