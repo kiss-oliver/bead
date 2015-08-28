@@ -104,9 +104,14 @@ class Robot(fixtures.Fixture):
         with fixtures.EnvironmentVariable('HOME', self.home):
             with chdir(self.cwd):
                 with CaptureStdout() as stdout, CaptureStderr() as stderr:
-                    self.retval = m.cli(self.config_dir, args)
-                    self.stdout = stdout.text
-                    self.stderr = stderr.text
+                    try:
+                        self.retval = m.cli(self.config_dir, args)
+                    except BaseException as e:
+                        self.retval = e
+                        raise
+                    finally:
+                        self.stdout = stdout.text
+                        self.stderr = stderr.text
 
     def ls(self, directory=None):
         directory = self._path(directory or self.cwd)
@@ -201,7 +206,7 @@ class Test_new(TestCase):  # noqa
             Peer.self().get_translation('new').package_uuid)
 
 
-class Test_command_line(TestCase):
+class Test_basic_command_line(TestCase):
 
     # fixtures
     def robot(self):
@@ -407,3 +412,13 @@ class Test_package_references(TestCase):
 
         self.assertTrue(Workspace(robot.cwd / pkg_a).is_valid)
         self.assertThat(robot.cwd / pkg_a / 'something', FileContains(pkg_a))
+
+    def test_develop_missing_package(self, robot, pkg_a):
+        robot.ws('repo', 'forget', 'repo')
+        try:
+            robot.ws('develop', pkg_a)
+        except SystemExit:
+            self.assertThat(robot.stderr, Contains('Package'))
+            self.assertThat(robot.stderr, Contains('not found'))
+        else:
+            self.fail('develop should have exited on missing package')

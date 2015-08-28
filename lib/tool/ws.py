@@ -136,8 +136,11 @@ def develop(package_ref, workspace, mount=False):
         peer = Peer.by_name(package_spec.peer)
         package_translation = peer.get_translation(package_spec.name)
         uuid = package_translation.package_uuid
-        # TODO: catch error when package not found
-        package = get_channel().get_package(uuid, package_spec.version)
+        try:
+            package = get_channel().get_package(uuid, package_spec.version)
+        except LookupError:
+            die('Package not found!')
+
         if workspace is None:
             workspace = Workspace(package_spec.name)
     dir = workspace.directory
