@@ -20,6 +20,7 @@ from .. import db
 from .. import PACKAGE, VERSION
 from ..translations import Peer, add_translation
 from .. import repos
+from .. import channels
 
 
 Path = tech.fs.Path
@@ -105,11 +106,8 @@ def new(workspace):
     print('Created {}'.format(workspace.package_name))
 
 
-def find_packages(uuid, matching=lambda package: True):
-    for repo in repos.get_all():
-        for package in repo.find_packages(uuid):
-            if matching(package):
-                yield package
+def get_channel():
+    return channels.AllAvailable(repos.get_all())
 
 
 # @command
@@ -138,10 +136,8 @@ def develop(package_ref, workspace, mount=False):
         peer = Peer.by_name(package_spec.peer)
         package_translation = peer.get_translation(package_spec.name)
         uuid = package_translation.package_uuid
-        # TODO: give find_packages a matcher for the version part
-        packages = list(find_packages(uuid))
-        assert len(packages) <= 1, 'TODO: select latest package version'
-        package = packages[0]
+        # TODO: catch error when package not found
+        package = get_channel().get_package(uuid, package_spec.version)
         if workspace is None:
             workspace = Workspace(package_spec.name)
     dir = workspace.directory
@@ -176,18 +172,15 @@ def mount_input_nick(workspace, input_nick):
         spec = workspace.inputspecs[input_nick]
         uuid = spec[metakey.INPUT_PACKAGE]
         version = spec[metakey.INPUT_VERSION]
-        for repo in repos.get_all():
-            packages = list(repo.find_packages(uuid, version))
-            if packages:
-                assert len(packages) == 1
-                package = packages[0]
-                workspace.mount(input_nick, package)
-                print('Mounted {}.'.format(input_nick))
-                return
-
-        print(
-            'Could not find archive for {} - not mounted!'
-            .format(input_nick))
+        try:
+            package = repos.get_package(uuid, version)
+        except LookupError:
+            print(
+                'Could not find archive for {} - not mounted!'
+                .format(input_nick))
+        else:
+            workspace.mount(input_nick, package)
+            print('Mounted {}.'.format(input_nick))
 
 
 # @command('input load')

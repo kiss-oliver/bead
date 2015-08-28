@@ -7,6 +7,7 @@ import re
 from collections import namedtuple
 
 
+# TODO: parse and return 'offset' - "offset to last matching version"
 PackageSpec = namedtuple('PackageSpec', 'peer name version')
 
 
