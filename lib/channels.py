@@ -21,7 +21,7 @@ from __future__ import print_function
 def _matching(package, version_pattern):
     if version_pattern is None:
         return True
-    if version_pattern in package.version:
+    if package.version.startswith(version_pattern):
         return True
     if package.timestamp_str.startswith(version_pattern):
         return True
