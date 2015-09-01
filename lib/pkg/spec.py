@@ -26,7 +26,7 @@ _parse = re.compile(
     # version is optional
     (
         @
-        (?P<version>[^-:@]+)
+        (?P<version>[^-:@]+)?
         (-(?P<offset>[0-9]+))?
     )?
     $

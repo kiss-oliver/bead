@@ -35,8 +35,15 @@ class Test_parse(unittest.TestCase):
             'peer:package-name',
             'peer', 'package-name', None, 0)
 
-    def test_empty_string_is_not_parsed_as_version_name(self):
-        self.assertRaises(ValueError, m.parse, 'peer:package-name@')
+    def test_empty_string_is_parsed_as_version(self):
+        self.assert_parsed(
+            'peer:package-name@',
+            'peer', 'package-name', None, 0)
+
+    def test_empty_string_with_offset_is_parsed_as_version_with_offset(self):
+        self.assert_parsed(
+            'peer:package-name@-1',
+            'peer', 'package-name', None, 1)
 
     def test_empty_string_is_not_parsed_as_package_name(self):
         self.assertRaises(ValueError, m.parse, 'peer:@version1')
