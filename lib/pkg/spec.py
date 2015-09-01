@@ -8,7 +8,7 @@ from collections import namedtuple
 
 
 # TODO: parse and return 'offset' - "offset to last matching version"
-PackageSpec = namedtuple('PackageSpec', 'peer name version')
+PackageSpec = namedtuple('PackageSpec', 'peer name version offset')
 
 
 _parse = re.compile(
@@ -26,7 +26,8 @@ _parse = re.compile(
     # version is optional
     (
         @
-        (?P<version>[^:@]+)
+        (?P<version>[^-:@]+)
+        (-(?P<offset>[0-9]+))?
     )?
     $
     ''', re.VERBOSE).match
@@ -44,5 +45,6 @@ def parse(string):
     match = _parse(string)
     if match:
         m = match.groupdict()
-        return PackageSpec(m['peer'] or '', m['name'], m['version'])
+        offset = int(m['offset'] or '0')
+        return PackageSpec(m['peer'] or '', m['name'], m['version'], offset)
     raise ValueError('Not a valid package specification', string)

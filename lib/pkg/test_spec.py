@@ -9,38 +9,37 @@ import unittest
 
 class Test_parse(unittest.TestCase):
 
-    def assert_parsed(self, spec, peer, name, version):
+    def assert_parsed(self, spec, peer, name, version, offset):
         parsed = m.parse(spec)
         self.assertEqual(
-            (peer, name, version),
-            (parsed.peer, parsed.name, parsed.version))
+            (peer, name, version, offset),
+            (parsed.peer, parsed.name, parsed.version, parsed.offset))
 
     def test_all_parts(self):
         self.assert_parsed(
-            'peer:package-name@version',
-            'peer', 'package-name', 'version')
+            'peer:package-name@version-1',
+            'peer', 'package-name', 'version', 1)
 
     def test_peer_is_optional(self):
         self.assert_parsed(
             'package-name@version',
-            '', 'package-name', 'version')
+            '', 'package-name', 'version', 0)
 
     def test_empty_peer_is_ok(self):
         self.assert_parsed(
             ':package-name@version',
-            '', 'package-name', 'version')
+            '', 'package-name', 'version', 0)
 
     def test_version_is_optional(self):
         self.assert_parsed(
             'peer:package-name',
-            'peer', 'package-name', None)
+            'peer', 'package-name', None, 0)
 
     def test_empty_string_is_not_parsed_as_version_name(self):
         self.assertRaises(ValueError, m.parse, 'peer:package-name@')
 
     def test_empty_string_is_not_parsed_as_package_name(self):
         self.assertRaises(ValueError, m.parse, 'peer:@version1')
-
 
 if __name__ == '__main__':
     unittest.main()
