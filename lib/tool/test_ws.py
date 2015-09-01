@@ -468,23 +468,23 @@ class Test_package_references(TestCase):
             robot.cwd / 'pkg_with_history' / 'sentinel-' + timestamp,
             FileExists())
 
-    def test_develop_without_version(self, robot, repo, pkg_with_history):
+    def test_develop_without_version(self, robot, pkg_with_history):
         robot.ws('develop', 'pkg_with_history')
         self.assert_version(robot, TS2)
 
-    def test_develop_without_offset(self, robot, repo, pkg_with_history):
+    def test_develop_without_offset(self, robot, pkg_with_history):
         robot.ws('develop', 'pkg_with_history@')
         self.assert_version(robot, TS2)
 
-    def test_develop_with_offset(self, robot, repo, pkg_with_history):
+    def test_develop_with_offset(self, robot, pkg_with_history):
         robot.ws('develop', 'pkg_with_history@-1')
         self.assert_version(robot, TS1)
 
-    def test_develop_w_version_wo_offset(self, robot, repo, pkg_with_history):
+    def test_develop_w_version_wo_offset(self, robot, pkg_with_history):
         robot.ws('develop', 'pkg_with_history@' + TS1)
         self.assert_version(robot, TS1)
 
     def test_develop_available_matches_to_version_are_less_than_offset(
-            self, robot, repo, pkg_with_history):
+            self, robot, pkg_with_history):
         robot.ws('develop', 'pkg_with_history@{}-1'.format(TS2))
         self.assert_version(robot, TS2)
