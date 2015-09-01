@@ -64,5 +64,5 @@ class AllAvailable(object):
         if not history:
             raise LookupError('No package found')
 
-        position = min(0, len(history) - 1 - offset)
+        position = max(0, len(history) - 1 - offset)
         return history[position]

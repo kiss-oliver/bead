@@ -137,7 +137,9 @@ def develop(package_ref, workspace, mount=False):
         package_translation = peer.get_translation(package_spec.name)
         uuid = package_translation.package_uuid
         try:
-            package = get_channel().get_package(uuid, package_spec.version)
+            package = (
+                get_channel()
+                .get_package(uuid, package_spec.version, package_spec.offset))
         except LookupError:
             die('Package not found!')
 
