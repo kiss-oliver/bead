@@ -177,10 +177,6 @@ class Test_new(TestCase):  # noqa
     home = None
     current_dir = None
 
-    @property
-    def personal_id(self):
-        return Peer.self().id
-
     def setUp(self):  # noqa
         super(Test_new, self).setUp()
         # protect user's home directory
