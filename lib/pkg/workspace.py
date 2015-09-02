@@ -162,6 +162,10 @@ class AbstractWorkspace(object):
         finally:
             fs.make_readonly(input_dir)
 
+    def __repr__(self):
+        # argh prints default value as repr of the value
+        return self.directory
+
 
 class Workspace(AbstractWorkspace):
 
