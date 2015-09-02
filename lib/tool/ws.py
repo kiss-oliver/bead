@@ -250,6 +250,7 @@ def arg_input_nick(func):
     return decorate(func)
 
 
+# FIXME: unused???
 PACKAGE_METAVAR = 'PACKAGE'
 PACKAGE_MOUNT_HELP = 'package to mount data from'
 
@@ -335,10 +336,11 @@ NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
     'input_nick', type=type(''), nargs='?', default=ALL_INPUTS,
     metavar=INPUT_NICK_METAVAR, help=INPUT_NICK_HELP)
 @arg(
-    'package', type=type(''), nargs='?', default=NEWEST_VERSION,
-    metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
+    'package_ref', type=PackageReference, nargs='?',
+    default=NEWEST_VERSION,
+    metavar=PACKAGE_REF_METAVAR, help=PACKAGE_REF_HELP)
 @opt_workspace
-def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
+def update_command(input_nick, package_ref, workspace=CurrentDirWorkspace()):
     '''
     When no input NAME is given:
         update all inputs to the newest version of all packages.
@@ -346,18 +348,19 @@ def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
     When input NAME is given:
         replace that input with a newer version or different package.
     '''
-    # TODO: #10 names for packages - use package_ref
-    # TODO: use sentinels for default values
     if input_nick is ALL_INPUTS:
-        update_all_inputs(workspace)
+        for input_nick in workspace.inputs:
+            update_input(workspace, input_nick)
+        print('All inputs are up to date.')
     else:
-        update_input(workspace, input_nick, package)
+        update_input(workspace, input_nick, package_ref)
 
 
-def update_input(workspace, input_nick, package_file_name=NEWEST_VERSION):
+def update_input(workspace, input_nick, package_ref=NEWEST_VERSION):
     spec = workspace.inputspecs[input_nick]
-    if package_file_name is NEWEST_VERSION:
+    if package_ref is NEWEST_VERSION:
         uuid = spec[metakey.INPUT_PACKAGE]
+        # FIXME: use channel
         # find newest package
         newest = None
         for repo in repos.get_all():
@@ -367,7 +370,7 @@ def update_input(workspace, input_nick, package_file_name=NEWEST_VERSION):
                     newest = package
         # XXX: check if found package is newer than currently mounted?
     else:
-        newest = Archive(package_file_name)
+        newest = package_ref.package
 
     if newest is None:
         print('No package found!!!')
@@ -375,12 +378,6 @@ def update_input(workspace, input_nick, package_file_name=NEWEST_VERSION):
         workspace.unmount(input_nick)
         workspace.mount(input_nick, newest)
         print('Mounted {}.'.format(input_nick))
-
-
-def update_all_inputs(workspace):
-    for input_nick in workspace.inputs:
-        update_input(workspace, input_nick)
-    print('All inputs are up to date.')
 
 
 # @command
