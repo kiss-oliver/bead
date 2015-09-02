@@ -360,23 +360,16 @@ def update_input(workspace, input_nick, package_ref=NEWEST_VERSION):
     spec = workspace.inputspecs[input_nick]
     if package_ref is NEWEST_VERSION:
         uuid = spec[metakey.INPUT_PACKAGE]
-        # FIXME: use channel
-        # find newest package
-        newest = None
-        for repo in repos.get_all():
-            package = repo.find_newest(uuid)
-            if package is not None:
-                if newest is None or newest.timestamp < package.timestamp:
-                    newest = package
+        replacement = get_channel().get_package(uuid)
         # XXX: check if found package is newer than currently mounted?
     else:
-        newest = package_ref.package
+        replacement = package_ref.package
 
-    if newest is None:
+    if replacement is None:
         print('No package found!!!')
     else:
         workspace.unmount(input_nick)
-        workspace.mount(input_nick, newest)
+        workspace.mount(input_nick, replacement)
         print('Mounted {}.'.format(input_nick))
 
 
