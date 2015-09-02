@@ -140,6 +140,17 @@ class PackageReference(object):
         return Workspace(workspace_dir)
 
 
+PACKAGE_REF_HELP = (
+    'either an archive file name or' +
+    ' a reference the format peer:package_name@version-offset' +
+    ' where every part except package_name is optional')
+PACKAGE_REF_METAVAR = 'PACKAGE'
+
+arg_package_ref = arg(
+    'package_ref', type=PackageReference,
+    metavar=PACKAGE_REF_METAVAR, help=PACKAGE_REF_HELP)
+
+
 class DefaultArgSentinel(object):
     '''
     I am a sentinel for @argh.arg default values.
@@ -162,9 +173,7 @@ DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive from package name')
 @arg(
     'workspace', nargs='?', type=Workspace, default=DERIVE_FROM_PACKAGE_NAME,
     metavar=WORKSPACE_METAVAR, help='workspace directory')
-@arg(
-    'package_ref', type=PackageReference,
-    metavar='PACKAGE', help='package name or file name')
+@arg_package_ref
 def develop(package_ref, workspace, mount=False):
     '''
     Unpack a package as a source tree.
@@ -172,7 +181,6 @@ def develop(package_ref, workspace, mount=False):
     Package directory layout is created, but only the source files are
     extracted.
     '''
-    # TODO: #10 names for packages
     try:
         package = package_ref.package
     except LookupError:
@@ -230,12 +238,6 @@ def load_inputs(workspace):
         mount_input_nick(workspace, input_nick)
 
 
-def mount_archive(workspace, input_nick, package_file_name):
-    assert not workspace.has_input(input_nick)
-    workspace.mount(input_nick, Archive(package_file_name))
-    print('{} mounted on {}.'.format(package_file_name, input_nick))
-
-
 INPUT_NICK_HELP = (
     'name of input,'
     + ' its workspace relative location is "input/%(metavar)s"')
@@ -252,26 +254,39 @@ PACKAGE_METAVAR = 'PACKAGE'
 PACKAGE_MOUNT_HELP = 'package to mount data from'
 
 
-@arg('package', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
+@arg_package_ref
 @arg_input_nick
 @opt_workspace
-def add_input(input_nick, package, workspace=CurrentDirWorkspace()):
-    return mount(package, input_nick, workspace)
-
-
-@arg_input_nick
-@arg('package', nargs='?', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
-@opt_workspace
-def mount(package, input_nick, workspace=CurrentDirWorkspace()):
+def add_input(input_nick, package_ref, workspace=CurrentDirWorkspace()):
     '''
     Add data from another package to the input directory.
     '''
-    # TODO: #10 names for packages
-    if package is None:
+    return mount(package_ref, input_nick, workspace)
+
+
+ALREADY_CONFIGURED_PACKAGE = DefaultArgSentinel(
+    'already configured package for {}'
+    .format(INPUT_NICK_METAVAR))
+
+
+@arg_input_nick
+@arg(
+    'package_ref', type=PackageReference, nargs='?',
+    default=ALREADY_CONFIGURED_PACKAGE,
+    metavar=PACKAGE_REF_METAVAR, help=PACKAGE_REF_HELP)
+@opt_workspace
+def mount(package_ref, input_nick, workspace=CurrentDirWorkspace()):
+    '''
+    Add data from another package to the input directory.
+    '''
+    if package_ref is ALREADY_CONFIGURED_PACKAGE:
         mount_input_nick(workspace, input_nick)
     else:
-        package_file_name = package
-        mount_archive(workspace, input_nick, package_file_name)
+        assert not workspace.has_input(input_nick)
+        workspace.mount(input_nick, package_ref.package)
+        print(
+            '{} mounted on {}.'
+            .format(package_ref.package_reference, input_nick))
 
 
 def print_mounts(directory):
@@ -324,6 +339,8 @@ def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
     When input NAME is given:
         replace that input with a newer version or different package.
     '''
+    # TODO: #10 names for packages - use package_ref
+    # TODO: use sentinels for default values
     if input_nick is None:
         update_all_inputs(workspace)
     else:
@@ -459,7 +476,9 @@ def make_argument_parser():
             mount,
             status,
             named('update')(update_command),
-            nuke
+            nuke,
+            # TODO: #10 names for packages
+            # rename  # package
         ])
     # FIXME: ArghParser.add_subcommands
     # https://github.com/neithere/argh/issues/88
@@ -480,6 +499,7 @@ def make_argument_parser():
             named('add')(add_repo),
             named('list')(list_repos),
             named('forget')(forget_repo),
+            # TODO: rename repo
             # add_token_to_repo
         ],
         namespace='repo',
