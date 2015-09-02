@@ -463,28 +463,26 @@ class Test_package_references(TestCase):
         else:
             self.fail('develop should have exited on missing package')
 
-    def assert_version(self, robot, timestamp):
+    def assert_develop_version(self, robot, pkg_spec, timestamp):
+        assert pkg_spec.startswith('pkg_with_history')
+        robot.ws('develop', pkg_spec)
         self.assertThat(
             robot.cwd / 'pkg_with_history' / 'sentinel-' + timestamp,
             FileExists())
 
     def test_develop_without_version(self, robot, pkg_with_history):
-        robot.ws('develop', 'pkg_with_history')
-        self.assert_version(robot, TS2)
+        self.assert_develop_version(robot, 'pkg_with_history', TS2)
 
     def test_develop_without_offset(self, robot, pkg_with_history):
-        robot.ws('develop', 'pkg_with_history@')
-        self.assert_version(robot, TS2)
+        self.assert_develop_version(robot, 'pkg_with_history@', TS2)
 
     def test_develop_with_offset(self, robot, pkg_with_history):
-        robot.ws('develop', 'pkg_with_history@-1')
-        self.assert_version(robot, TS1)
+        self.assert_develop_version(robot, 'pkg_with_history@-1', TS1)
 
     def test_develop_w_version_wo_offset(self, robot, pkg_with_history):
-        robot.ws('develop', 'pkg_with_history@' + TS1)
-        self.assert_version(robot, TS1)
+        self.assert_develop_version(robot, 'pkg_with_history@' + TS1, TS1)
 
     def test_develop_available_matches_to_version_are_less_than_offset(
             self, robot, pkg_with_history):
-        robot.ws('develop', 'pkg_with_history@{}-1'.format(TS2))
-        self.assert_version(robot, TS2)
+        self.assert_develop_version(
+            robot, 'pkg_with_history@{}-1'.format(TS2), TS2)
