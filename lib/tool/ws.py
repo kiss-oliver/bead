@@ -326,10 +326,17 @@ def delete_input(input_nick, workspace=CurrentDirWorkspace()):
     print('Input {} is deleted.'.format(input_nick))
 
 
+ALL_INPUTS = DefaultArgSentinel('all inputs')
+NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
+
+
 # @command('input update')
 @arg(
-    'input_nick', metavar=INPUT_NICK_METAVAR, nargs='?', help=INPUT_NICK_HELP)
-@arg('package', metavar=PACKAGE_METAVAR, nargs='?', help=PACKAGE_MOUNT_HELP)
+    'input_nick', type=type(''), nargs='?', default=ALL_INPUTS,
+    metavar=INPUT_NICK_METAVAR, help=INPUT_NICK_HELP)
+@arg(
+    'package', type=type(''), nargs='?', default=NEWEST_VERSION,
+    metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
 @opt_workspace
 def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
     '''
@@ -341,17 +348,15 @@ def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
     '''
     # TODO: #10 names for packages - use package_ref
     # TODO: use sentinels for default values
-    if input_nick is None:
+    if input_nick is ALL_INPUTS:
         update_all_inputs(workspace)
     else:
         update_input(workspace, input_nick, package)
 
 
-def update_input(workspace, input_nick, package_file_name=None):
+def update_input(workspace, input_nick, package_file_name=NEWEST_VERSION):
     spec = workspace.inputspecs[input_nick]
-    if package_file_name:
-        newest = Archive(package_file_name)
-    else:
+    if package_file_name is NEWEST_VERSION:
         uuid = spec[metakey.INPUT_PACKAGE]
         # find newest package
         newest = None
@@ -361,6 +366,8 @@ def update_input(workspace, input_nick, package_file_name=None):
                 if newest is None or newest.timestamp < package.timestamp:
                     newest = package
         # XXX: check if found package is newer than currently mounted?
+    else:
+        newest = Archive(package_file_name)
 
     if newest is None:
         print('No package found!!!')
