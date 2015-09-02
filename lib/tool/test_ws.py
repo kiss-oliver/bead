@@ -305,6 +305,7 @@ class Test_shared_repo(TestCase):
         robot.ws('repo', 'add', 'alicerepo', repo)
         return robot
 
+    # tests
     def test_update(self, alice, bob, package):
         bob.ws('new', 'bobpkg')
         bob.cd('bobpkg')
