@@ -14,6 +14,7 @@ from .. import tech
 
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
+from ..pkg.spec import parse as parse_package_spec
 from ..pkg import metakey
 from .. import db
 
@@ -110,12 +111,59 @@ def get_channel():
     return channels.AllAvailable(repos.get_all())
 
 
+class PackageReference(object):
+    def __init__(self, package_reference):
+        self.package_reference = package_reference
+
+    @property
+    def package(self):
+        if os.path.isfile(self.package_reference):
+            return Archive(self.package_reference)
+
+        package_spec = parse_package_spec(self.package_reference)
+        peer = Peer.by_name(package_spec.peer)
+        package_translation = peer.get_translation(package_spec.name)
+        uuid = package_translation.package_uuid
+        package = (
+            get_channel()
+            .get_package(uuid, package_spec.version, package_spec.offset))
+        return package
+
+    @property
+    def default_workspace(self):
+        if os.path.isfile(self.package_reference):
+            archive_filename = os.path.basename(self.package_reference)[0]
+            workspace_dir = os.path.splitext(archive_filename)
+        else:
+            package_spec = parse_package_spec(self.package_reference)
+            workspace_dir = package_spec.name
+        return Workspace(workspace_dir)
+
+
+class DefaultArgSentinel(object):
+    '''
+    I am a sentinel for @argh.arg default values.
+
+    I.e. I can tell you, that you got the default value.
+
+    I also provide sensible description for the default value.
+    '''
+
+    def __init__(self, description):
+        self.description = description
+
+    def __repr__(self):
+        return self.description
+
+DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive from package name')
+
+
 # @command
 @arg(
-    'workspace', nargs='?', type=Workspace, default=None,
+    'workspace', nargs='?', type=Workspace, default=DERIVE_FROM_PACKAGE_NAME,
     metavar=WORKSPACE_METAVAR, help='workspace directory')
 @arg(
-    'package_ref',
+    'package_ref', type=PackageReference,
     metavar='PACKAGE', help='package name or file name')
 def develop(package_ref, workspace, mount=False):
     '''
@@ -125,35 +173,20 @@ def develop(package_ref, workspace, mount=False):
     extracted.
     '''
     # TODO: #10 names for packages
-    if os.path.isfile(package_ref):
-        package = Archive(package_ref)
-        if workspace is None:
-            workspace = Workspace(
-                os.path.basename(os.path.splitext(package_ref)[0]))
-    else:
-        from ..pkg.spec import parse
-        package_spec = parse(package_ref)
-        peer = Peer.by_name(package_spec.peer)
-        package_translation = peer.get_translation(package_spec.name)
-        uuid = package_translation.package_uuid
-        try:
-            package = (
-                get_channel()
-                .get_package(uuid, package_spec.version, package_spec.offset))
-        except LookupError:
-            die('Package not found!')
-
-        if workspace is None:
-            workspace = Workspace(package_spec.name)
-    dir = workspace.directory
+    try:
+        package = package_ref.package
+    except LookupError:
+        die('Package not found!')
+    if workspace is DERIVE_FROM_PACKAGE_NAME:
+        workspace = package_ref.default_workspace
 
     package.unpack_to(workspace)
-
     assert workspace.is_valid
 
     if mount:
         load_inputs(workspace)
 
+    dir = workspace.directory
     print('Extracted source into {}'.format(dir))
     print_mounts(directory=dir)
 
