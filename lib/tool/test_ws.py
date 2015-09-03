@@ -258,15 +258,12 @@ class Test_basic_command_line(TestCase):
         ws('repo', 'add', 'default', repo_dir)
         ws('pack')
 
-        # FIXME: replace package as filename with package name
-        package, = ls(repo_dir)
-
         cd('..')
-        ws('develop', package, 'something-develop')
+        ws('develop', 'something', 'something-develop')
         self.assertIn(robot.cwd / 'something-develop', ls())
 
         cd('something-develop')
-        ws('mount', package, 'older-self')
+        ws('mount', 'something', 'older-self')
         ws('status')
         self.assertNotIn('no defined inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
