@@ -87,9 +87,6 @@ def is_known(name):
 
 
 def get_all():
-    '''
-    Iterator over Repositories
-    '''
     return omlite.get_all(Repository)
 
 
