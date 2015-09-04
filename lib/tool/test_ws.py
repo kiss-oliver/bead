@@ -13,6 +13,7 @@ import fixtures
 import contextlib
 import os
 from ..pkg.workspace import Workspace
+from .. import commands
 from .. import pkg
 from .. import repos
 from .. import db
@@ -197,7 +198,7 @@ class Test_new(TestCase):  # noqa
 
     def when_new_is_called_with_nonexisting_name(self):
         with CaptureStdout():
-            m.new(Workspace('new'))
+            commands.workspace.new(Workspace('new'))
 
     def when_new_is_called_with_already_existing_name(self):
         self.__stderr = fixtures.StringStream('stderr')
@@ -205,7 +206,7 @@ class Test_new(TestCase):  # noqa
         self.assertTrue(Peer.self().knows_about('existing'))
         with fixtures.MonkeyPatch('sys.stderr', self.__stderr.stream):
             try:
-                m.new(Workspace('existing'))
+                commands.workspace.new(Workspace('existing'))
             except SystemExit:
                 self.__error_raised = True
 
@@ -263,7 +264,7 @@ class Test_basic_command_line(TestCase):
         self.assertIn(robot.cwd / 'something-develop', ls())
 
         cd('something-develop')
-        ws('mount', 'something', 'older-self')
+        ws('input', 'add', 'older-self', 'something')
         ws('status')
         self.assertNotIn('no defined inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
@@ -316,7 +317,7 @@ class Test_shared_repo(TestCase):
         alice.ws('pack')
 
         # update only one input
-        bob.ws('update', 'alicepkg1')
+        bob.ws('input', 'update', 'alicepkg1')
 
         self.assertThat(
             bob.cwd / 'input/alicepkg1/datafile',
@@ -328,7 +329,7 @@ class Test_shared_repo(TestCase):
             Not(FileExists()))
 
         # update all inputs
-        bob.ws('update')
+        bob.ws('input', 'update')
 
         self.assertThat(
             bob.cwd / 'input/alicepkg2/datafile',
