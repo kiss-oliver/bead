@@ -1,3 +1,4 @@
+# coding: utf-8
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -122,3 +123,13 @@ class Test_all_subpaths(TestCase):
             | set(root / f for f in self.FILES),
             self.__paths
         )
+
+
+class Test_read_write_file(TestCase):
+
+    def test(self):
+        root = self.new_temp_dir()
+        testfile = root / 'testfile'
+        content = u'Test_read_write_file testfile content / áíőóüú@!#@!#$$@'
+        m.write_file(testfile, content)
+        self.assertEquals(content, m.read_file(testfile))

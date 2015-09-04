@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import codecs
+import io
 import os
 import stat
 import contextlib
@@ -34,14 +34,14 @@ def write_file(path, content):
     if isinstance(content, bytes):
         f = open(path, 'wb')
     else:
-        f = codecs.open(path, 'wb', encoding='utf-8')
+        f = io.open(path, 'wt', encoding='utf-8')
 
     with f:
         f.write(content)
 
 
 def read_file(path):
-    with open(path) as f:
+    with io.open(path, 'rt', encoding='utf-8') as f:
         return f.read()
 
 
