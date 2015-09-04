@@ -43,6 +43,8 @@ def _mount(workspace, input_nick):
         else:
             workspace.mount(input_nick, package)
             print('Loaded {}.'.format(input_nick))
+    else:
+        print('Skipping {} (already loaded)'.format(input_nick))
 
 
 @opt_input_nick
@@ -109,9 +111,6 @@ def _update(workspace, input_nick, package_ref=NEWEST_VERSION):
     else:
         replacement = package_ref.package
 
-    if replacement is None:
-        print('No package found!!!')
-    else:
-        workspace.unmount(input_nick)
-        workspace.mount(input_nick, replacement)
-        print('Mounted {}.'.format(input_nick))
+    workspace.unmount(input_nick)
+    workspace.mount(input_nick, replacement)
+    print('Mounted {}.'.format(input_nick))

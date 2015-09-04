@@ -312,7 +312,6 @@ class Test_shared_repo(TestCase):
 
         alice.ws('develop', package, 'alicepkg')
         alice.cd('alicepkg')
-        alice.ls()
         alice.write_file('output/datafile', '''Alice's new data''')
         alice.ws('pack')
 
@@ -407,7 +406,7 @@ TS1 = '20150901_151015_1'
 TS2 = '20150901_151016_2'
 
 
-class Test_package_references(TestCase):
+class Test_package_with_history(TestCase):
 
     # fixtures
     def _robot(self):
@@ -481,3 +480,28 @@ class Test_package_references(TestCase):
             self, robot, pkg_with_history):
         self.assert_develop_version(
             robot, 'pkg_with_history@{}-1'.format(TS2), TS2)
+
+    def test_load(self, robot, pkg_with_history):
+        # nextpkg with input1 as datapkg1
+        robot.ws('new', 'nextpkg')
+        robot.cd('nextpkg')
+        robot.ws('input', 'add', 'input1', 'pkg_with_history@' + TS1)
+        robot.ws('pack')
+        robot.cd('..')
+        robot.ws('nuke', 'nextpkg')
+
+        robot.ws('develop', 'nextpkg')
+        robot.cd('nextpkg')
+        assert not os.path.exists(robot.cwd / 'input/input1')
+
+        robot.ws('input', 'load')
+        assert os.path.exists(robot.cwd / 'input/input1')
+
+        robot.ws('input', 'add', 'input2', 'pkg_with_history')
+        assert os.path.exists(robot.cwd / 'input/input2')
+
+        robot.ws('input', 'delete', 'input1')
+        assert not os.path.exists(robot.cwd / 'input/input1')
+
+        # no-op load do not crash
+        robot.ws('input', 'load')
