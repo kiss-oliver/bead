@@ -62,14 +62,6 @@ class Repository(object):
                 # XXX - we should log them
                 pass
 
-    def find_newest(self, uuid):
-        # -> Package
-        newest = None
-        for package in self.find_packages(uuid):
-            if newest is None or package.timestamp > newest.timestamp:
-                newest = package
-        return newest
-
     def store(self, workspace, timestamp):
         # -> Package
         zipfilename = (
@@ -77,10 +69,7 @@ class Repository(object):
                 '{package}_{timestamp}.zip'
                 .format(
                     package=workspace.package_name,
-                    timestamp=timestamp,
-                )
-            )
-        )
+                    timestamp=timestamp)))
         workspace.pack(zipfilename, timestamp=timestamp)
         return Archive(zipfilename)
 
