@@ -1,3 +1,13 @@
+# TODO: names/translations management commands
+# - export [--peer name] filename
+# - import peer filename
+# - rename-peer old-name new-name
+# - delete-peer name
+# - rename-package old-name new-name
+# - delete-package package-name
+# - lift peer:name [local-name]
+
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -14,12 +24,14 @@ from .. import tech
 
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
+from ..pkg.spec import parse as parse_package_spec
 from ..pkg import metakey
 from .. import db
 
 from .. import PACKAGE, VERSION
 from ..translations import Peer, add_translation
 from .. import repos
+from .. import channels
 
 
 Path = tech.fs.Path
@@ -38,27 +50,6 @@ def opt_workspace(func):
     decorate = arg(
         '--workspace', metavar=WORKSPACE_METAVAR,
         type=Workspace, default=CurrentDirWorkspace(),
-        help=WORKSPACE_HELP)
-    return decorate(func)
-
-
-def arg_workspace(func):
-    '''
-    Define `workspace` argument, defaulting to current directory
-    '''
-    decorate = arg(
-        'workspace', nargs='?', metavar=WORKSPACE_METAVAR,
-        type=Workspace, default=CurrentDirWorkspace(),
-        help=WORKSPACE_HELP)
-    return decorate(func)
-
-
-def arg_new_workspace(func):
-    '''
-    Define mandatory `workspace` argument (without default)
-    '''
-    decorate = arg(
-        'workspace', type=Workspace, metavar=WORKSPACE_METAVAR,
         help=WORKSPACE_HELP)
     return decorate(func)
 
@@ -90,11 +81,12 @@ def assert_may_be_valid_name(name):
         die('"{}" is already used, rename it if you insist'.format(name))
 
 
-# @command
-@arg_new_workspace
+@arg(
+    'workspace', type=Workspace, metavar=WORKSPACE_METAVAR,
+    help=WORKSPACE_HELP)
 def new(workspace):
     '''
-    Create new package directory layout.
+    Create and initialize new workspace.
     '''
     uuid = tech.identifier.uuid()
 
@@ -105,31 +97,96 @@ def new(workspace):
     print('Created {}'.format(workspace.package_name))
 
 
-# @command
-@arg_new_workspace
-def develop(workspace, package_file_name, mount=False):
+def get_channel():
+    return channels.AllAvailable(repos.get_all())
+
+
+class PackageReference(object):
+    def __init__(self, package_reference):
+        self.package_reference = package_reference
+
+    @property
+    def package(self):
+        if os.path.isfile(self.package_reference):
+            return Archive(self.package_reference)
+
+        package_spec = parse_package_spec(self.package_reference)
+        peer = Peer.by_name(package_spec.peer)
+        package_translation = peer.get_translation(package_spec.name)
+        uuid = package_translation.package_uuid
+        package = (
+            get_channel()
+            .get_package(uuid, package_spec.version, package_spec.offset))
+        return package
+
+    @property
+    def default_workspace(self):
+        if os.path.isfile(self.package_reference):
+            archive_filename = os.path.basename(self.package_reference)[0]
+            workspace_dir = os.path.splitext(archive_filename)
+        else:
+            package_spec = parse_package_spec(self.package_reference)
+            workspace_dir = package_spec.name
+        return Workspace(workspace_dir)
+
+
+PACKAGE_REF_HELP = (
+    'either an archive file name or' +
+    ' a reference of the format peer:package_name@version-offset' +
+    ' where every part except package_name is optional')
+PACKAGE_MOUNT_HELP = 'package to mount data from - ' + PACKAGE_REF_HELP
+PACKAGE_REF_METAVAR = 'PACKAGE'
+
+
+class DefaultArgSentinel(object):
+    '''
+    I am a sentinel for @argh.arg default values.
+
+    I.e. If you see me, it means that you got the default value.
+
+    I also provide sensible description for the default value.
+    '''
+
+    def __init__(self, description):
+        self.description = description
+
+    def __repr__(self):
+        return self.description
+
+DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
+
+
+@arg(
+    'package_ref', type=PackageReference,
+    metavar=PACKAGE_REF_METAVAR, help=PACKAGE_REF_HELP)
+@arg(
+    'workspace', nargs='?', type=Workspace, default=DERIVE_FROM_PACKAGE_NAME,
+    metavar=WORKSPACE_METAVAR, help='workspace directory')
+def develop(package_ref, workspace, mount=False):
     '''
     Unpack a package as a source tree.
 
     Package directory layout is created, but only the source files are
     extracted.
     '''
-    # TODO: #10 names for packages
-    dir = workspace.directory
+    try:
+        package = package_ref.package
+    except LookupError:
+        die('Package not found!')
+    if workspace is DERIVE_FROM_PACKAGE_NAME:
+        workspace = package_ref.default_workspace
 
-    package = Archive(package_file_name)
     package.unpack_to(workspace)
-
     assert workspace.is_valid
 
     if mount:
         load_inputs(workspace)
 
+    dir = workspace.directory
     print('Extracted source into {}'.format(dir))
     print_mounts(directory=dir)
 
 
-# @command
 @opt_workspace
 def pack(workspace=CurrentDirWorkspace()):
     '''
@@ -148,33 +205,24 @@ def mount_input_nick(workspace, input_nick):
         spec = workspace.inputspecs[input_nick]
         uuid = spec[metakey.INPUT_PACKAGE]
         version = spec[metakey.INPUT_VERSION]
-        for repo in repos.get_all():
-            packages = list(repo.find_packages(uuid, version))
-            if packages:
-                assert len(packages) == 1
-                package = packages[0]
-                workspace.mount(input_nick, package)
-                print('Mounted {}.'.format(input_nick))
-                return
-
-        print(
-            'Could not find archive for {} - not mounted!'
-            .format(input_nick))
+        try:
+            package = repos.get_package(uuid, version)
+        except LookupError:
+            print(
+                'Could not find archive for {} - not mounted!'
+                .format(input_nick))
+        else:
+            workspace.mount(input_nick, package)
+            print('Mounted {}.'.format(input_nick))
 
 
-# @command('input load')
-def load_inputs(workspace):
+@opt_workspace
+def load_inputs(workspace=CurrentDirWorkspace()):
     '''
     Put all defined input data in place.
     '''
     for input_nick in workspace.inputs:
         mount_input_nick(workspace, input_nick)
-
-
-def mount_archive(workspace, input_nick, package_file_name):
-    assert not workspace.has_input(input_nick)
-    workspace.mount(input_nick, Archive(package_file_name))
-    print('{} mounted on {}.'.format(package_file_name, input_nick))
 
 
 INPUT_NICK_HELP = (
@@ -189,30 +237,41 @@ def arg_input_nick(func):
     return decorate(func)
 
 
-PACKAGE_METAVAR = 'PACKAGE'
-PACKAGE_MOUNT_HELP = 'package to mount data from'
-
-
-@arg('package', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
 @arg_input_nick
+@arg(
+    'package_ref', type=PackageReference,
+    metavar=PACKAGE_REF_METAVAR, help=PACKAGE_MOUNT_HELP)
 @opt_workspace
-def add_input(input_nick, package, workspace=CurrentDirWorkspace()):
-    return mount(package, input_nick, workspace)
+def add_input(input_nick, package_ref, workspace=CurrentDirWorkspace()):
+    '''
+    Make data from another package available in the input directory.
+    '''
+    return mount(package_ref, input_nick, workspace)
+
+
+ALREADY_CONFIGURED_PACKAGE = DefaultArgSentinel(
+    'already configured package for {}'
+    .format(INPUT_NICK_METAVAR))
 
 
 @arg_input_nick
-@arg('package', nargs='?', metavar=PACKAGE_METAVAR, help=PACKAGE_MOUNT_HELP)
+@arg(
+    'package_ref', type=PackageReference, nargs='?',
+    default=ALREADY_CONFIGURED_PACKAGE,
+    metavar=PACKAGE_REF_METAVAR, help=PACKAGE_MOUNT_HELP)
 @opt_workspace
-def mount(package, input_nick, workspace=CurrentDirWorkspace()):
+def mount(package_ref, input_nick, workspace=CurrentDirWorkspace()):
     '''
-    Add data from another package to the input directory.
+    Make data from another package available in the input directory.
     '''
-    # TODO: #10 names for packages
-    if package is None:
+    if package_ref is ALREADY_CONFIGURED_PACKAGE:
         mount_input_nick(workspace, input_nick)
     else:
-        package_file_name = package
-        mount_archive(workspace, input_nick, package_file_name)
+        assert not workspace.has_input(input_nick)
+        workspace.mount(input_nick, package_ref.package)
+        print(
+            '{} mounted on {}.'
+            .format(package_ref.package_reference, input_nick))
 
 
 def print_mounts(directory):
@@ -232,7 +291,6 @@ def print_mounts(directory):
             print(msg)
 
 
-# @command
 def status():
     '''
     Show workspace status - name of package, mount names and their status.
@@ -241,7 +299,6 @@ def status():
     print_mounts('.')
 
 
-# @command('input delete')
 @arg_input_nick
 @opt_workspace
 def delete_input(input_nick, workspace=CurrentDirWorkspace()):
@@ -252,56 +309,49 @@ def delete_input(input_nick, workspace=CurrentDirWorkspace()):
     print('Input {} is deleted.'.format(input_nick))
 
 
-# @command('input update')
+ALL_INPUTS = DefaultArgSentinel('all inputs')
+NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
+
+
 @arg(
-    'input_nick', metavar=INPUT_NICK_METAVAR, nargs='?', help=INPUT_NICK_HELP)
-@arg('package', metavar=PACKAGE_METAVAR, nargs='?', help=PACKAGE_MOUNT_HELP)
+    'input_nick', type=type(''), nargs='?', default=ALL_INPUTS,
+    metavar=INPUT_NICK_METAVAR, help=INPUT_NICK_HELP)
+@arg(
+    'package_ref', type=PackageReference, nargs='?', default=NEWEST_VERSION,
+    metavar=PACKAGE_REF_METAVAR, help=PACKAGE_MOUNT_HELP)
 @opt_workspace
-def update_command(input_nick, package, workspace=CurrentDirWorkspace()):
+def update(input_nick, package_ref, workspace=CurrentDirWorkspace()):
     '''
-    When no input NAME is given:
-        update all inputs to the newest version of all packages.
-
-    When input NAME is given:
-        replace that input with a newer version or different package.
+    Update input[s] to newest version or defined package.
     '''
-    if input_nick is None:
-        update_all_inputs(workspace)
+    if input_nick is ALL_INPUTS:
+        for input_nick in workspace.inputs:
+            update_input(workspace, input_nick)
+        print('All inputs are up to date.')
     else:
-        update_input(workspace, input_nick, package)
+        update_input(workspace, input_nick, package_ref)
 
 
-def update_input(workspace, input_nick, package_file_name=None):
+def update_input(workspace, input_nick, package_ref=NEWEST_VERSION):
     spec = workspace.inputspecs[input_nick]
-    if package_file_name:
-        newest = Archive(package_file_name)
-    else:
+    if package_ref is NEWEST_VERSION:
         uuid = spec[metakey.INPUT_PACKAGE]
-        # find newest package
-        newest = None
-        for repo in repos.get_all():
-            package = repo.find_newest(uuid)
-            if package is not None:
-                if newest is None or newest.timestamp < package.timestamp:
-                    newest = package
+        replacement = get_channel().get_package(uuid)
         # XXX: check if found package is newer than currently mounted?
+    else:
+        replacement = package_ref.package
 
-    if newest is None:
+    if replacement is None:
         print('No package found!!!')
     else:
         workspace.unmount(input_nick)
-        workspace.mount(input_nick, newest)
+        workspace.mount(input_nick, replacement)
         print('Mounted {}.'.format(input_nick))
 
 
-def update_all_inputs(workspace):
-    for input_nick in workspace.inputs:
-        update_input(workspace, input_nick)
-    print('All inputs are up to date.')
-
-
-# @command
-@arg_workspace
+@arg(
+    'workspace', nargs='?', type=Workspace, default=CurrentDirWorkspace(),
+    metavar=WORKSPACE_METAVAR, help=WORKSPACE_HELP)
 def nuke(workspace):
     '''
     Delete the workspace, inluding data, code and documentation.
@@ -358,22 +408,6 @@ def forget_repo(name):
         print('WARNING: no repository defined with "{}"'.format(name))
 
 
-# TODO: names/translations management commands
-# - import peer filename
-# - rename-peer old-name new-name
-# - delete-peer name
-#
-# - export [--peer name] filename
-# - rename-package old-name new-name
-# - delete-package package-name
-# - lift peer:name [local-name]
-#
-# TODO: parse package-name
-# format: [[peer]:]name[@version]
-# already implemented:
-# https://gist.github.com/krisztianfekete/25f972c70d1cdbd19b9d#file-new-py
-
-
 def initialize_env(config_dir):
     try:
         os.makedirs(config_dir)
@@ -381,12 +415,6 @@ def initialize_env(config_dir):
         assert os.path.isdir(config_dir)
     db_path = os.path.join(config_dir, 'config.sqlite')
     db.connect(db_path)
-
-
-INPUT_SUBCOMMAND_TITLE = 'INPUT_SUBCOMMAND_TITLE'
-INPUT_SUBCOMMAND_HELP = 'INPUT_SUBCOMMAND_HELP'
-REPO_SUBCOMMAND_TITLE = 'REPO_SUBCOMMAND_TITLE'
-REPO_SUBCOMMAND_HELP = 'REPO_SUBCOMMAND_HELP'
 
 
 def make_argument_parser():
@@ -399,8 +427,10 @@ def make_argument_parser():
             pack,
             mount,
             status,
-            named('update')(update_command),
-            nuke
+            update,
+            nuke,
+            # TODO: #10 names for packages
+            # rename  # package
         ])
     # FIXME: ArghParser.add_subcommands
     # https://github.com/neithere/argh/issues/88
@@ -409,24 +439,23 @@ def make_argument_parser():
             named('load')(load_inputs),
             named('add')(add_input),
             named('delete')(delete_input),
-            named('update')(update_command),
+            update,
         ],
         namespace='input',
         namespace_kwargs=dict(
-            title=INPUT_SUBCOMMAND_TITLE,
-            help=INPUT_SUBCOMMAND_HELP,
+            title='Manage data loaded from other packages...',
         ))
     parser.add_commands(
         [
             named('add')(add_repo),
             named('list')(list_repos),
             named('forget')(forget_repo),
+            # TODO: rename repo
             # add_token_to_repo
         ],
         namespace='repo',
         namespace_kwargs=dict(
-            title=REPO_SUBCOMMAND_TITLE,
-            help=REPO_SUBCOMMAND_HELP,
+            title='Manage package repositories...',
         ))
     return parser
 

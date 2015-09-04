@@ -1,3 +1,7 @@
+'''
+We are responsible to store (and retrieve) packages.
+'''
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -111,3 +115,10 @@ def add(name, directory):
 def forget(name):
     repo = get(name)
     omlite.delete(repo)
+
+
+def get_package(uuid, version):
+    for repo in get_all():
+        for package in repo.find_packages(uuid, version):
+            return package
+    raise LookupError('Package {} {} not found'.format(uuid, version))

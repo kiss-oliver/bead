@@ -6,7 +6,7 @@ from __future__ import print_function
 from ..test import TestCase, TempDir
 # from ..test import xfail
 from testtools.content import text_content
-from testtools.matchers import FileContains, DirContains, Not, Contains
+from testtools.matchers import FileContains, Not, Contains, FileExists
 from . import ws as m
 import fixtures
 
@@ -14,6 +14,7 @@ import contextlib
 import os
 from ..pkg.workspace import Workspace
 from .. import pkg
+from .. import repos
 from .. import db
 from .. import tech
 from ..translations import add_translation, Peer
@@ -104,9 +105,14 @@ class Robot(fixtures.Fixture):
         with fixtures.EnvironmentVariable('HOME', self.home):
             with chdir(self.cwd):
                 with CaptureStdout() as stdout, CaptureStderr() as stderr:
-                    self.retval = m.cli(self.config_dir, args)
-                    self.stdout = stdout.text
-                    self.stderr = stderr.text
+                    try:
+                        self.retval = m.cli(self.config_dir, args)
+                    except BaseException as e:
+                        self.retval = e
+                        raise
+                    finally:
+                        self.stdout = stdout.text
+                        self.stderr = stderr.text
 
     def ls(self, directory=None):
         directory = self._path(directory or self.cwd)
@@ -117,6 +123,29 @@ class Robot(fixtures.Fixture):
     def write_file(self, path, content):
         assert not os.path.isabs(path)
         tech.fs.write_file(self.cwd / path, content)
+
+    def declare_package(self, name, uuid):
+        ''' -> uuid'''
+        with fixtures.EnvironmentVariable('HOME', self.home):
+            m.initialize_env(self.config_dir)
+            add_translation(name, uuid)
+
+    def make_package(self, repo, uuid, timestamp):
+        with TempDir() as tempdir_obj:
+            tempdir = tempdir_obj.path
+            with fixtures.EnvironmentVariable('HOME', self.home):
+                m.initialize_env(self.config_dir)
+                ws = Workspace(tempdir)
+                ws.create(uuid)
+                sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
+                tech.fs.write_file(sentinel_file, timestamp)
+                repo.store(ws, timestamp)
+                tech.fs.rmtree(tempdir)
+
+    def repo(self, name):
+        with fixtures.EnvironmentVariable('HOME', self.home):
+            m.initialize_env(self.config_dir)
+            return repos.get('repo')
 
 
 class Test_new(TestCase):  # noqa
@@ -147,10 +176,6 @@ class Test_new(TestCase):  # noqa
     __error_raised = False
     home = None
     current_dir = None
-
-    @property
-    def personal_id(self):
-        return Peer.self().id
 
     def setUp(self):  # noqa
         super(Test_new, self).setUp()
@@ -201,7 +226,7 @@ class Test_new(TestCase):  # noqa
             Peer.self().get_translation('new').package_uuid)
 
 
-class Test_command_line(TestCase):
+class Test_basic_command_line(TestCase):
 
     # fixtures
     def robot(self):
@@ -233,15 +258,12 @@ class Test_command_line(TestCase):
         ws('repo', 'add', 'default', repo_dir)
         ws('pack')
 
-        # FIXME: replace package as filename with package name
-        package, = ls(repo_dir)
-
         cd('..')
-        ws('develop', 'something-develop', package)
+        ws('develop', 'something', 'something-develop')
         self.assertIn(robot.cwd / 'something-develop', ls())
 
         cd('something-develop')
-        ws('mount', package, 'older-self')
+        ws('mount', 'something', 'older-self')
         ws('status')
         self.assertNotIn('no defined inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
@@ -280,13 +302,14 @@ class Test_shared_repo(TestCase):
         robot.ws('repo', 'add', 'alicerepo', repo)
         return robot
 
+    # tests
     def test_update(self, alice, bob, package):
         bob.ws('new', 'bobpkg')
         bob.cd('bobpkg')
         bob.ws('input', 'add', 'alicepkg1', package)
         bob.ws('input', 'add', 'alicepkg2', package)
 
-        alice.ws('develop', 'alicepkg', package)
+        alice.ws('develop', package, 'alicepkg')
         alice.cd('alicepkg')
         alice.ls()
         alice.write_file('output/datafile', '''Alice's new data''')
@@ -301,8 +324,8 @@ class Test_shared_repo(TestCase):
 
         # second input directory not changed
         self.assertThat(
-            bob.cwd / 'input/alicepkg2',
-            Not(DirContains('datafile')))
+            bob.cwd / 'input/alicepkg2/datafile',
+            Not(FileExists()))
 
         # update all inputs
         bob.ws('update')
@@ -376,3 +399,84 @@ class Test_repo_commands(TestCase):
     def test_forget_nonexisting_repo(self, robot):
         robot.ws('repo', 'forget', 'non-existing')
         self.assertThat(robot.stdout, Contains('WARNING'))
+
+
+# timestamps
+TS1 = '20150901_151015_1'
+TS2 = '20150901_151016_2'
+
+
+class Test_package_references(TestCase):
+
+    # fixtures
+    def _robot(self):
+        return self.useFixture(Robot())
+
+    def repo(self, _robot):
+        robot = _robot
+        repo_dir = robot.cwd / 'repo'
+        os.makedirs(repo_dir)
+        robot.ws('repo', 'add', 'repo', repo_dir)
+        return robot.repo('repo')
+
+    def robot(self, _robot, repo):
+        '''
+        I am a robot user with a repo
+        '''
+        return _robot
+
+    def pkg_a(self, robot):
+        package_name = 'pkg_a'
+        robot.ws('new', package_name)
+        robot.cd(package_name)
+        robot.write_file('something', package_name)
+        robot.ws('pack')
+        robot.cd('..')
+        robot.ws('nuke', package_name)
+        return package_name
+
+    def pkg_with_history(self, robot, repo):
+        robot.declare_package('pkg_with_history', 'UUID')
+        robot.make_package(repo, 'UUID', TS1)
+        robot.make_package(repo, 'UUID', TS2)
+
+    # tests
+    def test_develop_by_name(self, robot, pkg_a):
+        robot.ws('develop', pkg_a)
+
+        self.assertTrue(Workspace(robot.cwd / pkg_a).is_valid)
+        self.assertThat(robot.cwd / pkg_a / 'something', FileContains(pkg_a))
+
+    def test_develop_missing_package(self, robot, pkg_a):
+        robot.ws('repo', 'forget', 'repo')
+        try:
+            robot.ws('develop', pkg_a)
+        except SystemExit:
+            self.assertThat(robot.stderr, Contains('Package'))
+            self.assertThat(robot.stderr, Contains('not found'))
+        else:
+            self.fail('develop should have exited on missing package')
+
+    def assert_develop_version(self, robot, pkg_spec, timestamp):
+        assert pkg_spec.startswith('pkg_with_history')
+        robot.ws('develop', pkg_spec)
+        self.assertThat(
+            robot.cwd / 'pkg_with_history' / 'sentinel-' + timestamp,
+            FileExists())
+
+    def test_develop_without_version(self, robot, pkg_with_history):
+        self.assert_develop_version(robot, 'pkg_with_history', TS2)
+
+    def test_develop_without_offset(self, robot, pkg_with_history):
+        self.assert_develop_version(robot, 'pkg_with_history@', TS2)
+
+    def test_develop_with_offset(self, robot, pkg_with_history):
+        self.assert_develop_version(robot, 'pkg_with_history@-1', TS1)
+
+    def test_develop_w_version_wo_offset(self, robot, pkg_with_history):
+        self.assert_develop_version(robot, 'pkg_with_history@' + TS1, TS1)
+
+    def test_develop_available_matches_to_version_are_less_than_offset(
+            self, robot, pkg_with_history):
+        self.assert_develop_version(
+            robot, 'pkg_with_history@{}-1'.format(TS2), TS2)
