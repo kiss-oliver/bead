@@ -62,7 +62,9 @@ class Robot(fixtures.Fixture):
     '''
     Represents a fake user.
 
-    Have a temporary environment with temporary config and working directory.
+    All operations are isolated from the test runner user's environment.
+    They work in a dedicated environment with temporary home, config
+    and working directories.
     '''
 
     def setUp(self):
@@ -406,46 +408,48 @@ TS1 = '20150901_151015_1'
 TS2 = '20150901_151016_2'
 
 
-class Test_package_with_history(TestCase):
+class PackageFixtures(object):
 
     # fixtures
-    def _robot(self):
-        return self.useFixture(Robot())
-
-    def repo(self, _robot):
-        robot = _robot
-        repo_dir = robot.cwd / 'repo'
-        os.makedirs(repo_dir)
-        robot.cli('repo', 'add', 'repo', repo_dir)
-        return robot.repo('repo')
-
-    def robot(self, _robot, repo):
+    def robot(self):
         '''
         I am a robot user with a repo
         '''
-        return _robot
+        robot = self.useFixture(Robot())
+        repo_dir = robot.cwd / 'repo'
+        os.makedirs(repo_dir)
+        robot.cli('repo', 'add', 'repo', repo_dir)
+        return robot
 
-    def pkg_a(self, robot):
-        package_name = 'pkg_a'
+    def repo(self, robot):
+        return robot.repo('repo')
+
+    def _new_package(self, robot, package_name):
         robot.cli('new', package_name)
         robot.cd(package_name)
-        robot.write_file('something', package_name)
+        robot.write_file('README', package_name)
         robot.cli('pack')
         robot.cd('..')
         robot.cli('nuke', package_name)
         return package_name
+
+    def pkg_a(self, robot):
+        return self._new_package(robot, 'pkg_a')
 
     def pkg_with_history(self, robot, repo):
         robot.declare_package('pkg_with_history', 'UUID')
         robot.make_package(repo, 'UUID', TS1)
         robot.make_package(repo, 'UUID', TS2)
 
+
+class Test_package_with_history(TestCase, PackageFixtures):
+
     # tests
     def test_develop_by_name(self, robot, pkg_a):
         robot.cli('develop', pkg_a)
 
         self.assertTrue(Workspace(robot.cwd / pkg_a).is_valid)
-        self.assertThat(robot.cwd / pkg_a / 'something', FileContains(pkg_a))
+        self.assertThat(robot.cwd / pkg_a / 'README', FileContains(pkg_a))
 
     def test_develop_missing_package(self, robot, pkg_a):
         robot.cli('repo', 'forget', 'repo')
