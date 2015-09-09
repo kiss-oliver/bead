@@ -8,7 +8,7 @@ import os
 from .. import tech
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 
-from .common import arg, die, opt_workspace
+from .common import arg, die
 from .common import DefaultArgSentinel, PackageReference
 from . import metavar
 from . import help
@@ -50,8 +50,17 @@ def new(workspace):
     print('Created {}'.format(workspace.package_name))
 
 
-@opt_workspace
-def pack(workspace=CurrentDirWorkspace()):
+CURRENT_DIRECTORY = CurrentDirWorkspace()
+
+
+def arg_workspace_defaulting_to(default_workspace):
+    return arg(
+        'workspace', nargs='?', type=Workspace, default=default_workspace,
+        metavar=metavar.WORKSPACE, help=help.WORKSPACE)
+
+
+@arg_workspace_defaulting_to(CURRENT_DIRECTORY)
+def pack(workspace):
     '''
     Create a new archive from the workspace.
     '''
@@ -68,9 +77,7 @@ DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
 @arg(
     'package_ref', type=PackageReference,
     metavar=metavar.PACKAGE_REF, help=help.PACKAGE_REF)
-@arg(
-    'workspace', nargs='?', type=Workspace, default=DERIVE_FROM_PACKAGE_NAME,
-    metavar=metavar.WORKSPACE, help='workspace directory')
+@arg_workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME)
 def develop(package_ref, workspace):
     '''
     Unpack a package as a source tree.
@@ -88,9 +95,8 @@ def develop(package_ref, workspace):
     package.unpack_to(workspace)
     assert workspace.is_valid
 
-    dir = workspace.directory
-    print('Extracted source into {}'.format(dir))
-    print_mounts(directory=dir)
+    print('Extracted source into {}'.format(workspace.directory))
+    print_mounts(workspace)
 
 
 def assert_valid_workspace(workspace):
@@ -98,8 +104,7 @@ def assert_valid_workspace(workspace):
         die('{} is not a valid workspace'.format(workspace.directory))
 
 
-def print_mounts(directory):
-    workspace = Workspace(directory)
+def print_mounts(workspace):
     assert_valid_workspace(workspace)
     inputs = workspace.inputs
     if not inputs:
@@ -115,17 +120,16 @@ def print_mounts(directory):
             print(msg)
 
 
-def status():
+@arg_workspace_defaulting_to(CURRENT_DIRECTORY)
+def status(workspace):
     '''
-    Show workspace status - name of package, mount names and their status.
+    Show workspace status - name of package, inputs and their unpack status.
     '''
-    # TODO: print Package UUID
-    print_mounts('.')
+    # TODO: print Package UUID, version (both hash and timestamp)
+    print_mounts(workspace)
 
 
-@arg(
-    'workspace', nargs='?', type=Workspace, default=CurrentDirWorkspace(),
-    metavar=metavar.WORKSPACE, help=help.WORKSPACE)
+@arg_workspace_defaulting_to(CURRENT_DIRECTORY)
 def nuke(workspace):
     '''
     Delete the workspace, inluding data, code and documentation.
