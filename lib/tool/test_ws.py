@@ -424,22 +424,40 @@ class PackageFixtures(object):
     def repo(self, robot):
         return robot.repo('repo')
 
-    def _new_package(self, robot, package_name):
+    def _new_package(self, robot, package_name, inputs=None):
         robot.cli('new', package_name)
         robot.cd(package_name)
         robot.write_file('README', package_name)
+        robot.write_file('output/README', package_name)
+        self._add_inputs(robot, inputs)
         robot.cli('pack')
         robot.cd('..')
         robot.cli('nuke', package_name)
         return package_name
 
+    def _add_inputs(self, robot, inputs):
+        inputs = inputs or {}
+        for name in inputs:
+            robot.cli('input', 'add', name, inputs[name])
+
     def pkg_a(self, robot):
         return self._new_package(robot, 'pkg_a')
 
-    def pkg_with_history(self, robot, repo):
-        robot.declare_package('pkg_with_history', 'UUID')
+    def pkg_b(self, robot):
+        return self._new_package(robot, 'pkg_b')
+
+    def _pkg_with_history(self, robot, repo, package_name):
+        robot.declare_package(package_name, 'UUID')
         robot.make_package(repo, 'UUID', TS1)
         robot.make_package(repo, 'UUID', TS2)
+        return package_name
+
+    def pkg_with_history(self, robot, repo):
+        return self._pkg_with_history(robot, repo, 'pkg_with_history')
+
+    def pkg_with_inputs(self, robot, pkg_a, pkg_b):
+        inputs = dict(input_a=pkg_a, input_b=pkg_b)
+        return self._new_package(robot, 'pkg_with_inputs', inputs)
 
 
 class Test_package_with_history(TestCase, PackageFixtures):
@@ -485,7 +503,17 @@ class Test_package_with_history(TestCase, PackageFixtures):
         self.assert_develop_version(
             robot, 'pkg_with_history@{}-1'.format(TS2), TS2)
 
-    def test_load(self, robot, pkg_with_history):
+
+class Test_input_commands(TestCase, PackageFixtures):
+
+    def assert_mounted(self, robot, input_name, package_name):
+        self.assertThat(
+            robot.cwd / 'input' / input_name / 'README',
+            FileContains(package_name))
+
+    # tests
+
+    def test_input_commands(self, robot, pkg_with_history):
         # nextpkg with input1 as datapkg1
         robot.cli('new', 'nextpkg')
         robot.cd('nextpkg')
@@ -509,3 +537,16 @@ class Test_package_with_history(TestCase, PackageFixtures):
 
         # no-op load do not crash
         robot.cli('input', 'load')
+
+    def test_update_unmounted_input_with_explicit_package(
+            self, robot, pkg_with_inputs, pkg_a, pkg_b):
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+
+        assert not Workspace(robot.cwd).is_mounted('input_b')
+
+        robot.cli('input', 'update', 'input_b', pkg_a)
+        self.assert_mounted(robot, 'input_b', pkg_a)
+
+        robot.cli('status')
+        self.assertThat(robot.stdout, Not(Contains(pkg_b)))

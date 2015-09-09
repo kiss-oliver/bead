@@ -155,12 +155,13 @@ class AbstractWorkspace(object):
         Remove files for given input
         '''
         assert self.has_input(input_nick)
-        input_dir = self.directory / layouts.Workspace.INPUT
-        fs.make_writable(input_dir)
-        try:
-            fs.rmtree(input_dir / input_nick)
-        finally:
-            fs.make_readonly(input_dir)
+        if self.is_mounted(input_nick):
+            input_dir = self.directory / layouts.Workspace.INPUT
+            fs.make_writable(input_dir)
+            try:
+                fs.rmtree(input_dir / input_nick)
+            finally:
+                fs.make_readonly(input_dir)
 
     def __repr__(self):
         # argh prints default value as repr of the value
