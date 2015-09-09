@@ -30,38 +30,6 @@ NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
 CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 
-def _mount(workspace, input_nick):
-    assert workspace.has_input(input_nick)
-    if not workspace.is_mounted(input_nick):
-        spec = workspace.inputspecs[input_nick]
-        uuid = spec[metakey.INPUT_PACKAGE]
-        version = spec[metakey.INPUT_VERSION]
-        try:
-            package = repos.get_package(uuid, version)
-        except LookupError:
-            print(
-                'Could not find archive for {} - not loaded!'
-                .format(input_nick))
-        else:
-            workspace.mount(input_nick, package)
-            print('Loaded {}.'.format(input_nick))
-    else:
-        print('Skipping {} (already loaded)'.format(input_nick))
-
-
-@opt_input_nick
-@opt_workspace
-def load(input_nick, workspace=CURRENT_DIRECTORY):
-    '''
-    Put defined input data in place.
-    '''
-    if input_nick is ALL_INPUTS:
-        for input_nick in workspace.inputs:
-            _mount(workspace, input_nick)
-    else:
-        _mount(workspace, input_nick)
-
-
 @arg_input_nick
 @arg(
     'package_ref', type=PackageReference,
@@ -116,3 +84,35 @@ def _update(workspace, input_nick, package_ref=NEWEST_VERSION):
     workspace.unmount(input_nick)
     workspace.mount(input_nick, replacement)
     print('Mounted {}.'.format(input_nick))
+
+
+@opt_input_nick
+@opt_workspace
+def load(input_nick, workspace=CURRENT_DIRECTORY):
+    '''
+    Put defined input data in place.
+    '''
+    if input_nick is ALL_INPUTS:
+        for input_nick in workspace.inputs:
+            _mount(workspace, input_nick)
+    else:
+        _mount(workspace, input_nick)
+
+
+def _mount(workspace, input_nick):
+    assert workspace.has_input(input_nick)
+    if not workspace.is_mounted(input_nick):
+        spec = workspace.inputspecs[input_nick]
+        uuid = spec[metakey.INPUT_PACKAGE]
+        version = spec[metakey.INPUT_VERSION]
+        try:
+            package = repos.get_package(uuid, version)
+        except LookupError:
+            print(
+                'Could not find archive for {} - not loaded!'
+                .format(input_nick))
+        else:
+            workspace.mount(input_nick, package)
+            print('Loaded {}.'.format(input_nick))
+    else:
+        print('Skipping {} (already loaded)'.format(input_nick))
