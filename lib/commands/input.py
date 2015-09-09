@@ -26,6 +26,8 @@ arg_input_nick = arg(
 
 # package_ref
 NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
+# default workspace
+CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 
 def _mount(workspace, input_nick):
@@ -49,7 +51,7 @@ def _mount(workspace, input_nick):
 
 @opt_input_nick
 @opt_workspace
-def load(input_nick, workspace=CurrentDirWorkspace()):
+def load(input_nick, workspace=CURRENT_DIRECTORY):
     '''
     Put defined input data in place.
     '''
@@ -65,7 +67,7 @@ def load(input_nick, workspace=CurrentDirWorkspace()):
     'package_ref', type=PackageReference,
     metavar=metavar.PACKAGE_REF, help=help.PACKAGE_MOUNT)
 @opt_workspace
-def add(input_nick, package_ref, workspace=CurrentDirWorkspace()):
+def add(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     '''
     Make data from another package available in the input directory.
     '''
@@ -77,7 +79,7 @@ def add(input_nick, package_ref, workspace=CurrentDirWorkspace()):
 
 @arg_input_nick
 @opt_workspace
-def delete(input_nick, workspace=CurrentDirWorkspace()):
+def delete(input_nick, workspace=CURRENT_DIRECTORY):
     '''
     Forget all about input.
     '''
@@ -90,7 +92,7 @@ def delete(input_nick, workspace=CurrentDirWorkspace()):
     'package_ref', type=PackageReference, nargs='?', default=NEWEST_VERSION,
     metavar=metavar.PACKAGE_REF, help=help.PACKAGE_MOUNT)
 @opt_workspace
-def update(input_nick, package_ref, workspace=CurrentDirWorkspace()):
+def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     '''
     Update input[s] to newest version or defined package.
     '''
