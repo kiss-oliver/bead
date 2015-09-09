@@ -81,7 +81,8 @@ def _update(workspace, input_nick, package_ref=NEWEST_VERSION):
     else:
         replacement = package_ref.package
 
-    workspace.unmount(input_nick)
+    if workspace.is_mounted(input_nick):
+        workspace.unmount(input_nick)
     workspace.mount(input_nick, replacement)
     print('Mounted {}.'.format(input_nick))
 
