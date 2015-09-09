@@ -99,7 +99,7 @@ class Robot(fixtures.Fixture):
         self.cwd = self._path(dir)
         assert os.path.isdir(self.cwd)
 
-    def ws(self, *args):
+    def cli(self, *args):
         '''
         Imitate calling the ws tool with the given args
         '''
@@ -233,8 +233,8 @@ class Test_basic_command_line(TestCase):
     def robot(self):
         return self.useFixture(Robot())
 
-    def ws(self, robot):
-        return robot.ws
+    def cli(self, robot):
+        return robot.cli
 
     def cd(self, robot):
         return robot.cd
@@ -246,31 +246,31 @@ class Test_basic_command_line(TestCase):
         return self.new_temp_dir()
 
     # tests
-    def test(self, robot, ws, cd, ls, repo_dir):
+    def test(self, robot, cli, cd, ls, repo_dir):
         self.addDetail('home', text_content(robot.home))
 
-        ws('new', 'something')
+        cli('new', 'something')
         self.assertIn('something', robot.stdout)
 
         cd('something')
-        ws('status')
+        cli('status')
         self.assertIn('no defined inputs', robot.stdout)
 
-        ws('repo', 'add', 'default', repo_dir)
-        ws('pack')
+        cli('repo', 'add', 'default', repo_dir)
+        cli('pack')
 
         cd('..')
-        ws('develop', 'something', 'something-develop')
+        cli('develop', 'something', 'something-develop')
         self.assertIn(robot.cwd / 'something-develop', ls())
 
         cd('something-develop')
-        ws('input', 'add', 'older-self', 'something')
-        ws('status')
+        cli('input', 'add', 'older-self', 'something')
+        cli('status')
         self.assertNotIn('no defined inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
 
-        ws('nuke', robot.cwd.parent / 'something')
-        ws('nuke')
+        cli('nuke', robot.cwd.parent / 'something')
+        cli('nuke')
 
         cd('..')
         self.assertEqual([], ls(robot.home))
@@ -295,28 +295,28 @@ class Test_shared_repo(TestCase):
 
     def alice(self, repo):
         robot = self.useFixture(Robot())
-        robot.ws('repo', 'add', 'bobrepo', repo)
+        robot.cli('repo', 'add', 'bobrepo', repo)
         return robot
 
     def bob(self, repo):
         robot = self.useFixture(Robot())
-        robot.ws('repo', 'add', 'alicerepo', repo)
+        robot.cli('repo', 'add', 'alicerepo', repo)
         return robot
 
     # tests
     def test_update(self, alice, bob, package):
-        bob.ws('new', 'bobpkg')
+        bob.cli('new', 'bobpkg')
         bob.cd('bobpkg')
-        bob.ws('input', 'add', 'alicepkg1', package)
-        bob.ws('input', 'add', 'alicepkg2', package)
+        bob.cli('input', 'add', 'alicepkg1', package)
+        bob.cli('input', 'add', 'alicepkg2', package)
 
-        alice.ws('develop', package, 'alicepkg')
+        alice.cli('develop', package, 'alicepkg')
         alice.cd('alicepkg')
         alice.write_file('output/datafile', '''Alice's new data''')
-        alice.ws('pack')
+        alice.cli('pack')
 
         # update only one input
-        bob.ws('input', 'update', 'alicepkg1')
+        bob.cli('input', 'update', 'alicepkg1')
 
         self.assertThat(
             bob.cwd / 'input/alicepkg1/datafile',
@@ -328,7 +328,7 @@ class Test_shared_repo(TestCase):
             Not(FileExists()))
 
         # update all inputs
-        bob.ws('input', 'update')
+        bob.cli('input', 'update')
 
         self.assertThat(
             bob.cwd / 'input/alicepkg2/datafile',
@@ -351,53 +351,53 @@ class Test_repo_commands(TestCase):
 
     # tests
     def test_list_when_there_are_no_repos(self, robot):
-        robot.ws('repo', 'list')
+        robot.cli('repo', 'list')
         self.assertThat(
             robot.stdout, Contains('There are no defined repositories'))
 
     def test_add_non_existing_directory_fails(self, robot):
-        robot.ws('repo', 'add', 'notadded', 'non-existing')
+        robot.cli('repo', 'add', 'notadded', 'non-existing')
         self.assertThat(robot.stdout, Contains('ERROR'))
         self.assertThat(robot.stdout, Not(Contains('notadded')))
 
     def test_add_multiple(self, robot, dir1, dir2):
-        robot.ws('repo', 'add', 'name1', 'dir1')
-        robot.ws('repo', 'add', 'name2', 'dir2')
+        robot.cli('repo', 'add', 'name1', 'dir1')
+        robot.cli('repo', 'add', 'name2', 'dir2')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
-        robot.ws('repo', 'list')
+        robot.cli('repo', 'list')
         self.assertThat(robot.stdout, Contains('name1'))
         self.assertThat(robot.stdout, Contains('name2'))
         self.assertThat(robot.stdout, Contains('dir1'))
         self.assertThat(robot.stdout, Contains('dir2'))
 
     def test_add_with_same_name_fails(self, robot, dir1, dir2):
-        robot.ws('repo', 'add', 'name', 'dir1')
+        robot.cli('repo', 'add', 'name', 'dir1')
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
-        robot.ws('repo', 'add', 'name', 'dir2')
+        robot.cli('repo', 'add', 'name', 'dir2')
         self.assertThat(robot.stdout, Contains('ERROR'))
 
     def test_add_same_directory_twice_fails(self, robot, dir1):
-        robot.ws('repo', 'add', 'name1', dir1)
+        robot.cli('repo', 'add', 'name1', dir1)
         self.assertThat(robot.stdout, Not(Contains('ERROR')))
 
-        robot.ws('repo', 'add', 'name2', dir1)
+        robot.cli('repo', 'add', 'name2', dir1)
         self.assertThat(robot.stdout, Contains('ERROR'))
 
     def test_forget_repo(self, robot, dir1, dir2):
-        robot.ws('repo', 'add', 'repo-to-delete', dir1)
-        robot.ws('repo', 'add', 'another-repo', dir2)
+        robot.cli('repo', 'add', 'repo-to-delete', dir1)
+        robot.cli('repo', 'add', 'another-repo', dir2)
 
-        robot.ws('repo', 'forget', 'repo-to-delete')
+        robot.cli('repo', 'forget', 'repo-to-delete')
         self.assertThat(robot.stdout, Contains('forgotten'))
 
-        robot.ws('repo', 'list')
+        robot.cli('repo', 'list')
         self.assertThat(robot.stdout, Not(Contains('repo-to-delete')))
         self.assertThat(robot.stdout, Contains('another-repo'))
 
     def test_forget_nonexisting_repo(self, robot):
-        robot.ws('repo', 'forget', 'non-existing')
+        robot.cli('repo', 'forget', 'non-existing')
         self.assertThat(robot.stdout, Contains('WARNING'))
 
 
@@ -416,7 +416,7 @@ class Test_package_with_history(TestCase):
         robot = _robot
         repo_dir = robot.cwd / 'repo'
         os.makedirs(repo_dir)
-        robot.ws('repo', 'add', 'repo', repo_dir)
+        robot.cli('repo', 'add', 'repo', repo_dir)
         return robot.repo('repo')
 
     def robot(self, _robot, repo):
@@ -427,12 +427,12 @@ class Test_package_with_history(TestCase):
 
     def pkg_a(self, robot):
         package_name = 'pkg_a'
-        robot.ws('new', package_name)
+        robot.cli('new', package_name)
         robot.cd(package_name)
         robot.write_file('something', package_name)
-        robot.ws('pack')
+        robot.cli('pack')
         robot.cd('..')
-        robot.ws('nuke', package_name)
+        robot.cli('nuke', package_name)
         return package_name
 
     def pkg_with_history(self, robot, repo):
@@ -442,15 +442,15 @@ class Test_package_with_history(TestCase):
 
     # tests
     def test_develop_by_name(self, robot, pkg_a):
-        robot.ws('develop', pkg_a)
+        robot.cli('develop', pkg_a)
 
         self.assertTrue(Workspace(robot.cwd / pkg_a).is_valid)
         self.assertThat(robot.cwd / pkg_a / 'something', FileContains(pkg_a))
 
     def test_develop_missing_package(self, robot, pkg_a):
-        robot.ws('repo', 'forget', 'repo')
+        robot.cli('repo', 'forget', 'repo')
         try:
-            robot.ws('develop', pkg_a)
+            robot.cli('develop', pkg_a)
         except SystemExit:
             self.assertThat(robot.stderr, Contains('Package'))
             self.assertThat(robot.stderr, Contains('not found'))
@@ -459,7 +459,7 @@ class Test_package_with_history(TestCase):
 
     def assert_develop_version(self, robot, pkg_spec, timestamp):
         assert pkg_spec.startswith('pkg_with_history')
-        robot.ws('develop', pkg_spec)
+        robot.cli('develop', pkg_spec)
         self.assertThat(
             robot.cwd / 'pkg_with_history' / 'sentinel-' + timestamp,
             FileExists())
@@ -483,25 +483,25 @@ class Test_package_with_history(TestCase):
 
     def test_load(self, robot, pkg_with_history):
         # nextpkg with input1 as datapkg1
-        robot.ws('new', 'nextpkg')
+        robot.cli('new', 'nextpkg')
         robot.cd('nextpkg')
-        robot.ws('input', 'add', 'input1', 'pkg_with_history@' + TS1)
-        robot.ws('pack')
+        robot.cli('input', 'add', 'input1', 'pkg_with_history@' + TS1)
+        robot.cli('pack')
         robot.cd('..')
-        robot.ws('nuke', 'nextpkg')
+        robot.cli('nuke', 'nextpkg')
 
-        robot.ws('develop', 'nextpkg')
+        robot.cli('develop', 'nextpkg')
         robot.cd('nextpkg')
         assert not os.path.exists(robot.cwd / 'input/input1')
 
-        robot.ws('input', 'load')
+        robot.cli('input', 'load')
         assert os.path.exists(robot.cwd / 'input/input1')
 
-        robot.ws('input', 'add', 'input2', 'pkg_with_history')
+        robot.cli('input', 'add', 'input2', 'pkg_with_history')
         assert os.path.exists(robot.cwd / 'input/input2')
 
-        robot.ws('input', 'delete', 'input1')
+        robot.cli('input', 'delete', 'input1')
         assert not os.path.exists(robot.cwd / 'input/input1')
 
         # no-op load do not crash
-        robot.ws('input', 'load')
+        robot.cli('input', 'load')
