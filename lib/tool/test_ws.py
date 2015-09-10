@@ -133,17 +133,17 @@ class Robot(fixtures.Fixture):
             m.initialize_env(self.config_dir)
             add_translation(name, uuid)
 
-    def make_package(self, repo, uuid, timestamp):
+    def make_package(self, repo, uuid, timestamp, package_name='test-package'):
         with TempDir() as tempdir_obj:
-            tempdir = tempdir_obj.path
+            workspace_dir = os.path.join(tempdir_obj.path, package_name)
             with fixtures.EnvironmentVariable('HOME', self.home):
                 m.initialize_env(self.config_dir)
-                ws = Workspace(tempdir)
+                ws = Workspace(workspace_dir)
                 ws.create(uuid)
                 sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
                 tech.fs.write_file(sentinel_file, timestamp)
                 repo.store(ws, timestamp)
-                tech.fs.rmtree(tempdir)
+                tech.fs.rmtree(workspace_dir)
 
     def repo(self, name):
         with fixtures.EnvironmentVariable('HOME', self.home):
