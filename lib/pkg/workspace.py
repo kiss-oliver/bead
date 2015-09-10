@@ -56,7 +56,7 @@ class AbstractWorkspace(object):
 
     @property
     def inputs(self):
-        return meta.parse_inputs(self.meta)
+        return tuple(meta.parse_inputs(self.meta))
 
     def get_input(self, name):
         for input in self.inputs:

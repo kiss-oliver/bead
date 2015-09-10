@@ -58,6 +58,7 @@ class Test_create(TestCase):
     def then_workspace_has_no_inputs(self):
         self.assertFalse(self.workspace.has_input('pkg1'))
         self.assertFalse(self.workspace.is_mounted('pkg1'))
+        self.assertFalse(self.workspace.inputs)
 
     def then_workspace_has_the_specified_uuid(self):
         self.assertEquals(A_PACKAGE_UUID, self.workspace.uuid)
