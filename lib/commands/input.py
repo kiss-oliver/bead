@@ -10,7 +10,6 @@ from ..commands.common import (
     opt_workspace, PackageReference, DefaultArgSentinel, get_channel,
     CurrentDirWorkspace
 )
-from ..pkg import metakey
 from .. import repos
 
 
@@ -65,26 +64,24 @@ def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     Update input[s] to newest version or defined package.
     '''
     if input_nick is ALL_INPUTS:
-        for input_nick in workspace.inputs:
-            _update(workspace, input_nick)
+        for input in workspace.inputs:
+            _update(workspace, input)
         print('All inputs are up to date.')
     else:
-        _update(workspace, input_nick, package_ref)
+        _update(workspace, workspace.get_input(input_nick), package_ref)
 
 
-def _update(workspace, input_nick, package_ref=NEWEST_VERSION):
-    spec = workspace.inputspecs[input_nick]
+def _update(workspace, input, package_ref=NEWEST_VERSION):
     if package_ref is NEWEST_VERSION:
-        uuid = spec[metakey.INPUT_PACKAGE]
-        replacement = get_channel().get_package(uuid)
+        replacement = get_channel().get_package(input.package)
         # XXX: check if found package is newer than currently mounted?
     else:
         replacement = package_ref.package
 
-    if workspace.is_mounted(input_nick):
-        workspace.unmount(input_nick)
-    workspace.mount(input_nick, replacement)
-    print('Mounted {}.'.format(input_nick))
+    if workspace.is_mounted(input.name):
+        workspace.unmount(input.name)
+    workspace.mount(input.name, replacement)
+    print('Mounted {}.'.format(input.name))
 
 
 @opt_input_nick
@@ -94,26 +91,23 @@ def load(input_nick, workspace=CURRENT_DIRECTORY):
     Put defined input data in place.
     '''
     if input_nick is ALL_INPUTS:
-        for input_nick in workspace.inputs:
-            _mount(workspace, input_nick)
+        for input in workspace.inputs:
+            _mount(workspace, input)
     else:
-        _mount(workspace, input_nick)
+        _mount(workspace, workspace.get_input(input_nick))
 
 
-def _mount(workspace, input_nick):
-    assert workspace.has_input(input_nick)
-    if not workspace.is_mounted(input_nick):
-        spec = workspace.inputspecs[input_nick]
-        uuid = spec[metakey.INPUT_PACKAGE]
-        version = spec[metakey.INPUT_VERSION]
+def _mount(workspace, input):
+    assert input is not None
+    if not workspace.is_mounted(input.name):
         try:
-            package = repos.get_package(uuid, version)
+            package = repos.get_package(input.package, input.version)
         except LookupError:
             print(
                 'Could not find archive for {} - not loaded!'
-                .format(input_nick))
+                .format(input.name))
         else:
-            workspace.mount(input_nick, package)
-            print('Loaded {}.'.format(input_nick))
+            workspace.mount(input.name, package)
+            print('Loaded {}.'.format(input.name))
     else:
-        print('Skipping {} (already loaded)'.format(input_nick))
+        print('Skipping {} (already loaded)'.format(input.name))

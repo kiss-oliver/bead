@@ -55,12 +55,13 @@ class AbstractWorkspace(object):
         return self.meta[metakey.PACKAGE]
 
     @property
-    def inputspecs(self):
-        return self.meta[metakey.INPUTS]
-
-    @property
     def inputs(self):
-        return self.inputspecs.keys()
+        return metakey.parse_inputs(self.meta)
+
+    def get_input(self, name):
+        for input in self.inputs:
+            if name == input.name:
+                return input
 
     def create(self, uuid):
         '''
@@ -113,7 +114,7 @@ class AbstractWorkspace(object):
 
         NOTE: it is not necessarily mounted!
         '''
-        return input_nick in self.inputs
+        return input_nick in self.meta[metakey.INPUTS]
 
     def is_mounted(self, input_nick):
         return os.path.isdir(

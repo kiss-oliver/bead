@@ -539,6 +539,8 @@ class Test_input_commands(TestCase, PackageFixtures):
         # no-op load do not crash
         robot.cli('input', 'load')
 
+        robot.cli('status')
+
     def test_update_unmounted_input_with_explicit_package(
             self, robot, pkg_with_inputs, pkg_a, pkg_b):
         robot.cli('develop', pkg_with_inputs)

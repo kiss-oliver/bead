@@ -28,12 +28,28 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
+from collections import namedtuple
+
+
 PACKAGE = 'package uuid'
 
 INPUTS = 'inputs'
 
 INPUT_PACKAGE = 'package uuid'
 INPUT_VERSION = 'version uuid'
+
+
+InputSpec = namedtuple('InputSpec', 'name package version')
+
+
+def parse_inputs(meta):
+    '''
+    Parse and yield input specification from meta as records.
+    '''
+    inputs = meta[INPUTS]
+    for name in inputs:
+        spec = inputs[name]
+        yield InputSpec(name, spec[INPUT_PACKAGE], spec[INPUT_VERSION])
 
 
 # Archive meta:
