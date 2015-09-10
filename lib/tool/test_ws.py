@@ -454,7 +454,7 @@ class PackageFixtures(object):
 
     def pkg_with_history(self, robot, repo):
         return self._pkg_with_history(
-            robot, repo, 'pkg_with_history', 'pkg_with_history-UUID')
+            robot, repo, 'pkg_with_history', 'UUID:pkg_with_history')
 
     def pkg_with_inputs(self, robot, pkg_a, pkg_b):
         inputs = dict(input_a=pkg_a, input_b=pkg_b)
