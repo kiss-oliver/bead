@@ -20,7 +20,7 @@ def file(file, file_size):
     '''
 
     hash = hashlib.sha512()
-    hash.update('{}:'.format(file_size).encode('ascii'))
+    hash.update(b'{}:'.format(file_size).encode('ascii'))
     with file:
         while True:
             block = file.read(READ_BLOCK_SIZE)
