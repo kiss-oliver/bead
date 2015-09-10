@@ -97,7 +97,9 @@ def develop(package_ref, workspace):
     assert workspace.is_valid
 
     print('Extracted source into {}'.format(workspace.directory))
-    print_mounts(workspace)
+    # XXX: try to load smaller inputs?
+    if workspace.inputs:
+        print('Input data not loaded, update if needed and load manually')
 
 
 def assert_valid_workspace(workspace):
@@ -112,21 +114,37 @@ def indent(lines):
 def print_mounts(workspace):
     assert_valid_workspace(workspace)
     inputs = sorted(workspace.inputs)
+
     if not inputs:
         print('Package has no defined inputs')
     else:
         print('Package inputs:')
+        lines = []
         for input in inputs:
-            lines = [
-                '{}{}:'.format(
-                    input.name,
-                    '' if workspace.is_mounted(input.name)
-                    else ' (not mounted)'),
-                '\tpackage: {}'.format(input.package),
-                '\tversion: {}'.format(input.version),
-            ]
-            msg = '\n'.join(indent(lines)).expandtabs(2)
-            print('{}'.format(msg))
+            if lines:
+                # separator
+                lines.append('')
+            # TODO: print package name and version timestamp
+            lines.extend([
+                '- {0} (input/{0})'.format(input.name),
+                '\tPackage UUID: {}'.format(input.package),
+                '\tVersion hash: {}'.format(input.version),
+            ])
+        msg = '\n'.join(indent(lines)).expandtabs(2)
+        print(msg)
+
+        print('')
+        unmounted = [
+            input.name
+            for input in inputs
+            if not workspace.is_mounted(input.name)]
+        if unmounted:
+            print('These inputs are not loaded:')
+            unmounted_list = '\t- ' + '\t- '.join(unmounted)
+            print(unmounted_list.expandtabs(2))
+            print('You can "load" or "update" them manually.')
+        else:
+            print('All inputs are available under input directory.')
 
 
 @arg_workspace_defaulting_to(CURRENT_DIRECTORY)
@@ -134,7 +152,8 @@ def status(workspace):
     '''
     Show workspace status - name of package, inputs and their unpack status.
     '''
-    # TODO: print Package UUID, version (both hash and timestamp)
+    # TODO: print Package name, version (both hash and timestamp)
+    print('Package UUID: {}'.format(workspace.uuid))
     print_mounts(workspace)
 
 
