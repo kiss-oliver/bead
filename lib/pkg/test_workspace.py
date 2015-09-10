@@ -118,6 +118,27 @@ class Test_pack(TestCase):
         self.assertTrue(pkg.is_valid)
 
 
+class Test_pack_stability(TestCase):
+
+    def test_directory_name_data_and_timestamp_determines_versions(self):
+        TS = '20150910_093724_802366'
+
+        # note: it is important to create the same package in
+        # two different directories
+        def make_pkg():
+            output = self.new_temp_dir() / 'pkg.zip'
+            ws = m.Workspace(self.new_temp_dir() / 'a package')
+            ws.create(A_PACKAGE_UUID)
+            write_file(ws.directory / 'source1', 'code to produce output')
+            write_file(ws.directory / 'output/output1', TS)
+            ws.pack(output, TS)
+            return Archive(output)
+
+        pkg1 = make_pkg()
+        pkg2 = make_pkg()
+        self.assertEquals(pkg1.version, pkg2.version)
+
+
 def make_package(path, filespecs):
     with temp_dir() as root:
         workspace = m.Workspace(root)
