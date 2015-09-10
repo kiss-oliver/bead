@@ -51,7 +51,7 @@ class Archive(Package):
     # -
     @property
     def is_valid(self):
-        # TODO
+        # FIXME verify checksums!
         '''
         verify, that
         - all files under code, data, meta are present in the checksums
