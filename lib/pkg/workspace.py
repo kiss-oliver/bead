@@ -259,16 +259,15 @@ class _ZipCreator(object):
         )
 
     def add_meta(self, workspace, timestamp):
-        wsmeta = workspace.meta
         pkgmeta = {
-            meta.PACKAGE: wsmeta[meta.PACKAGE],
+            meta.PACKAGE: workspace.uuid,
             meta.PACKAGE_TIMESTAMP: timestamp,
             meta.INPUTS: {
-                input_nick: {
-                    meta.INPUT_PACKAGE: spec[meta.INPUT_PACKAGE],
-                    meta.INPUT_VERSION: spec[meta.INPUT_VERSION],
+                input.name: {
+                    meta.INPUT_PACKAGE: input.package,
+                    meta.INPUT_VERSION: input.version,
                 }
-                for input_nick, spec in wsmeta[meta.INPUTS].items()
+                for input in workspace.inputs
             },
             meta.DEFAULT_NAME: workspace.package_name,
         }
