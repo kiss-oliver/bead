@@ -446,14 +446,15 @@ class PackageFixtures(object):
     def pkg_b(self, robot):
         return self._new_package(robot, 'pkg_b')
 
-    def _pkg_with_history(self, robot, repo, package_name):
-        robot.declare_package(package_name, 'UUID')
-        robot.make_package(repo, 'UUID', TS1)
-        robot.make_package(repo, 'UUID', TS2)
+    def _pkg_with_history(self, robot, repo, package_name, uuid):
+        robot.declare_package(package_name, uuid)
+        robot.make_package(repo, uuid, TS1)
+        robot.make_package(repo, uuid, TS2)
         return package_name
 
     def pkg_with_history(self, robot, repo):
-        return self._pkg_with_history(robot, repo, 'pkg_with_history')
+        return self._pkg_with_history(
+            robot, repo, 'pkg_with_history', 'pkg_with_history-UUID')
 
     def pkg_with_inputs(self, robot, pkg_a, pkg_b):
         inputs = dict(input_a=pkg_a, input_b=pkg_b)
