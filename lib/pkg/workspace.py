@@ -10,7 +10,7 @@ import os
 import zipfile
 
 from . import layouts
-from . import metakey
+from . import meta
 from .. import tech
 
 # technology modules
@@ -52,11 +52,11 @@ class AbstractWorkspace(object):
 
     @property
     def uuid(self):
-        return self.meta[metakey.PACKAGE]
+        return self.meta[meta.PACKAGE]
 
     @property
     def inputs(self):
-        return metakey.parse_inputs(self.meta)
+        return meta.parse_inputs(self.meta)
 
     def get_input(self, name):
         for input in self.inputs:
@@ -78,8 +78,8 @@ class AbstractWorkspace(object):
         self.create_directories()
 
         pkgmeta = {
-            metakey.PACKAGE: uuid,
-            metakey.INPUTS: {},
+            meta.PACKAGE: uuid,
+            meta.INPUTS: {},
         }
         fs.write_file(
             dir / layouts.Workspace.PKGMETA,
@@ -114,7 +114,7 @@ class AbstractWorkspace(object):
 
         NOTE: it is not necessarily mounted!
         '''
-        return input_nick in self.meta[metakey.INPUTS]
+        return input_nick in self.meta[meta.INPUTS]
 
     def is_mounted(self, input_nick):
         return os.path.isdir(
@@ -122,9 +122,9 @@ class AbstractWorkspace(object):
 
     def add_input(self, input_nick, uuid, version):
         m = self.meta
-        m[metakey.INPUTS][input_nick] = {
-            metakey.INPUT_PACKAGE: uuid,
-            metakey.INPUT_VERSION: version,
+        m[meta.INPUTS][input_nick] = {
+            meta.INPUT_PACKAGE: uuid,
+            meta.INPUT_VERSION: version,
         }
         self.meta = m
 
@@ -133,7 +133,7 @@ class AbstractWorkspace(object):
         if self.is_mounted(input_nick):
             self.unmount(input_nick)
         m = self.meta
-        del m[metakey.INPUTS][input_nick]
+        del m[meta.INPUTS][input_nick]
         self.meta = m
 
     def mount(self, input_nick, package):
@@ -261,16 +261,16 @@ class _ZipCreator(object):
     def add_meta(self, workspace, timestamp):
         wsmeta = workspace.meta
         pkgmeta = {
-            metakey.PACKAGE: wsmeta[metakey.PACKAGE],
-            metakey.PACKAGE_TIMESTAMP: timestamp,
-            metakey.INPUTS: {
+            meta.PACKAGE: wsmeta[meta.PACKAGE],
+            meta.PACKAGE_TIMESTAMP: timestamp,
+            meta.INPUTS: {
                 input_nick: {
-                    metakey.INPUT_PACKAGE: spec[metakey.INPUT_PACKAGE],
-                    metakey.INPUT_VERSION: spec[metakey.INPUT_VERSION],
+                    meta.INPUT_PACKAGE: spec[meta.INPUT_PACKAGE],
+                    meta.INPUT_VERSION: spec[meta.INPUT_VERSION],
                 }
-                for input_nick, spec in wsmeta[metakey.INPUTS].items()
+                for input_nick, spec in wsmeta[meta.INPUTS].items()
             },
-            metakey.DEFAULT_NAME: workspace.package_name,
+            meta.DEFAULT_NAME: workspace.package_name,
         }
 
         self.add_string_content(

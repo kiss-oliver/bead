@@ -12,7 +12,7 @@ import zipfile
 from .package import Package
 from .. import tech
 from . import layouts
-from . import metakey
+from . import meta
 
 # technology modules
 timestamp = tech.timestamp
@@ -64,16 +64,16 @@ class Archive(Package):
             - has inputs (even if empty)
         '''
         valid = all((
-            metakey.PACKAGE in self.meta,
-            metakey.PACKAGE_TIMESTAMP in self.meta,
-            metakey.INPUTS in self.meta,
-            metakey.DEFAULT_NAME in self.meta,
+            meta.PACKAGE in self.meta,
+            meta.PACKAGE_TIMESTAMP in self.meta,
+            meta.INPUTS in self.meta,
+            meta.DEFAULT_NAME in self.meta,
         ))
 
         if valid:
             now = timestamp.time_from_timestamp(timestamp.timestamp())
             pkgtime = timestamp.time_from_timestamp(
-                self.meta[metakey.PACKAGE_TIMESTAMP]
+                self.meta[meta.PACKAGE_TIMESTAMP]
             )
             valid = pkgtime < now
 
@@ -88,11 +88,11 @@ class Archive(Package):
 
     @property
     def uuid(self):
-        return self._meta[metakey.PACKAGE]
+        return self._meta[meta.PACKAGE]
 
     @property
     def timestamp_str(self):
-        return self._meta[metakey.PACKAGE_TIMESTAMP]
+        return self._meta[meta.PACKAGE_TIMESTAMP]
 
     @property
     def meta(self):

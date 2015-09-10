@@ -225,7 +225,7 @@ class Test_new(TestCase):  # noqa
 
     def then_workspace_uuid_is_the_uuid_registered_for_name(self):
         self.assertEqual(
-            Workspace('new').meta[pkg.metakey.PACKAGE],
+            Workspace('new').meta[pkg.meta.PACKAGE],
             Peer.self().get_translation('new').package_uuid)
 
 
