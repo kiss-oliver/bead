@@ -9,12 +9,10 @@ with the following minimum structure:
         'mount point1' : {
             package uuid: ...,
             version uuid: ...,
-            mounted: true | false,
         },
         'mount point2' : {
             package uuid: ...,
             version uuid: ...,
-            mounted: true | false,
         },
         ...
     },
