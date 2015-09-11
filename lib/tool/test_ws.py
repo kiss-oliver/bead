@@ -3,152 +3,19 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase, TempDir
+from ..test import TestCase, CaptureStdout, CaptureStderr
 # from ..test import xfail
 from testtools.content import text_content
 from testtools.matchers import FileContains, Not, Contains, FileExists
-from . import ws as m
-import fixtures
 
-import contextlib
 import os
 from ..pkg.workspace import Workspace
 from .. import commands
 from .. import pkg
-from .. import repos
 from .. import db
-from .. import tech
+from ..tech.timestamp import timestamp
 from ..translations import add_translation, Peer
-Path = tech.fs.Path
-timestamp = tech.timestamp.timestamp
-
-
-@contextlib.contextmanager
-def chdir(directory):
-    cwd = os.getcwd()
-    try:
-        os.chdir(directory)
-        yield
-    finally:
-        os.chdir(cwd)
-
-
-class CaptureStdStream(fixtures.Fixture):
-
-    def __init__(self, stream):
-        assert stream.startswith('sys.std')
-        super(CaptureStdStream, self).__init__()
-        self.stream = stream
-
-    def setUp(self):
-        super(CaptureStdStream, self).setUp()
-        stdout = self.useFixture(fixtures.StringStream(self.stream)).stream
-        self.useFixture(fixtures.MonkeyPatch(self.stream, stdout))
-
-    @property
-    def text(self):
-        return self.getDetails()[self.stream].as_text()
-
-
-def CaptureStdout():
-    return CaptureStdStream('sys.stdout')
-
-
-def CaptureStderr():
-    return CaptureStdStream('sys.stderr')
-
-
-class Robot(fixtures.Fixture):
-    '''
-    Represents a fake user.
-
-    All operations are isolated from the test runner user's environment.
-    They work in a dedicated environment with temporary home, config
-    and working directories.
-    '''
-
-    def setUp(self):
-        super(Robot, self).setUp()
-        self.base_dir = self.useFixture(TempDir()).path
-        os.makedirs(self.home)
-        self.cd(self.home)
-
-    def cleanUp(self):
-        super(Robot, self).cleanUp()
-        self.base_dir = None
-
-    @property
-    def config_dir(self):
-        return self.base_dir / 'config'
-
-    @property
-    def home(self):
-        return self.base_dir / 'home'
-
-    def _path(self, path):
-        '''
-        Convert relative paths to absolute paths
-        '''
-        if os.path.isabs(path):
-            return path
-        else:
-            return Path(os.path.normpath(self.cwd / path))
-
-    def cd(self, dir):
-        '''
-        Change to directory
-        '''
-        self.cwd = self._path(dir)
-        assert os.path.isdir(self.cwd)
-
-    def cli(self, *args):
-        '''
-        Imitate calling the ws tool with the given args
-        '''
-        with fixtures.EnvironmentVariable('HOME', self.home):
-            with chdir(self.cwd):
-                with CaptureStdout() as stdout, CaptureStderr() as stderr:
-                    try:
-                        self.retval = m.cli(self.config_dir, args)
-                    except BaseException as e:
-                        self.retval = e
-                        raise
-                    finally:
-                        self.stdout = stdout.text
-                        self.stderr = stderr.text
-
-    def ls(self, directory=None):
-        directory = self._path(directory or self.cwd)
-        return [
-            directory / filename
-            for filename in os.listdir(directory)]
-
-    def write_file(self, path, content):
-        assert not os.path.isabs(path)
-        tech.fs.write_file(self.cwd / path, content)
-
-    def declare_package(self, name, uuid):
-        ''' -> uuid'''
-        with fixtures.EnvironmentVariable('HOME', self.home):
-            m.initialize_env(self.config_dir)
-            add_translation(name, uuid)
-
-    def make_package(self, repo, uuid, timestamp, package_name='test-package'):
-        with TempDir() as tempdir_obj:
-            workspace_dir = os.path.join(tempdir_obj.path, package_name)
-            with fixtures.EnvironmentVariable('HOME', self.home):
-                m.initialize_env(self.config_dir)
-                ws = Workspace(workspace_dir)
-                ws.create(uuid)
-                sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
-                tech.fs.write_file(sentinel_file, timestamp)
-                repo.store(ws, timestamp)
-                tech.fs.rmtree(workspace_dir)
-
-    def repo(self, name):
-        with fixtures.EnvironmentVariable('HOME', self.home):
-            m.initialize_env(self.config_dir)
-            return repos.get('repo')
+from ..test_fixture_robot import Robot
 
 
 class Test_new(TestCase):  # noqa
@@ -203,19 +70,18 @@ class Test_new(TestCase):  # noqa
             commands.workspace.new(Workspace('new'))
 
     def when_new_is_called_with_already_existing_name(self):
-        self.__stderr = fixtures.StringStream('stderr')
-        self.useFixture(self.__stderr)
         self.assertTrue(Peer.self().knows_about('existing'))
-        with fixtures.MonkeyPatch('sys.stderr', self.__stderr.stream):
+        with CaptureStderr() as stderr:
             try:
                 commands.workspace.new(Workspace('existing'))
             except SystemExit:
                 self.__error_raised = True
+            finally:
+                self.__stderr = stderr.text
 
     def then_error_is_raised(self):
         self.assertTrue(self.__error_raised)
-        self.__stderr.stream.seek(0)
-        self.assertIn('ERROR: ', self.__stderr.stream.read())
+        self.assertIn('ERROR: ', self.__stderr)
 
     def then_workspace_is_created(self):
         self.assertTrue(Workspace('new').is_valid)

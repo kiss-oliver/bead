@@ -34,6 +34,28 @@ def xfail(test, why=""):
     return expect_to_fail
 
 
+TestCase = arglinker.add_test_linker(testtools.TestCase)
+
+
+class TestCase(TestCase):
+
+    def new_temp_dir(self):
+        return self.useFixture(TempDir()).path
+
+    def new_temp_home_dir(self):
+        return self.useFixture(TempHomeDir()).path
+
+    def new_temp_filename(self):
+        fd, name = tempfile.mkstemp()
+        os.close(fd)
+        os.unlink(name)
+        self.addCleanup(os.unlink, name)
+        return name
+
+###
+# commonly used fixtures
+
+
 class TempDir(fixtures.Fixture):
 
     def setUp(self):
@@ -52,20 +74,26 @@ class TempHomeDir(fixtures.Fixture):
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
 
-TestCase = arglinker.add_test_linker(testtools.TestCase)
+class _CaptureStdStream(fixtures.Fixture):
+
+    def __init__(self, stream):
+        assert stream.startswith('sys.std')
+        super(_CaptureStdStream, self).__init__()
+        self.stream = stream
+
+    def setUp(self):
+        super(_CaptureStdStream, self).setUp()
+        stdout = self.useFixture(fixtures.StringStream(self.stream)).stream
+        self.useFixture(fixtures.MonkeyPatch(self.stream, stdout))
+
+    @property
+    def text(self):
+        return self.getDetails()[self.stream].as_text()
 
 
-class TestCase(TestCase):
+def CaptureStdout():
+    return _CaptureStdStream('sys.stdout')
 
-    def new_temp_dir(self):
-        return self.useFixture(TempDir()).path
 
-    def new_temp_home_dir(self):
-        return self.useFixture(TempHomeDir()).path
-
-    def new_temp_filename(self):
-        fd, name = tempfile.mkstemp()
-        os.close(fd)
-        os.unlink(name)
-        self.addCleanup(os.unlink, name)
-        return name
+def CaptureStderr():
+    return _CaptureStdStream('sys.stderr')
