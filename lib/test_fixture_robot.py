@@ -13,7 +13,7 @@ from .pkg.workspace import Workspace
 from .translations import add_translation
 
 from .test import TempDir, CaptureStdout, CaptureStderr
-from .tool import ws as m
+from . import cli
 
 
 @contextlib.contextmanager
@@ -77,7 +77,7 @@ class Robot(fixtures.Fixture):
             with chdir(self.cwd):
                 with CaptureStdout() as stdout, CaptureStderr() as stderr:
                     try:
-                        self.retval = m.cli(self.config_dir, args)
+                        self.retval = cli.cli(self.config_dir, args)
                     except BaseException as e:
                         self.retval = e
                         raise
@@ -98,14 +98,14 @@ class Robot(fixtures.Fixture):
     def declare_package(self, name, uuid):
         ''' -> uuid'''
         with fixtures.EnvironmentVariable('HOME', self.home):
-            m.initialize_env(self.config_dir)
+            cli.initialize_env(self.config_dir)
             add_translation(name, uuid)
 
     def make_package(self, repo, uuid, timestamp, package_name='test-package'):
         with TempDir() as tempdir_obj:
             workspace_dir = os.path.join(tempdir_obj.path, package_name)
             with fixtures.EnvironmentVariable('HOME', self.home):
-                m.initialize_env(self.config_dir)
+                cli.initialize_env(self.config_dir)
                 ws = Workspace(workspace_dir)
                 ws.create(uuid)
                 sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
@@ -115,5 +115,5 @@ class Robot(fixtures.Fixture):
 
     def repo(self, name):
         with fixtures.EnvironmentVariable('HOME', self.home):
-            m.initialize_env(self.config_dir)
+            cli.initialize_env(self.config_dir)
             return repos.get('repo')

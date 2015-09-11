@@ -3,19 +3,19 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase, CaptureStdout, CaptureStderr
+from .test import TestCase, CaptureStdout, CaptureStderr
 # from ..test import xfail
 from testtools.content import text_content
 from testtools.matchers import FileContains, Not, Contains, FileExists
 
 import os
-from ..pkg.workspace import Workspace
-from .. import commands
-from .. import pkg
-from .. import db
-from ..tech.timestamp import timestamp
-from ..translations import add_translation, Peer
-from ..test_fixture_robot import Robot
+from .pkg.workspace import Workspace
+from . import commands
+from . import pkg
+from . import db
+from .tech.timestamp import timestamp
+from .translations import add_translation, Peer
+from .test_fixture_robot import Robot
 
 
 class Test_new(TestCase):  # noqa

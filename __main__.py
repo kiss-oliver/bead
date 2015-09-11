@@ -1,3 +1,3 @@
-from lib.tool.ws import main
-main()
+import lib.cli
 
+lib.cli.main()

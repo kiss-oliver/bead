@@ -18,9 +18,9 @@ import os
 import sys
 
 from argh import ArghParser
-from .. import commands
-from .. import db
-from .. import PACKAGE, VERSION
+from . import commands
+from . import db
+from . import PACKAGE, VERSION
 
 
 def initialize_env(config_dir):
