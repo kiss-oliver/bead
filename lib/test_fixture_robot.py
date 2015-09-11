@@ -95,7 +95,7 @@ class Robot(fixtures.Fixture):
         with self.environment:
             with CaptureStdout() as stdout, CaptureStderr() as stderr:
                 try:
-                    self.retval = cli.cli(args)
+                    self.retval = cli.run(args)
                 finally:
                     self.stdout = stdout.text
                     self.stderr = stderr.text
