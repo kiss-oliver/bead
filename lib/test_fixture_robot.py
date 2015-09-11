@@ -7,10 +7,7 @@ import contextlib
 import os
 import fixtures
 
-from . import repos
 from . import tech
-from .pkg.workspace import Workspace
-from .translations import add_translation
 
 from .test import TempDir, CaptureStdout, CaptureStderr
 from . import cli
@@ -24,6 +21,21 @@ def chdir(directory):
         yield
     finally:
         os.chdir(cwd)
+
+
+@contextlib.contextmanager
+def environment(robot):
+    '''
+    Context manager - enable running code in the context of the robot.
+    '''
+    with fixtures.EnvironmentVariable('HOME', robot.home):
+        with chdir(robot.cwd):
+            try:
+                cli.initialize_env(robot.config_dir)
+                yield
+            except BaseException as e:
+                robot.retval = e
+                raise
 
 
 class Robot(fixtures.Fixture):
@@ -69,21 +81,24 @@ class Robot(fixtures.Fixture):
         self.cwd = self._path(dir)
         assert os.path.isdir(self.cwd)
 
+    @property
+    def environment(self):
+        '''
+        Context manager - enable running code in the context of this robot.
+        '''
+        return environment(self)
+
     def cli(self, *args):
         '''
-        Imitate calling the ws tool with the given args
+        Imitate calling the command line tool with the given args
         '''
-        with fixtures.EnvironmentVariable('HOME', self.home):
-            with chdir(self.cwd):
-                with CaptureStdout() as stdout, CaptureStderr() as stderr:
-                    try:
-                        self.retval = cli.cli(self.config_dir, args)
-                    except BaseException as e:
-                        self.retval = e
-                        raise
-                    finally:
-                        self.stdout = stdout.text
-                        self.stderr = stderr.text
+        with self.environment:
+            with CaptureStdout() as stdout, CaptureStderr() as stderr:
+                try:
+                    self.retval = cli.cli(args)
+                finally:
+                    self.stdout = stdout.text
+                    self.stderr = stderr.text
 
     def ls(self, directory=None):
         directory = self._path(directory or self.cwd)
@@ -94,26 +109,3 @@ class Robot(fixtures.Fixture):
     def write_file(self, path, content):
         assert not os.path.isabs(path)
         tech.fs.write_file(self.cwd / path, content)
-
-    def declare_package(self, name, uuid):
-        ''' -> uuid'''
-        with fixtures.EnvironmentVariable('HOME', self.home):
-            cli.initialize_env(self.config_dir)
-            add_translation(name, uuid)
-
-    def make_package(self, repo, uuid, timestamp, package_name='test-package'):
-        with TempDir() as tempdir_obj:
-            workspace_dir = os.path.join(tempdir_obj.path, package_name)
-            with fixtures.EnvironmentVariable('HOME', self.home):
-                cli.initialize_env(self.config_dir)
-                ws = Workspace(workspace_dir)
-                ws.create(uuid)
-                sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
-                tech.fs.write_file(sentinel_file, timestamp)
-                repo.store(ws, timestamp)
-                tech.fs.rmtree(workspace_dir)
-
-    def repo(self, name):
-        with fixtures.EnvironmentVariable('HOME', self.home):
-            cli.initialize_env(self.config_dir)
-            return repos.get('repo')

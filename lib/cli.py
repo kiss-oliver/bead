@@ -74,8 +74,7 @@ def make_argument_parser():
     return parser
 
 
-def cli(config_dir, argv):
-    initialize_env(config_dir)
+def cli(argv):
     parser = make_argument_parser()
     parser.dispatch(argv)
     # TODO verify exit status
@@ -84,7 +83,8 @@ def cli(config_dir, argv):
 def main():
     config_dir = appdirs.user_config_dir(
         PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
-    cli(config_dir, sys.argv[1:])
+    initialize_env(config_dir)
+    cli(sys.argv[1:])
 
 
 if __name__ == '__main__':

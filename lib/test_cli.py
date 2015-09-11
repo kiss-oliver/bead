@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from .test import TestCase, CaptureStdout, CaptureStderr
+from .test import TestCase, TempDir, CaptureStdout, CaptureStderr
 # from ..test import xfail
 from testtools.content import text_content
 from testtools.matchers import FileContains, Not, Contains, FileExists
@@ -11,11 +11,13 @@ from testtools.matchers import FileContains, Not, Contains, FileExists
 import os
 from .pkg.workspace import Workspace
 from . import commands
-from . import pkg
 from . import db
+from . import pkg
+from . import tech
 from .tech.timestamp import timestamp
 from .translations import add_translation, Peer
 from .test_fixture_robot import Robot
+from . import repos
 
 
 class Test_new(TestCase):  # noqa
@@ -288,7 +290,8 @@ class PackageFixtures(object):
         return robot
 
     def repo(self, robot):
-        return robot.repo('repo')
+        with robot.environment:
+            return repos.get('repo')
 
     def _new_package(self, robot, package_name, inputs=None):
         robot.cli('new', package_name)
@@ -313,9 +316,20 @@ class PackageFixtures(object):
         return self._new_package(robot, 'pkg_b')
 
     def _pkg_with_history(self, robot, repo, package_name, uuid):
-        robot.declare_package(package_name, uuid)
-        robot.make_package(repo, uuid, TS1)
-        robot.make_package(repo, uuid, TS2)
+        def make_package(timestamp):
+            with TempDir() as tempdir_obj:
+                workspace_dir = os.path.join(tempdir_obj.path, package_name)
+                ws = Workspace(workspace_dir)
+                ws.create(uuid)
+                sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
+                tech.fs.write_file(sentinel_file, timestamp)
+                repo.store(ws, timestamp)
+                tech.fs.rmtree(workspace_dir)
+
+        with robot.environment:
+            add_translation(package_name, uuid)
+            make_package(TS1)
+            make_package(TS2)
         return package_name
 
     def pkg_with_history(self, robot, repo):
