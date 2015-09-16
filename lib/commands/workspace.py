@@ -35,15 +35,16 @@ def assert_may_be_valid_name(name):
 
 
 @arg(
-    'workspace', type=Workspace, metavar=metavar.WORKSPACE,
-    help=help.WORKSPACE)
+    'workspace', type=Workspace, metavar='WORKSPACE',
+    help='package and directory to create')
 def new(workspace):
     '''
-    Create and initialize new workspace.
+    Create and initialize new workspace directory with a new package.
     '''
     uuid = tech.identifier.uuid()
 
     assert_may_be_valid_name(workspace.package_name)
+    # FIXME: die with message when directory already exists
     add_translation(workspace.package_name, uuid)
 
     workspace.create(uuid)
