@@ -90,6 +90,29 @@ class Test_Peer(TestCase):
         a.save()
         self.assertRaises(LookupError, a.get_translation, 'nonexisting')
 
+    def test_get_translations(self):
+        a = Peer('a')
+        a.save()
+
+        translations = a.get_translations('known_uuid')
+        self.assertEquals([], translations)
+
+        def add_translation(name, uuid):
+            translation = Translation()
+            translation.peer_id = a.id
+            translation.name = name
+            translation.package_uuid = uuid
+            omlite.save(translation)
+
+        add_translation('shiny', 'known_uuid')
+        add_translation('another-name', 'known_uuid')
+        add_translation('something-else', 'another-uuid')
+
+        translations = a.get_translations('known_uuid')
+        self.assertEquals(
+            {'shiny', 'another-name'},
+            {t.name for t in translations})
+
 
 class Test_Translation(TestCase):
 

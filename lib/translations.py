@@ -73,6 +73,13 @@ class Peer(object):
             return translations[0]
         raise LookupError(self.name, package_name)
 
+    def get_translations(self, package_uuid):
+        return list(
+            omlite.filter(
+                Translation,
+                'peer_id = ? AND package_uuid = ?',
+                self.id, package_uuid))
+
     def knows_about(self, package_name):
         try:
             self.get_translation(package_name)
