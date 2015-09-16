@@ -124,7 +124,7 @@ class Test_basic_command_line(TestCase):
 
         cd('something')
         cli('status')
-        self.assertIn('no defined inputs', robot.stdout)
+        self.assertNotIn('Inputs', robot.stdout)
 
         cli('repo', 'add', 'default', repo_dir)
         cli('pack')
@@ -136,7 +136,7 @@ class Test_basic_command_line(TestCase):
         cd('something-develop')
         cli('input', 'add', 'older-self', 'something')
         cli('status')
-        self.assertNotIn('no defined inputs', robot.stdout)
+        self.assertIn('Inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
 
         cli('nuke', robot.cwd.parent / 'something')
@@ -293,13 +293,18 @@ class PackageFixtures(object):
         with robot.environment:
             return repos.get('repo')
 
-    def _new_package(self, robot, package_name, inputs=None):
+    def packages(self):
+        return {}
+
+    def _new_package(self, robot, packages, package_name, inputs=None):
         robot.cli('new', package_name)
         robot.cd(package_name)
         robot.write_file('README', package_name)
         robot.write_file('output/README', package_name)
         self._add_inputs(robot, inputs)
-        robot.cli('pack')
+        repo = self.repo(robot)
+        with robot.environment:
+            packages[package_name] = repo.store(Workspace('.'), TS1)
         robot.cd('..')
         robot.cli('nuke', package_name)
         return package_name
@@ -309,11 +314,11 @@ class PackageFixtures(object):
         for name in inputs:
             robot.cli('input', 'add', name, inputs[name])
 
-    def pkg_a(self, robot):
-        return self._new_package(robot, 'pkg_a')
+    def pkg_a(self, robot, packages):
+        return self._new_package(robot, packages, 'pkg_a')
 
-    def pkg_b(self, robot):
-        return self._new_package(robot, 'pkg_b')
+    def pkg_b(self, robot, packages):
+        return self._new_package(robot, packages, 'pkg_b')
 
     def _pkg_with_history(self, robot, repo, package_name, uuid):
         def make_package(timestamp):
@@ -336,9 +341,9 @@ class PackageFixtures(object):
         return self._pkg_with_history(
             robot, repo, 'pkg_with_history', 'UUID:pkg_with_history')
 
-    def pkg_with_inputs(self, robot, pkg_a, pkg_b):
+    def pkg_with_inputs(self, robot, packages, pkg_a, pkg_b):
         inputs = dict(input_a=pkg_a, input_b=pkg_b)
-        return self._new_package(robot, 'pkg_with_inputs', inputs)
+        return self._new_package(robot, packages, 'pkg_with_inputs', inputs)
 
 
 class Test_package_with_history(TestCase, PackageFixtures):
@@ -433,3 +438,70 @@ class Test_input_commands(TestCase, PackageFixtures):
 
         robot.cli('status')
         self.assertThat(robot.stdout, Not(Contains(pkg_b)))
+
+
+class Test_status(TestCase, PackageFixtures):
+
+    # tests
+
+    def test(self, robot, packages, pkg_with_inputs, pkg_a):
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+        robot.cli('status')
+
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs))
+        self.assertThat(robot.stdout, Contains(pkg_a))
+
+        pkg_a = packages[pkg_a]
+        pkg_with_inputs = packages[pkg_with_inputs]
+        self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs.uuid)))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a.uuid)))
+        self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a.version)))
+
+    def test_verbose(self, robot, packages, pkg_with_inputs, pkg_a):
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+        robot.cli('status', '-v')
+
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs))
+        self.assertThat(robot.stdout, Contains(pkg_a))
+
+        pkg_a = packages[pkg_a]
+        pkg_with_inputs = packages[pkg_with_inputs]
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_a.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
+        self.assertThat(robot.stdout, Contains(pkg_a.version))
+
+    def test_no_translations(self, robot, packages, pkg_with_inputs, pkg_a):
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+        robot.cause_amnesia()
+        robot.cli('status')
+
+        self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs)))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a)))
+
+        pkg_a = packages[pkg_a]
+        pkg_with_inputs = packages[pkg_with_inputs]
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_a.uuid))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a.timestamp_str)))
+        self.assertThat(robot.stdout, Contains(pkg_a.version))
+
+    def test_verbose2(self, robot, packages, pkg_with_inputs, pkg_a):
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+        robot.cause_amnesia()
+        robot.cli('status', '--verbose')
+
+        self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs)))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a)))
+
+        pkg_a = packages[pkg_a]
+        pkg_with_inputs = packages[pkg_with_inputs]
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_a.uuid))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a.timestamp_str)))
+        self.assertThat(robot.stdout, Contains(pkg_a.version))

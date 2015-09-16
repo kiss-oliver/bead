@@ -10,6 +10,7 @@ from ..pkg.workspace import Workspace, CurrentDirWorkspace
 
 from .common import arg, die
 from .common import DefaultArgSentinel, PackageReference
+from .common import get_channel
 from . import metavar
 from . import help
 from .. import repos
@@ -112,27 +113,83 @@ def indent(lines):
     return ('\t' + line for line in lines)
 
 
-def print_mounts(workspace):
+def _status_version_timestamp(input, peer):
+    return (
+        'Release time',
+        get_channel().get_package(input.package, input.version).timestamp_str)
+
+
+def get_package_name(package_uuid, peer):
+    translations = peer.get_translations(package_uuid)
+    if translations:
+        return translations[0].name
+    raise LookupError(peer.name, package_uuid)
+
+
+def _status_package_name(input, peer):
+    return ('Package name', get_package_name(input.package, peer))
+
+
+def _status_package_uuid(input, peer):
+    return ('Package UUID', input.package)
+
+
+def _status_version_hash(input, peer):
+    return ('Version hash', input.version)
+
+
+def first(*fields):
+    '''
+    First available field
+    '''
+    def field(input, peer):
+        for field in fields:
+            try:
+                return field(input, peer)
+            except LookupError:
+                pass
+        raise LookupError()
+    return field
+
+
+ALL_FIELDS = (
+    _status_package_name,
+    _status_package_uuid,
+    _status_version_timestamp,
+    _status_version_hash,
+)
+
+
+DEFAULT_FIELDS = (
+    first(_status_package_name, _status_package_uuid),
+    first(_status_version_timestamp, _status_version_hash),
+)
+
+
+def format_input(input, peer, fields):
+    yield '- {0} (input/{0})'.format(input.name)
+    for field in fields:
+        try:
+            name, value = field(input, peer)
+        except LookupError:
+            pass
+        else:
+            yield '\t{}: {}'.format(name, value)
+
+
+def print_mounts(workspace, peer, fields=ALL_FIELDS):
     assert_valid_workspace(workspace)
     inputs = sorted(workspace.inputs)
 
-    if not inputs:
-        print('Package has no defined inputs')
-    else:
-        print('Package inputs:')
-        lines = []
+    if inputs:
+        print('Inputs:')
+        print_separator = lambda: None
         for input in inputs:
-            if lines:
-                # separator
-                lines.append('')
-            # TODO: print package name and version timestamp
-            lines.extend([
-                '- {0} (input/{0})'.format(input.name),
-                '\tPackage UUID: {}'.format(input.package),
-                '\tVersion hash: {}'.format(input.version),
-            ])
-        msg = '\n'.join(indent(lines)).expandtabs(2)
-        print(msg)
+            print_separator()
+            print(
+                '\n'.join(indent(format_input(input, peer, fields)))
+                .expandtabs(2))
+            print_separator = print
 
         print('')
         unmounted = [
@@ -141,21 +198,30 @@ def print_mounts(workspace):
             if not workspace.is_mounted(input.name)]
         if unmounted:
             print('These inputs are not loaded:')
-            unmounted_list = '\t- ' + '\t- '.join(unmounted)
+            unmounted_list = '\t- ' + '\n\t- '.join(unmounted)
             print(unmounted_list.expandtabs(2))
             print('You can "load" or "update" them manually.')
-        else:
-            print('All inputs are available under input directory.')
 
 
 @arg_workspace_defaulting_to(CURRENT_DIRECTORY)
-def status(workspace):
+@arg('-v', '--verbose', help='show more detailed information')
+def status(workspace, verbose=False):
     '''
     Show workspace status - name of package, inputs and their unpack status.
     '''
-    # TODO: print Package name, version (both hash and timestamp)
-    print('Package UUID: {}'.format(workspace.uuid))
-    print_mounts(workspace)
+    # TODO: use a template and render it with passing in all data
+    peer = Peer.self()
+    print_uuid = verbose
+    try:
+        package_name = get_package_name(workspace.uuid, peer)
+        print('Package Name: {}'.format(package_name))
+    except LookupError:
+        print_uuid = True
+    if print_uuid:
+        print('Package UUID: {}'.format(workspace.uuid))
+    print()
+    print_mounts(
+        workspace, peer, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
 
 
 @arg_workspace_defaulting_to(CURRENT_DIRECTORY)

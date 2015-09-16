@@ -109,3 +109,9 @@ class Robot(fixtures.Fixture):
     def write_file(self, path, content):
         assert not os.path.isabs(path)
         tech.fs.write_file(self.cwd / path, content)
+
+    def cause_amnesia(self):
+        '''
+        Forget all translations and repos by removing the user config.
+        '''
+        tech.fs.rmtree(self.config_dir)
