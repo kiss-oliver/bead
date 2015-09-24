@@ -3,94 +3,15 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase, TempDir
-# from ..test import xfail
+from ..test import TestCase
 from testtools.matchers import FileContains, Not, Contains, FileExists
 
 import os
 from ..pkg.workspace import Workspace
-from .. import tech
-from ..translations import add_translation
-from .robot import Robot
-from .. import repos
+from . import fixtures
 
 
-# timestamps
-TS1 = '20150901_151015_1'
-TS2 = '20150901_151016_2'
-
-
-class PackageFixtures(object):
-
-    # fixtures
-    def robot(self):
-        '''
-        I am a robot user with a repo
-        '''
-        robot = self.useFixture(Robot())
-        repo_dir = robot.cwd / 'repo'
-        os.makedirs(repo_dir)
-        robot.cli('repo', 'add', 'repo', repo_dir)
-        return robot
-
-    def repo(self, robot):
-        with robot.environment:
-            return repos.get('repo')
-
-    def packages(self):
-        return {}
-
-    def _new_package(self, robot, packages, package_name, inputs=None):
-        robot.cli('new', package_name)
-        robot.cd(package_name)
-        robot.write_file('README', package_name)
-        robot.write_file('output/README', package_name)
-        self._add_inputs(robot, inputs)
-        repo = self.repo(robot)
-        with robot.environment:
-            packages[package_name] = repo.store(Workspace('.'), TS1)
-        robot.cd('..')
-        robot.cli('nuke', package_name)
-        return package_name
-
-    def _add_inputs(self, robot, inputs):
-        inputs = inputs or {}
-        for name in inputs:
-            robot.cli('input', 'add', name, inputs[name])
-
-    def pkg_a(self, robot, packages):
-        return self._new_package(robot, packages, 'pkg_a')
-
-    def pkg_b(self, robot, packages):
-        return self._new_package(robot, packages, 'pkg_b')
-
-    def _pkg_with_history(self, robot, repo, package_name, uuid):
-        def make_package(timestamp):
-            with TempDir() as tempdir_obj:
-                workspace_dir = os.path.join(tempdir_obj.path, package_name)
-                ws = Workspace(workspace_dir)
-                ws.create(uuid)
-                sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
-                tech.fs.write_file(sentinel_file, timestamp)
-                repo.store(ws, timestamp)
-                tech.fs.rmtree(workspace_dir)
-
-        with robot.environment:
-            add_translation(package_name, uuid)
-            make_package(TS1)
-            make_package(TS2)
-        return package_name
-
-    def pkg_with_history(self, robot, repo):
-        return self._pkg_with_history(
-            robot, repo, 'pkg_with_history', 'UUID:pkg_with_history')
-
-    def pkg_with_inputs(self, robot, packages, pkg_a, pkg_b):
-        inputs = dict(input_a=pkg_a, input_b=pkg_b)
-        return self._new_package(robot, packages, 'pkg_with_inputs', inputs)
-
-
-class Test_package_with_history(TestCase, PackageFixtures):
+class Test_package_with_history(TestCase, fixtures.RobotAndPackages):
 
     # tests
     def test_develop_by_name(self, robot, pkg_a):
@@ -117,24 +38,26 @@ class Test_package_with_history(TestCase, PackageFixtures):
             FileExists())
 
     def test_develop_without_version(self, robot, pkg_with_history):
-        self.assert_develop_version(robot, 'pkg_with_history', TS2)
+        self.assert_develop_version(robot, 'pkg_with_history', fixtures.TS2)
 
     def test_develop_without_offset(self, robot, pkg_with_history):
-        self.assert_develop_version(robot, 'pkg_with_history@', TS2)
+        self.assert_develop_version(robot, 'pkg_with_history@', fixtures.TS2)
 
     def test_develop_with_offset(self, robot, pkg_with_history):
-        self.assert_develop_version(robot, 'pkg_with_history@-1', TS1)
+        self.assert_develop_version(robot, 'pkg_with_history@-1', fixtures.TS1)
 
     def test_develop_w_version_wo_offset(self, robot, pkg_with_history):
-        self.assert_develop_version(robot, 'pkg_with_history@' + TS1, TS1)
+        self.assert_develop_version(
+            robot, 'pkg_with_history@' + fixtures.TS1,
+            fixtures.TS1)
 
     def test_develop_available_matches_to_version_are_less_than_offset(
             self, robot, pkg_with_history):
         self.assert_develop_version(
-            robot, 'pkg_with_history@{}-1'.format(TS2), TS2)
+            robot, 'pkg_with_history@{}-1'.format(fixtures.TS2), fixtures.TS2)
 
 
-class Test_input_commands(TestCase, PackageFixtures):
+class Test_input_commands(TestCase, fixtures.RobotAndPackages):
 
     def assert_mounted(self, robot, input_name, package_name):
         self.assertThat(
@@ -147,7 +70,7 @@ class Test_input_commands(TestCase, PackageFixtures):
         # nextpkg with input1 as datapkg1
         robot.cli('new', 'nextpkg')
         robot.cd('nextpkg')
-        robot.cli('input', 'add', 'input1', 'pkg_with_history@' + TS1)
+        robot.cli('input', 'add', 'input1', 'pkg_with_history@' + fixtures.TS1)
         robot.cli('pack')
         robot.cd('..')
         robot.cli('nuke', 'nextpkg')
@@ -184,7 +107,7 @@ class Test_input_commands(TestCase, PackageFixtures):
         self.assertThat(robot.stdout, Not(Contains(pkg_b)))
 
 
-class Test_status(TestCase, PackageFixtures):
+class Test_status(TestCase, fixtures.RobotAndPackages):
 
     # tests
 
