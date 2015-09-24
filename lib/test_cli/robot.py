@@ -7,10 +7,10 @@ import contextlib
 import os
 import fixtures
 
-from . import tech
+from .. import tech
 
-from .test import TempDir, CaptureStdout, CaptureStderr
-from . import cli
+from ..test import TempDir, CaptureStdout, CaptureStderr
+from .. import cli
 
 
 @contextlib.contextmanager

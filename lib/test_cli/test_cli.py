@@ -3,21 +3,21 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from .test import TestCase, TempDir, CaptureStdout, CaptureStderr
+from ..test import TestCase, TempDir, CaptureStdout, CaptureStderr
 # from ..test import xfail
 from testtools.content import text_content
 from testtools.matchers import FileContains, Not, Contains, FileExists
 
 import os
-from .pkg.workspace import Workspace
-from . import commands
-from . import db
-from . import pkg
-from . import tech
-from .tech.timestamp import timestamp
-from .translations import add_translation, Peer
-from .test_fixture_robot import Robot
-from . import repos
+from ..pkg.workspace import Workspace
+from .. import commands
+from .. import db
+from .. import pkg
+from .. import tech
+from ..tech.timestamp import timestamp
+from ..translations import add_translation, Peer
+from .robot import Robot
+from .. import repos
 
 
 class Test_new(TestCase):  # noqa
