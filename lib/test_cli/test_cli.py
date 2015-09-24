@@ -5,7 +5,6 @@ from __future__ import print_function
 
 from ..test import TestCase, TempDir
 # from ..test import xfail
-from testtools.content import text_content
 from testtools.matchers import FileContains, Not, Contains, FileExists
 
 import os
@@ -14,55 +13,6 @@ from .. import tech
 from ..translations import add_translation
 from .robot import Robot
 from .. import repos
-
-
-class Test_basic_command_line(TestCase):
-
-    # fixtures
-    def robot(self):
-        return self.useFixture(Robot())
-
-    def cli(self, robot):
-        return robot.cli
-
-    def cd(self, robot):
-        return robot.cd
-
-    def ls(self, robot):
-        return robot.ls
-
-    def repo_dir(self):
-        return self.new_temp_dir()
-
-    # tests
-    def test(self, robot, cli, cd, ls, repo_dir):
-        self.addDetail('home', text_content(robot.home))
-
-        cli('new', 'something')
-        self.assertIn('something', robot.stdout)
-
-        cd('something')
-        cli('status')
-        self.assertNotIn('Inputs', robot.stdout)
-
-        cli('repo', 'add', 'default', repo_dir)
-        cli('pack')
-
-        cd('..')
-        cli('develop', 'something', 'something-develop')
-        self.assertIn(robot.cwd / 'something-develop', ls())
-
-        cd('something-develop')
-        cli('input', 'add', 'older-self', 'something')
-        cli('status')
-        self.assertIn('Inputs', robot.stdout)
-        self.assertIn('older-self', robot.stdout)
-
-        cli('nuke', robot.cwd.parent / 'something')
-        cli('nuke')
-
-        cd('..')
-        self.assertEqual([], ls(robot.home))
 
 
 # timestamps
