@@ -30,7 +30,7 @@ $ cp build/ws ~/.local/bin
 
 Note: the name `ws` comes from *workspace*, it might change in the future.
 
-If you test it, please give [feedback](issues) on
+If you test it, please give [feedback](../../issues) on
 - general usability
 - misleading/unclear help
 - what is missing
