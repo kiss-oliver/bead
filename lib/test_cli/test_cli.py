@@ -11,7 +11,6 @@ from testtools.matchers import FileContains, Not, Contains, FileExists
 import os
 from ..pkg.workspace import Workspace
 from .. import tech
-from ..tech.timestamp import timestamp
 from ..translations import add_translation
 from .robot import Robot
 from .. import repos
@@ -64,131 +63,6 @@ class Test_basic_command_line(TestCase):
 
         cd('..')
         self.assertEqual([], ls(robot.home))
-
-
-class Test_shared_repo(TestCase):
-
-    # fixtures
-    def repo(self):
-        return self.new_temp_dir()
-
-    def timestamp(self):
-        return timestamp()
-
-    def package(self, timestamp):
-        tmp = self.new_temp_dir()
-        ws = Workspace(tmp / 'ws')
-        ws.create('pkg-uuid')
-        package_archive = tmp / 'package.zip'
-        ws.pack(package_archive, timestamp)
-        return package_archive
-
-    def alice(self, repo):
-        robot = self.useFixture(Robot())
-        robot.cli('repo', 'add', 'bobrepo', repo)
-        return robot
-
-    def bob(self, repo):
-        robot = self.useFixture(Robot())
-        robot.cli('repo', 'add', 'alicerepo', repo)
-        return robot
-
-    # tests
-    def test_update(self, alice, bob, package):
-        bob.cli('new', 'bobpkg')
-        bob.cd('bobpkg')
-        bob.cli('input', 'add', 'alicepkg1', package)
-        bob.cli('input', 'add', 'alicepkg2', package)
-
-        alice.cli('develop', package, 'alicepkg')
-        alice.cd('alicepkg')
-        alice.write_file('output/datafile', '''Alice's new data''')
-        alice.cli('pack')
-
-        # update only one input
-        bob.cli('input', 'update', 'alicepkg1')
-
-        self.assertThat(
-            bob.cwd / 'input/alicepkg1/datafile',
-            FileContains('''Alice's new data'''))
-
-        # second input directory not changed
-        self.assertThat(
-            bob.cwd / 'input/alicepkg2/datafile',
-            Not(FileExists()))
-
-        # update all inputs
-        bob.cli('input', 'update')
-
-        self.assertThat(
-            bob.cwd / 'input/alicepkg2/datafile',
-            FileContains('''Alice's new data'''))
-
-
-class Test_repo_commands(TestCase):
-
-    # fixtures
-    def robot(self):
-        return self.useFixture(Robot())
-
-    def dir1(self, robot):
-        os.makedirs(robot.cwd / 'dir1')
-        return 'dir1'
-
-    def dir2(self, robot):
-        os.makedirs(robot.cwd / 'dir2')
-        return 'dir2'
-
-    # tests
-    def test_list_when_there_are_no_repos(self, robot):
-        robot.cli('repo', 'list')
-        self.assertThat(
-            robot.stdout, Contains('There are no defined repositories'))
-
-    def test_add_non_existing_directory_fails(self, robot):
-        robot.cli('repo', 'add', 'notadded', 'non-existing')
-        self.assertThat(robot.stdout, Contains('ERROR'))
-        self.assertThat(robot.stdout, Not(Contains('notadded')))
-
-    def test_add_multiple(self, robot, dir1, dir2):
-        robot.cli('repo', 'add', 'name1', 'dir1')
-        robot.cli('repo', 'add', 'name2', 'dir2')
-        self.assertThat(robot.stdout, Not(Contains('ERROR')))
-
-        robot.cli('repo', 'list')
-        self.assertThat(robot.stdout, Contains('name1'))
-        self.assertThat(robot.stdout, Contains('name2'))
-        self.assertThat(robot.stdout, Contains('dir1'))
-        self.assertThat(robot.stdout, Contains('dir2'))
-
-    def test_add_with_same_name_fails(self, robot, dir1, dir2):
-        robot.cli('repo', 'add', 'name', 'dir1')
-        self.assertThat(robot.stdout, Not(Contains('ERROR')))
-
-        robot.cli('repo', 'add', 'name', 'dir2')
-        self.assertThat(robot.stdout, Contains('ERROR'))
-
-    def test_add_same_directory_twice_fails(self, robot, dir1):
-        robot.cli('repo', 'add', 'name1', dir1)
-        self.assertThat(robot.stdout, Not(Contains('ERROR')))
-
-        robot.cli('repo', 'add', 'name2', dir1)
-        self.assertThat(robot.stdout, Contains('ERROR'))
-
-    def test_forget_repo(self, robot, dir1, dir2):
-        robot.cli('repo', 'add', 'repo-to-delete', dir1)
-        robot.cli('repo', 'add', 'another-repo', dir2)
-
-        robot.cli('repo', 'forget', 'repo-to-delete')
-        self.assertThat(robot.stdout, Contains('forgotten'))
-
-        robot.cli('repo', 'list')
-        self.assertThat(robot.stdout, Not(Contains('repo-to-delete')))
-        self.assertThat(robot.stdout, Contains('another-repo'))
-
-    def test_forget_nonexisting_repo(self, robot):
-        robot.cli('repo', 'forget', 'non-existing')
-        self.assertThat(robot.stdout, Contains('WARNING'))
 
 
 # timestamps
