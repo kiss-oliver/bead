@@ -68,3 +68,14 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
 
         self.assertThat(robot.stderr, Contains('WARNING'))
         self.assertThat(robot.stderr, Contains('No inputs defined to load.'))
+
+    def test_add_with_unrecognized_package_name_exits_with_error(
+            self, robot, pkg_a):
+        robot.cli('develop', pkg_a)
+        robot.cd(pkg_a)
+        try:
+            robot.cli('input', 'add', 'x', 'non-existing-package')
+            self.fail('Expected an error exit!')
+        except SystemExit:
+            self.assertThat(robot.stderr, Contains('ERROR'))
+            self.assertThat(robot.stderr, Contains('non-existing-package'))

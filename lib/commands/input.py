@@ -9,7 +9,7 @@ from ..commands import metavar, help
 from ..commands.common import (
     opt_workspace, PackageReference, DefaultArgSentinel, get_channel,
     CurrentDirWorkspace,
-    warning
+    die, warning
 )
 from .. import repos
 
@@ -39,10 +39,17 @@ def add(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     '''
     Make data from another package available in the input directory.
     '''
-    workspace.load(input_nick, package_ref.package)
-    print(
-        '{} loaded on {}.'
-        .format(package_ref.package_reference, input_nick))
+    try:
+        package = package_ref.package
+    except LookupError:
+        die(
+            'Not a known package name: {}'
+            .format(package_ref.package_reference))
+    else:
+        workspace.load(input_nick, package)
+        print(
+            '{} loaded on {}.'
+            .format(package_ref.package_reference, input_nick))
 
 
 @arg_input_nick
