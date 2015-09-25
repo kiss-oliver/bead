@@ -114,7 +114,7 @@ def _load(workspace, input):
         try:
             package = repos.get_package(input.package, input.version)
         except LookupError:
-            print(
+            warning(
                 'Could not find archive for {} - not loaded!'
                 .format(input.name))
         else:

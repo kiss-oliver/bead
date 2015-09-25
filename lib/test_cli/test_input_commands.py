@@ -69,6 +69,25 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stderr, Contains('WARNING'))
         self.assertThat(robot.stderr, Contains('No inputs defined to load.'))
 
+    def test_load_with_missing_package_gives_warning(
+            self, robot, pkg_with_inputs, pkg_a):
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+        robot.cause_amnesia()
+        robot.cli('input', 'load')
+        self.assertThat(robot.stderr, Contains('WARNING'))
+        self.assertThat(robot.stderr, Contains('input_a'))
+        self.assertThat(robot.stderr, Contains('input_b'))
+
+    def test_load_only_one_input(
+            self, robot, pkg_with_inputs, pkg_a):
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+        robot.cli('input', 'load', 'input_a')
+        self.assert_loaded(robot, 'input_a', pkg_a)
+        with robot.environment:
+            self.assertFalse(Workspace('.').is_loaded('input_b'))
+
     def test_add_with_unrecognized_package_name_exits_with_error(
             self, robot, pkg_a):
         robot.cli('develop', pkg_a)
