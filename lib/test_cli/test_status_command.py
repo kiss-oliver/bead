@@ -76,3 +76,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stdout, Contains(pkg_a.uuid))
         self.assertThat(robot.stdout, Not(Contains(pkg_a.timestamp_str)))
         self.assertThat(robot.stdout, Contains(pkg_a.version))
+
+    def test_invalid_workspace(self, robot):
+        robot.cli('status')
+        self.assertThat(robot.stderr, Contains('WARNING'))

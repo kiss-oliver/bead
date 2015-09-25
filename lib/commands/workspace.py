@@ -8,7 +8,7 @@ import os
 from .. import tech
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 
-from .common import arg, die
+from .common import arg, die, warning
 from .common import DefaultArgSentinel, PackageReference
 from .common import get_channel
 from . import metavar
@@ -212,16 +212,19 @@ def status(workspace, verbose=False):
     # TODO: use a template and render it with passing in all data
     peer = Peer.self()
     uuid_needed = verbose
-    try:
-        package_name = get_package_name(workspace.uuid, peer)
-        print('Package Name: {}'.format(package_name))
-    except LookupError:
-        uuid_needed = True
-    if uuid_needed:
-        print('Package UUID: {}'.format(workspace.uuid))
-    print()
-    print_inputs(
-        workspace, peer, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
+    if workspace.is_valid:
+        try:
+            package_name = get_package_name(workspace.uuid, peer)
+            print('Package Name: {}'.format(package_name))
+        except LookupError:
+            uuid_needed = True
+        if uuid_needed:
+            print('Package UUID: {}'.format(workspace.uuid))
+        print()
+        print_inputs(
+            workspace, peer, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
+    else:
+        warning('Invalid workspace ({})'.format(workspace.directory))
 
 
 @arg_workspace_defaulting_to(CURRENT_DIRECTORY)
