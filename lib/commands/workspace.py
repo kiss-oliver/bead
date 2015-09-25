@@ -66,12 +66,16 @@ def pack(workspace):
     '''
     Create a new archive from the workspace.
     '''
+    assert_valid_workspace(workspace)
     # TODO: #9 personal config: directory to store newly created packages in
     # FIXME: parameter for repo selection in case of multiple repos
     repositories = list(repos.get_all())
+    if not repositories:
+        die('No repositories defined, please define one!')
     assert len(repositories) == 1, 'Only one repo supported at the moment :('
     repo = repositories[0]
     repo.store(workspace, timestamp())
+    print('Successfully stored package.')
 
 
 DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
