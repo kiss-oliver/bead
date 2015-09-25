@@ -28,6 +28,12 @@ def die(msg):
     sys.exit(ERROR_EXIT)
 
 
+def warning(msg):
+    sys.stderr.write('WARNING: ')
+    sys.stderr.write(msg)
+    sys.stderr.write('\n')
+
+
 def opt_workspace(func):
     '''
     Define `workspace` as option, defaulting to current directory

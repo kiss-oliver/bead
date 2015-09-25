@@ -59,3 +59,12 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
 
         robot.cli('status')
         self.assertThat(robot.stdout, Not(Contains(pkg_b)))
+
+    def test_load_on_workspace_without_input_gives_feedback(
+            self, robot, pkg_a):
+        robot.cli('develop', pkg_a)
+        robot.cd(pkg_a)
+        robot.cli('input', 'load')
+
+        self.assertThat(robot.stderr, Contains('WARNING'))
+        self.assertThat(robot.stderr, Contains('No inputs defined to load.'))

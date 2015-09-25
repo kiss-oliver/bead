@@ -8,7 +8,8 @@ from argh.decorators import arg
 from ..commands import metavar, help
 from ..commands.common import (
     opt_workspace, PackageReference, DefaultArgSentinel, get_channel,
-    CurrentDirWorkspace
+    CurrentDirWorkspace,
+    warning
 )
 from .. import repos
 
@@ -91,8 +92,12 @@ def load(input_nick, workspace=CURRENT_DIRECTORY):
     Put defined input data in place.
     '''
     if input_nick is ALL_INPUTS:
-        for input in workspace.inputs:
-            _load(workspace, input)
+        inputs = workspace.inputs
+        if inputs:
+            for input in inputs:
+                _load(workspace, input)
+        else:
+            warning('No inputs defined to load.')
     else:
         _load(workspace, workspace.get_input(input_nick))
 
