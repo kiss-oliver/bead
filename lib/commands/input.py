@@ -42,14 +42,13 @@ def add(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     try:
         package = package_ref.package
     except LookupError:
-        die(
-            'Not a known package name: {}'
+        die('Not a known package name: {}'
             .format(package_ref.package_reference))
-    else:
-        workspace.load(input_nick, package)
-        print(
-            '{} loaded on {}.'
-            .format(package_ref.package_reference, input_nick))
+
+    workspace.load(input_nick, package)
+    print(
+        '{} loaded on {}.'
+        .format(package_ref.package_reference, input_nick))
 
 
 @arg_input_nick
