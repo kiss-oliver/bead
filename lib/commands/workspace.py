@@ -187,13 +187,14 @@ def print_inputs(workspace, peer, fields=ALL_FIELDS):
 
     if inputs:
         print('Inputs:')
-        print_separator = lambda: None
+
+        input_separator = ''
         for input in inputs:
-            print_separator()
+            print(input_separator, end='')
             print(
                 '\n'.join(indent(format_input(input, peer, fields)))
                 .expandtabs(2))
-            print_separator = print
+            input_separator = os.linesep
 
         print('')
         unloaded = [
