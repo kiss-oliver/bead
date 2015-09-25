@@ -202,9 +202,7 @@ class Importer(object):
         import_db = omlite.Database(self.filename)
 
         imported_peer = self._get_peer_to_import(import_db)
-        omlite.delete(imported_peer)
-        # FIXME?: omlite should not erase id on delete
-        imported_peer = self._get_peer_to_import(import_db)
+        omlite.delete_but_keep_id(imported_peer)
         omlite.create(imported_peer)
 
         ExportedTranslation = _exported_translation_class(import_db)
