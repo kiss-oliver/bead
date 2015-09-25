@@ -177,7 +177,7 @@ def format_input(input, peer, fields):
             yield '\t{}: {}'.format(name, value)
 
 
-def print_mounts(workspace, peer, fields=ALL_FIELDS):
+def print_inputs(workspace, peer, fields=ALL_FIELDS):
     assert_valid_workspace(workspace)
     inputs = sorted(workspace.inputs)
 
@@ -192,14 +192,14 @@ def print_mounts(workspace, peer, fields=ALL_FIELDS):
             print_separator = print
 
         print('')
-        unmounted = [
+        unloaded = [
             input.name
             for input in inputs
-            if not workspace.is_mounted(input.name)]
-        if unmounted:
+            if not workspace.is_loaded(input.name)]
+        if unloaded:
             print('These inputs are not loaded:')
-            unmounted_list = '\t- ' + '\n\t- '.join(unmounted)
-            print(unmounted_list.expandtabs(2))
+            unloaded_list = '\t- ' + '\n\t- '.join(unloaded)
+            print(unloaded_list.expandtabs(2))
             print('You can "load" or "update" them manually.')
 
 
@@ -211,16 +211,16 @@ def status(workspace, verbose=False):
     '''
     # TODO: use a template and render it with passing in all data
     peer = Peer.self()
-    print_uuid = verbose
+    uuid_needed = verbose
     try:
         package_name = get_package_name(workspace.uuid, peer)
         print('Package Name: {}'.format(package_name))
     except LookupError:
-        print_uuid = True
-    if print_uuid:
+        uuid_needed = True
+    if uuid_needed:
         print('Package UUID: {}'.format(workspace.uuid))
     print()
-    print_mounts(
+    print_inputs(
         workspace, peer, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
 
 

@@ -6,11 +6,11 @@ with the following minimum structure:
 
 {
     inputs: {
-        'mount point1' : {
+        'nick1' : {
             package uuid: ...,
             version uuid: ...,
         },
-        'mount point2' : {
+        'nick2' : {
             package uuid: ...,
             version uuid: ...,
         },

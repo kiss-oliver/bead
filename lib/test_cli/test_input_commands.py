@@ -13,7 +13,7 @@ from . import fixtures
 
 class Test_input_commands(TestCase, fixtures.RobotAndPackages):
 
-    def assert_mounted(self, robot, input_name, package_name):
+    def assert_loaded(self, robot, input_name, package_name):
         self.assertThat(
             robot.cwd / 'input' / input_name / 'README',
             FileContains(package_name))
@@ -47,15 +47,15 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
 
         robot.cli('status')
 
-    def test_update_unmounted_input_with_explicit_package(
+    def test_update_unloaded_input_with_explicit_package(
             self, robot, pkg_with_inputs, pkg_a, pkg_b):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
 
-        assert not Workspace(robot.cwd).is_mounted('input_b')
+        assert not Workspace(robot.cwd).is_loaded('input_b')
 
         robot.cli('input', 'update', 'input_b', pkg_a)
-        self.assert_mounted(robot, 'input_b', pkg_a)
+        self.assert_loaded(robot, 'input_b', pkg_a)
 
         robot.cli('status')
         self.assertThat(robot.stdout, Not(Contains(pkg_b)))

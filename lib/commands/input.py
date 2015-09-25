@@ -32,15 +32,15 @@ CURRENT_DIRECTORY = CurrentDirWorkspace()
 @arg_input_nick
 @arg(
     'package_ref', type=PackageReference,
-    metavar=metavar.PACKAGE_REF, help=help.PACKAGE_MOUNT)
+    metavar=metavar.PACKAGE_REF, help=help.PACKAGE_LOAD)
 @opt_workspace
 def add(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     '''
     Make data from another package available in the input directory.
     '''
-    workspace.mount(input_nick, package_ref.package)
+    workspace.load(input_nick, package_ref.package)
     print(
-        '{} mounted on {}.'
+        '{} loaded on {}.'
         .format(package_ref.package_reference, input_nick))
 
 
@@ -57,7 +57,7 @@ def delete(input_nick, workspace=CURRENT_DIRECTORY):
 @opt_input_nick
 @arg(
     'package_ref', type=PackageReference, nargs='?', default=NEWEST_VERSION,
-    metavar=metavar.PACKAGE_REF, help=help.PACKAGE_MOUNT)
+    metavar=metavar.PACKAGE_REF, help=help.PACKAGE_LOAD)
 @opt_workspace
 def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     '''
@@ -74,14 +74,14 @@ def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
 def _update(workspace, input, package_ref=NEWEST_VERSION):
     if package_ref is NEWEST_VERSION:
         replacement = get_channel().get_package(input.package)
-        # XXX: check if found package is newer than currently mounted?
+        # XXX: check if found package is newer than currently loaded?
     else:
         replacement = package_ref.package
 
-    if workspace.is_mounted(input.name):
-        workspace.unmount(input.name)
-    workspace.mount(input.name, replacement)
-    print('Mounted {}.'.format(input.name))
+    if workspace.is_loaded(input.name):
+        workspace.unload(input.name)
+    workspace.load(input.name, replacement)
+    print('Loaded {}.'.format(input.name))
 
 
 @opt_input_nick
@@ -92,14 +92,14 @@ def load(input_nick, workspace=CURRENT_DIRECTORY):
     '''
     if input_nick is ALL_INPUTS:
         for input in workspace.inputs:
-            _mount(workspace, input)
+            _load(workspace, input)
     else:
-        _mount(workspace, workspace.get_input(input_nick))
+        _load(workspace, workspace.get_input(input_nick))
 
 
-def _mount(workspace, input):
+def _load(workspace, input):
     assert input is not None
-    if not workspace.is_mounted(input.name):
+    if not workspace.is_loaded(input.name):
         try:
             package = repos.get_package(input.package, input.version)
         except LookupError:
@@ -107,7 +107,7 @@ def _mount(workspace, input):
                 'Could not find archive for {} - not loaded!'
                 .format(input.name))
         else:
-            workspace.mount(input.name, package)
+            workspace.load(input.name, package)
             print('Loaded {}.'.format(input.name))
     else:
         print('Skipping {} (already loaded)'.format(input.name))

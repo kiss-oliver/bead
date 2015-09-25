@@ -112,11 +112,11 @@ class AbstractWorkspace(object):
         '''
         Is there an input defined for input_nick?
 
-        NOTE: it is not necessarily mounted!
+        NOTE: it is not necessarily loaded!
         '''
         return input_nick in self.meta[meta.INPUTS]
 
-    def is_mounted(self, input_nick):
+    def is_loaded(self, input_nick):
         return os.path.isdir(
             self.directory / layouts.Workspace.INPUT / input_nick)
 
@@ -130,13 +130,13 @@ class AbstractWorkspace(object):
 
     def delete_input(self, input_nick):
         assert self.has_input(input_nick)
-        if self.is_mounted(input_nick):
-            self.unmount(input_nick)
+        if self.is_loaded(input_nick):
+            self.unload(input_nick)
         m = self.meta
         del m[meta.INPUTS][input_nick]
         self.meta = m
 
-    def mount(self, input_nick, package):
+    def load(self, input_nick, package):
         '''
         Make output data files in package available under input directory
         '''
@@ -144,14 +144,14 @@ class AbstractWorkspace(object):
         fs.make_writable(input_dir)
         try:
             self.add_input(input_nick, package.uuid, package.version)
-            mount_dir = input_dir / input_nick
-            package.unpack_data_to(mount_dir)
-            for f in fs.all_subpaths(mount_dir):
+            destination_dir = input_dir / input_nick
+            package.unpack_data_to(destination_dir)
+            for f in fs.all_subpaths(destination_dir):
                 fs.make_readonly(f)
         finally:
             fs.make_readonly(input_dir)
 
-    def unmount(self, input_nick):
+    def unload(self, input_nick):
         '''
         Remove files for given input
         '''

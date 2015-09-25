@@ -57,7 +57,7 @@ class Test_create(TestCase):
 
     def then_workspace_has_no_inputs(self):
         self.assertFalse(self.workspace.has_input('pkg1'))
-        self.assertFalse(self.workspace.is_mounted('pkg1'))
+        self.assertFalse(self.workspace.is_loaded('pkg1'))
         self.assertFalse(self.workspace.inputs)
 
     def then_workspace_has_the_specified_uuid(self):
@@ -149,27 +149,27 @@ def make_package(path, filespecs):
         workspace.pack(path, timestamp())
 
 
-class Test_mount(TestCase):
+class Test_load(TestCase):
 
     def test_makes_package_files_available_under_input(self):
         self.given_a_package_directory()
-        self.when_mounting_a_package()
+        self.when_loading_a_package()
         self.then_data_files_in_package_are_available_in_workspace()
 
-    def test_mounted_inputs_are_read_only(self):
+    def test_loaded_inputs_are_read_only(self):
         self.given_a_package_directory()
-        self.when_mounting_a_package()
+        self.when_loading_a_package()
         self.then_extracted_files_under_input_are_readonly()
 
-    def test_mount_adds_input_to_pkgmeta(self):
+    def test_load_adds_input_to_pkgmeta(self):
         self.given_a_package_directory()
-        self.when_mounting_a_package()
-        self.then_mount_info_is_added_to_pkgmeta()
+        self.when_loading_a_package()
+        self.then_input_info_is_added_to_pkgmeta()
 
-    def test_mounting_more_than_one_package(self):
+    def test_loading_more_than_one_package(self):
         self.given_a_package_directory()
-        self.when_mounting_a_package()
-        self.then_another_package_can_be_mounted()
+        self.when_loading_a_package()
+        self.then_another_package_can_be_loaded()
 
     # implementation
 
@@ -183,19 +183,19 @@ class Test_mount(TestCase):
         self.__workspace_dir = self.new_temp_dir()
         self.workspace.create(A_PACKAGE_UUID)
 
-    def _mount_a_package(self, input_nick):
-        mounted_pkg_path = self.new_temp_dir() / 'pkg.zip'
+    def _load_a_package(self, input_nick):
+        path_of_pkg_to_load = self.new_temp_dir() / 'pkg.zip'
         make_package(
-            mounted_pkg_path,
+            path_of_pkg_to_load,
             {
                 'output/output1':
                 'data for {}'.format(input_nick).encode('utf-8')
             }
         )
-        self.workspace.mount(input_nick, Archive(mounted_pkg_path))
+        self.workspace.load(input_nick, Archive(path_of_pkg_to_load))
 
-    def when_mounting_a_package(self):
-        self._mount_a_package('pkg1')
+    def when_loading_a_package(self):
+        self._load_a_package('pkg1')
 
     def then_data_files_in_package_are_available_in_workspace(self):
         with open(self.__workspace_dir / 'input/pkg1/output1', 'rb') as f:
@@ -207,9 +207,9 @@ class Test_mount(TestCase):
         self.assertRaises(IOError, open, root / 'output1', 'ab')
         self.assertRaises(IOError, open, root / 'new-file', 'wb')
 
-    def then_mount_info_is_added_to_pkgmeta(self):
+    def then_input_info_is_added_to_pkgmeta(self):
         self.assertTrue(self.workspace.has_input('pkg1'))
-        self.assertTrue(self.workspace.is_mounted('pkg1'))
+        self.assertTrue(self.workspace.is_loaded('pkg1'))
 
-    def then_another_package_can_be_mounted(self):
-        self._mount_a_package('pkg2')
+    def then_another_package_can_be_loaded(self):
+        self._load_a_package('pkg2')
