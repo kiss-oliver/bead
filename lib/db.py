@@ -17,14 +17,8 @@ def connect(db_path):
     existing = db_path != MEMORY and os.path.exists(db_path)
     omlite.db.connect(db_path)
 
-    try:
-        if not existing:
-            initialize_new_db()
-    except:
-        omlite.db.connect(MEMORY)
-        # remove newly created, but partially initialized database
-        os.remove(db_path)
-        raise
+    if not existing:
+        initialize_new_db()
 
 
 def initialize_new_db():
