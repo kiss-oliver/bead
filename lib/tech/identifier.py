@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import hashlib
-from uuid import uuid1
+from uuid import uuid1, uuid4
 
 
 def uuid():
@@ -27,4 +27,8 @@ def uuid():
     each change, or adding a constant (but algorithm specific) prefix to all
     uuids generated.
     '''
-    return ''.__class__(hashlib.md5(uuid1().hex.encode('utf-8')).hexdigest())
+    # uuid1 by itself has privacy/security concerns, so hash it
+    # + add a random uuid to remain collision free
+    scrambled_uuid1 = hashlib.sha256(uuid1().bytes).hexdigest()[:32]
+    unicode = ''.__class__
+    return unicode(scrambled_uuid1) + '-' + unicode(uuid4())
