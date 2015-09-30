@@ -100,13 +100,16 @@ class Archive(Package):
                 info = self.zipfile.getinfo(name)
             except KeyError:
                 return name
-            # verify checksums
+            archived_hash = securehash.file(
+                self.zipfile.open(info), info.file_size)
+            if hash != archived_hash:
+                return name
 
     @property
     @__zipfile_user
     def checksums(self):
         with self.zipfile.open(layouts.Archive.CHECKSUMS) as f:
-            return persistence.load(f)
+            return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
 
     @property
     @__zipfile_user
@@ -133,7 +136,7 @@ class Archive(Package):
     @__zipfile_user
     def _load_meta(self):
         with self.zipfile.open(layouts.Archive.PKGMETA) as f:
-            return persistence.load(io.TextIOWrapper(f))
+            return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
 
     @__zipfile_user
     def extract_file(self, zip_path, destination):
