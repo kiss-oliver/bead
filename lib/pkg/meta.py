@@ -8,11 +8,11 @@ with the following minimum structure:
     inputs: {
         'nick1' : {
             package uuid: ...,
-            version uuid: ...,
+            version hash: ...,
         },
         'nick2' : {
             package uuid: ...,
-            version uuid: ...,
+            version hash: ...,
         },
         ...
     },
@@ -36,7 +36,7 @@ PACKAGE = 'package uuid'
 INPUTS = 'inputs'
 
 INPUT_PACKAGE = 'package uuid'
-INPUT_VERSION = 'version uuid'
+INPUT_VERSION = 'version hash'
 
 
 InputSpec = namedtuple('InputSpec', 'name package version')

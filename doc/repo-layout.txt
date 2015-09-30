@@ -7,7 +7,7 @@ repo_root
         |- ???
     |- packages
         |- pkg_uuid
-            |- version_uuid
+            |- version_hash
                 |- data.pkg
                 |- informal-name.txt
                 |- tags

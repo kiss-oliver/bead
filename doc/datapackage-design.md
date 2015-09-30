@@ -32,11 +32,11 @@
     + manage input data
         + mount input data (name, channel, version, input_nick)
             * extract data under input/<input_nick>
-            * register (name-uuid, version-uuid, input_nick) in metadata
+            * register (name-uuid, version-hash, input_nick) in metadata
         + unmount input data (delete input_nick)
         + rename input data (rename input_nick)
         + set upgrade channel (input_nick, channel)
-        + upgrade input data (input_nick[, version-uuid])
+        + upgrade input data (input_nick[, version-hash])
     + create archive from directory
     + publish package as archive on a repository
     + make package available on a channel
