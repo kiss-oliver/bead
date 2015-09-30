@@ -266,8 +266,8 @@ class Test_is_valid(TestCase):
 
     # tests
 
-    def test_newly_created_package_is_valid(self, archive):
-        self.assertTrue(archive.is_valid)
+    def test_newly_created_package_is_valid(self, archive_with_two_files_path):
+        self.assertTrue(Archive(archive_with_two_files_path).is_valid)
 
     def test_adding_a_data_file_to_an_archive_makes_package_invalid(
             self, archive_path):
