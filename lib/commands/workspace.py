@@ -238,4 +238,6 @@ def nuke(workspace):
     Delete the workspace, inluding data, code and documentation.
     '''
     assert_valid_workspace(workspace)
-    tech.fs.rmtree(workspace.directory)
+    directory = workspace.directory
+    tech.fs.rmtree(directory)
+    print('Deleted workspace {}'.format(directory))
