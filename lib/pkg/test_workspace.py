@@ -11,6 +11,7 @@ import zipfile
 
 from .. import tech
 from .archive import Archive
+from . import layouts
 
 write_file = tech.fs.write_file
 ensure_directory = tech.fs.ensure_directory
@@ -105,14 +106,15 @@ class Test_pack(TestCase):
 
     def then_archive_contains_files_from_package_directory(self):
         z = zipfile.ZipFile(self.__zipfile)
+        l = layouts.Archive
 
-        self.assertEquals(self.__OUTPUT1, z.read('data/output1'))
-        self.assertEquals(self.__SOURCE1, z.read('meta/code/source1'))
-        self.assertEquals(self.__SOURCE2, z.read('meta/code/subdir/source2'))
+        self.assertEquals(self.__OUTPUT1, z.read(l.DATA / 'output1'))
+        self.assertEquals(self.__SOURCE1, z.read(l.CODE / 'source1'))
+        self.assertEquals(self.__SOURCE2, z.read(l.CODE / 'subdir/source2'))
 
         files = z.namelist()
-        self.assertIn('meta/pkgmeta', files)
-        self.assertIn('meta/checksums', files)
+        self.assertIn(l.PKGMETA, files)
+        self.assertIn(l.CHECKSUMS, files)
 
     def then_archive_is_valid_package(self):
         pkg = Archive(self.__zipfile)

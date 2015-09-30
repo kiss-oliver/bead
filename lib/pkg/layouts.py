@@ -14,11 +14,11 @@ Path = tech.fs.Path
 
 class Archive:
 
-    DATA = Path('data')
     META = Path('meta')
-    CODE = META / 'code'
+    CODE = Path('code')
+    DATA = Path('data')
 
-    PKGMETA = META / 'pkgmeta'
+    PKGMETA = META / 'package'
     CHECKSUMS = META / 'checksums'
 
 
@@ -27,6 +27,6 @@ class Workspace:
     INPUT = Path('input')
     OUTPUT = Path('output')
     TEMP = Path('temp')
-    META = Path('.santa')
+    META = Path('.neuron-meta')
 
     PKGMETA = META / 'package'
