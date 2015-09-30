@@ -50,6 +50,7 @@ class Archive(Package):
 
     # -
     @property
+    @__zipfile_user
     def is_valid(self):
         # FIXME verify checksums!
         '''
@@ -63,21 +64,49 @@ class Archive(Package):
             - has unofficial package name
             - has inputs (even if empty)
         '''
-        valid = all((
-            meta.PACKAGE in self.meta,
-            meta.PACKAGE_TIMESTAMP in self.meta,
-            meta.INPUTS in self.meta,
-            meta.DEFAULT_NAME in self.meta,
-        ))
+        return all(self._checks())
 
-        if valid:
-            now = timestamp.time_from_timestamp(timestamp.timestamp())
-            pkgtime = timestamp.time_from_timestamp(
-                self.meta[meta.PACKAGE_TIMESTAMP]
-            )
-            valid = pkgtime < now
+    def _checks(self):
+        yield meta.PACKAGE in self.meta
+        yield meta.PACKAGE_TIMESTAMP in self.meta
+        yield meta.INPUTS in self.meta
+        yield meta.DEFAULT_NAME in self.meta
+        # verify package creation time
+        read_time = timestamp.time_from_timestamp
+        now = read_time(timestamp.timestamp())
+        pkgtime = read_time(self.meta[meta.PACKAGE_TIMESTAMP])
+        yield pkgtime < now
+        yield self._check_extra_files() is None
+        yield self._check_checksums() is None
 
-        return valid
+    @__zipfile_user
+    def _check_extra_files(self):
+        data_dir_prefix = layouts.Archive.DATA + '/'
+        code_dir_prefix = layouts.Archive.CODE + '/'
+        checksums = self.checksums
+        # check that there are no extra files
+        for name in self.zipfile.namelist():
+            is_data = name.startswith(data_dir_prefix)
+            is_code = name.startswith(code_dir_prefix)
+            if is_data or is_code:
+                if name not in checksums:
+                    # unexpected extra file!
+                    return name
+
+    @__zipfile_user
+    def _check_checksums(self):
+        for name, hash in self.checksums.items():
+            try:
+                info = self.zipfile.getinfo(name)
+            except KeyError:
+                return name
+            # verify checksums
+
+    @property
+    @__zipfile_user
+    def checksums(self):
+        with self.zipfile.open(layouts.Archive.CHECKSUMS) as f:
+            return persistence.load(f)
 
     @property
     @__zipfile_user
