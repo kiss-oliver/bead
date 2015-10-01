@@ -45,10 +45,8 @@ def add(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
         die('Not a known package name: {}'
             .format(package_ref.package_reference))
 
-    workspace.load(input_nick, package)
-    print(
-        '{} loaded on {}.'
-        .format(package_ref.package_reference, input_nick))
+    _check_load_with_feedback(
+        workspace, input_nick, package, package_ref.package_reference)
 
 
 @arg_input_nick
@@ -84,10 +82,7 @@ def _update(workspace, input, package_ref=NEWEST_VERSION):
     else:
         replacement = package_ref.package
 
-    if workspace.is_loaded(input.name):
-        workspace.unload(input.name)
-    workspace.load(input.name, replacement)
-    print('Loaded {}.'.format(input.name))
+    _check_load_with_feedback(workspace, input.name, replacement)
 
 
 @opt_input_nick
@@ -117,7 +112,22 @@ def _load(workspace, input):
                 'Could not find archive for {} - not loaded!'
                 .format(input.name))
         else:
-            workspace.load(input.name, package)
-            print('Loaded {}.'.format(input.name))
+            _check_load_with_feedback(workspace, input.name, package)
     else:
         print('Skipping {} (already loaded)'.format(input.name))
+
+
+def _check_load_with_feedback(
+        workspace, input_name, package, package_name=None):
+    if package.is_valid:
+        if workspace.is_loaded(input_name):
+            workspace.unload(input_name)
+        workspace.load(input_name, package)
+        if package_name:
+            print('{} loaded on {}.'.format(package_name, input_name))
+        else:
+            print('Loaded {}.'.format(input_name))
+    else:
+        warning(
+            'Package for {} is found but damaged - not loading.'
+            .format(input_name))

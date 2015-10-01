@@ -98,3 +98,22 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
         except SystemExit:
             self.assertThat(robot.stderr, Contains('ERROR'))
             self.assertThat(robot.stderr, Contains('non-existing-package'))
+
+    def test_add_with_hacked_package_is_refused(
+            self, robot, hacked_pkg, pkg_a):
+        robot.cli('develop', pkg_a)
+        robot.cd(pkg_a)
+        robot.cli('input', 'add', 'hack', hacked_pkg)
+        self.assertFalse(Workspace(robot.cwd).has_input('hack'))
+        self.assertThat(robot.stderr, Contains('WARNING'))
+
+    def test_update_with_hacked_package_is_refused(
+            self, robot, hacked_pkg, pkg_a):
+        robot.cli('develop', pkg_a)
+        robot.cd(pkg_a)
+        robot.cli('input', 'add', 'intelligence', pkg_a)
+        robot.cli('input', 'update', 'intelligence', hacked_pkg)
+        self.assertThat(
+            robot.cwd / 'input/intelligence/README',
+            FileContains(pkg_a))
+        self.assertThat(robot.stderr, Contains('WARNING'))

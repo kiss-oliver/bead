@@ -72,6 +72,7 @@ class RobotAndPackages(object):
         ws = Workspace(workspace_dir)
         ws.create('hacked-uuid')
         tech.fs.write_file(ws.directory / 'code', 'code')
+        tech.fs.write_file(ws.directory / 'output/README', 'README')
         ws.pack(hacked_pkg_path, TS1)
         with zipfile.ZipFile(hacked_pkg_path, 'a') as z:
             with warnings.catch_warnings():
@@ -79,6 +80,7 @@ class RobotAndPackages(object):
                 # this would cause a warning from zipfile for duplicate
                 # name in zip file (which is perfectly valid, though hacky)
                 z.writestr(layouts.Archive.CODE / 'code', 'HACKED')
+                z.writestr(layouts.Archive.DATA / 'README', 'HACKED')
         return hacked_pkg_path
 
     def _pkg_with_history(self, robot, repo, package_name, uuid):
