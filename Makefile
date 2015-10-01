@@ -5,7 +5,7 @@ test: clean
 
 clean:
 	git clean -fXd
-	rm -rf env test-env[23]
+	rm -rf env test-env*
 	git status
 
 env: clean
