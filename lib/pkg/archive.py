@@ -52,12 +52,11 @@ class Archive(Package):
     @property
     @__zipfile_user
     def is_valid(self):
-        # FIXME verify checksums!
         '''
         verify, that
         - all files under code, data, meta are present in the checksums
-          file and they match their checksums
-          (can extra files be allowed in the archive?)
+          file and they match their checksums (extra files are allowed
+          in the archive, but not as data or code files)
         - the pkgmeta file is valid
             - has package uuid
             - has timestamp
@@ -67,20 +66,28 @@ class Archive(Package):
         return all(self._checks())
 
     def _checks(self):
-        yield meta.PACKAGE in self.meta
-        yield meta.PACKAGE_TIMESTAMP in self.meta
-        yield meta.INPUTS in self.meta
-        yield meta.DEFAULT_NAME in self.meta
-        # verify package creation time
+        yield self._has_well_formed_meta()
+        yield self._package_creation_time_is_in_the_past()
+        yield self._extra_file() is None
+        yield self._file_failing_checksum() is None
+
+    def _has_well_formed_meta(self):
+        m = self.meta
+        keys = (
+            meta.PACKAGE,
+            meta.PACKAGE_TIMESTAMP,
+            meta.INPUTS,
+            meta.DEFAULT_NAME)
+        return all(key in m for key in keys)
+
+    def _package_creation_time_is_in_the_past(self):
         read_time = timestamp.time_from_timestamp
         now = read_time(timestamp.timestamp())
         pkgtime = read_time(self.meta[meta.PACKAGE_TIMESTAMP])
-        yield pkgtime < now
-        yield self._check_extra_files() is None
-        yield self._check_checksums() is None
+        return pkgtime < now
 
     @__zipfile_user
-    def _check_extra_files(self):
+    def _extra_file(self):
         data_dir_prefix = layouts.Archive.DATA + '/'
         code_dir_prefix = layouts.Archive.CODE + '/'
         checksums = self.checksums
@@ -94,7 +101,7 @@ class Archive(Package):
                     return name
 
     @__zipfile_user
-    def _check_checksums(self):
+    def _file_failing_checksum(self):
         for name, hash in self.checksums.items():
             try:
                 info = self.zipfile.getinfo(name)
