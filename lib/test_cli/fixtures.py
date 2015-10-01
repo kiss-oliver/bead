@@ -6,7 +6,11 @@ from __future__ import print_function
 from ..test import TempDir
 
 import os
+import warnings
+import zipfile
+
 from ..pkg.workspace import Workspace
+from ..pkg import layouts
 from .. import tech
 from ..translations import add_translation
 from .robot import Robot
@@ -61,6 +65,21 @@ class RobotAndPackages(object):
 
     def pkg_b(self, robot, packages):
         return self._new_package(robot, packages, 'pkg_b')
+
+    def hacked_pkg(self, robot, packages):
+        hacked_pkg_path = self.new_temp_dir() / 'hacked_pkg.zip'
+        workspace_dir = self.new_temp_dir() / 'hacked_pkg'
+        ws = Workspace(workspace_dir)
+        ws.create('hacked-uuid')
+        tech.fs.write_file(ws.directory / 'code', 'code')
+        ws.pack(hacked_pkg_path, TS1)
+        with zipfile.ZipFile(hacked_pkg_path, 'a') as z:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                # this would cause a warning from zipfile for duplicate
+                # name in zip file (which is perfectly valid, though hacky)
+                z.writestr(layouts.Archive.CODE / 'code', 'HACKED')
+        return hacked_pkg_path
 
     def _pkg_with_history(self, robot, repo, package_name, uuid):
         def make_package(timestamp):

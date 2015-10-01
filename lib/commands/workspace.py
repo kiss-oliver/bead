@@ -96,6 +96,8 @@ def develop(package_ref, workspace):
         package = package_ref.package
     except LookupError:
         die('Package not found!')
+    if not package.is_valid:
+        die('Package is found but damaged')
     if workspace is DERIVE_FROM_PACKAGE_NAME:
         workspace = package_ref.default_workspace
 
