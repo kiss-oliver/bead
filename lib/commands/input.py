@@ -81,7 +81,6 @@ def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
 def _update(workspace, input, package_ref=NEWEST_VERSION):
     if package_ref is NEWEST_VERSION:
         replacement = get_channel().get_package(input.package)
-        # XXX: check if found package is newer than currently loaded?
     else:
         replacement = package_ref.package
 
