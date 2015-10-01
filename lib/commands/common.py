@@ -66,8 +66,8 @@ class PackageReference(object):
     @property
     def default_workspace(self):
         if os.path.isfile(self.package_reference):
-            archive_filename = os.path.basename(self.package_reference)[0]
-            workspace_dir = os.path.splitext(archive_filename)
+            archive_filename = os.path.basename(self.package_reference)
+            workspace_dir = os.path.splitext(archive_filename)[0]
         else:
             package_spec = parse_package_spec(self.package_reference)
             workspace_dir = package_spec.name
