@@ -61,19 +61,33 @@ def arg_workspace_defaulting_to(default_workspace):
         metavar=metavar.WORKSPACE, help=help.WORKSPACE)
 
 
+USE_THE_ONLY_REPO = DefaultArgSentinel(
+    'if there is exactly one repository,' +
+    ' store there, otherwise it MUST be specified')
+
+
+@arg(
+    'repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
+    metavar='REPOSITORY', help='Name of repository to store package')
 @arg_workspace_defaulting_to(CURRENT_DIRECTORY)
-def pack(workspace):
+def pack(repo_name, workspace):
     '''
     Create a new archive from the workspace.
     '''
     assert_valid_workspace(workspace)
-    # TODO: #9 personal config: directory to store newly created packages in
-    # FIXME: parameter for repo selection in case of multiple repos
-    repositories = list(repos.get_all())
-    if not repositories:
-        die('No repositories defined, please define one!')
-    assert len(repositories) == 1, 'Only one repo supported at the moment :('
-    repo = repositories[0]
+    if repo_name is USE_THE_ONLY_REPO:
+        repositories = list(repos.get_all())
+        if not repositories:
+            die('No repositories defined, please define one!')
+        if len(repositories) > 1:
+            die(
+                'REPOSITORY parameter is not optional!\n' +
+                '(more than one repositories exists)')
+        repo = repositories[0]
+    else:
+        repo = repos.get(repo_name)
+        if repo is None:
+            die('Unknown repository: {}'.format(repo_name))
     repo.store(workspace, timestamp())
     print('Successfully stored package.')
 
