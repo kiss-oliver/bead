@@ -71,16 +71,18 @@ class Test_more_than_one_repos(TestCase):
 
     def test_pack_stores_package_in_specified_repo(self, robot, repo1, repo2):
         robot.cli('new', 'pkg')
-        robot.cli('pack', repo1.name, 'pkg')
+        robot.cli('pack', repo1.name, '--workspace=pkg')
         with robot.environment:
             pkg_uuid = Workspace('pkg').uuid
         self.assertEquals(1, package_count(robot, repo1, pkg_uuid))
         self.assertEquals(0, package_count(robot, repo2, pkg_uuid))
-        robot.cli('pack', repo2.name, 'pkg')
+        robot.cli('pack', repo2.name, '-w', 'pkg')
         self.assertEquals(1, package_count(robot, repo1, pkg_uuid))
         self.assertEquals(1, package_count(robot, repo2, pkg_uuid))
 
     def test_invalid_repo_specified(self, robot, repo1, repo2):
         robot.cli('new', 'pkg')
-        self.assertRaises(SystemExit, robot.cli, 'pack', 'unknown-repo', 'pkg')
+        self.assertRaises(
+            SystemExit,
+            robot.cli, 'pack', 'unknown-repo', '--workspace', 'pkg')
         self.assertThat(robot.stderr, Contains('ERROR'))

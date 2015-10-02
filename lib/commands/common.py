@@ -39,7 +39,7 @@ def opt_workspace(func):
     Define `workspace` as option, defaulting to current directory
     '''
     decorate = arg(
-        '--workspace', metavar=metavar.WORKSPACE,
+        '--workspace', '-w', metavar=metavar.WORKSPACE,
         type=Workspace, default=CurrentDirWorkspace(),
         help=help.WORKSPACE)
     return decorate(func)

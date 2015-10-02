@@ -10,7 +10,7 @@ from ..pkg.workspace import Workspace, CurrentDirWorkspace
 
 from .common import arg, die, warning
 from .common import DefaultArgSentinel, PackageReference
-from .common import get_channel
+from .common import get_channel, opt_workspace
 from . import metavar
 from . import help
 from .. import repos
@@ -69,8 +69,8 @@ USE_THE_ONLY_REPO = DefaultArgSentinel(
 @arg(
     'repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
     metavar='REPOSITORY', help='Name of repository to store package')
-@arg_workspace_defaulting_to(CURRENT_DIRECTORY)
-def pack(repo_name, workspace):
+@opt_workspace
+def pack(repo_name, workspace=CURRENT_DIRECTORY):
     '''
     Create a new archive from the workspace.
     '''
@@ -224,9 +224,9 @@ def print_inputs(workspace, peer, fields=ALL_FIELDS):
             print('You can "load" or "update" them manually.')
 
 
-@arg_workspace_defaulting_to(CURRENT_DIRECTORY)
+@opt_workspace
 @arg('-v', '--verbose', help='show more detailed information')
-def status(workspace, verbose=False):
+def status(workspace=CURRENT_DIRECTORY, verbose=False):
     '''
     Show workspace status - name of package, inputs and their unpack status.
     '''
