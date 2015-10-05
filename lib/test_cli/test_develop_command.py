@@ -7,10 +7,11 @@ from ..test import TestCase
 from testtools.matchers import FileContains, Contains, FileExists
 
 from ..pkg.workspace import Workspace
+from ..pkg import layouts
 from . import fixtures
 
 
-class Test_develop_package_with_history(TestCase, fixtures.RobotAndPackages):
+class Test_develop(TestCase, fixtures.RobotAndPackages):
 
     # tests
     def test_by_name(self, robot, pkg_a):
@@ -58,3 +59,14 @@ class Test_develop_package_with_history(TestCase, fixtures.RobotAndPackages):
     def test_hacked_package_is_detected(self, robot, hacked_pkg):
         self.assertRaises(SystemExit, robot.cli, 'develop', hacked_pkg)
         self.assertThat(robot.stderr, Contains('ERROR'))
+
+    def test_extract_output(self, robot, pkg_a):
+        robot.cli('develop', '-x', pkg_a)
+        ws = robot.cwd / pkg_a
+
+        self.assertTrue(Workspace(ws).is_valid)
+
+        # output must be unpacked as well!
+        self.assertThat(
+            ws / layouts.Workspace.OUTPUT / 'README',
+            FileContains(pkg_a))

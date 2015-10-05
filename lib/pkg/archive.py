@@ -18,7 +18,6 @@ from . import meta
 timestamp = tech.timestamp
 securehash = tech.securehash
 persistence = tech.persistence
-path = tech.fs
 
 
 class Archive(Package):
@@ -151,7 +150,7 @@ class Archive(Package):
 
         assert not os.path.exists(destination)
 
-        with path.temp_dir(destination.parent) as unzip_dir:
+        with tech.fs.temp_dir(destination.parent) as unzip_dir:
             self.zipfile.extract(zip_path, unzip_dir)
             os.rename(unzip_dir / zip_path, destination)
 
@@ -161,7 +160,8 @@ class Archive(Package):
         Extract all files from zipfile under zip_dir to destination.
         '''
 
-        assert not os.path.exists(destination)
+        if os.path.exists(destination):
+            os.rmdir(destination)
 
         zip_dir_prefix = zip_dir + '/'
         filelist = [
@@ -171,11 +171,11 @@ class Archive(Package):
         ]
 
         if filelist:
-            with path.temp_dir(destination.parent) as unzip_dir:
+            with tech.fs.temp_dir(destination.parent) as unzip_dir:
                 self.zipfile.extractall(unzip_dir, filelist)
                 os.rename(unzip_dir / zip_dir, destination)
         else:
-            path.ensure_directory(destination)
+            tech.fs.ensure_directory(destination)
 
     def unpack_code_to(self, destination):
         self.extract_dir(layouts.Archive.CODE, destination)

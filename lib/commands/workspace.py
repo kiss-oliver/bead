@@ -7,6 +7,7 @@ import os
 
 from .. import tech
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
+from ..pkg import layouts
 
 from .common import arg, die, warning
 from .common import DefaultArgSentinel, PackageReference
@@ -99,12 +100,15 @@ DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
     'package_ref', type=PackageReference,
     metavar=metavar.PACKAGE_REF, help=help.PACKAGE_REF)
 @arg_workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME)
-def develop(package_ref, workspace):
+@arg(
+    '-x', '--extract-output', dest='extract_output',
+    help='Extract canned output as well.')
+def develop(package_ref, workspace, extract_output=False):
     '''
     Unpack a package as a source tree.
 
     Package directory layout is created, but only the source files are
-    extracted.
+    extracted by default.
     '''
     try:
         package = package_ref.package
@@ -117,6 +121,10 @@ def develop(package_ref, workspace):
 
     package.unpack_to(workspace)
     assert workspace.is_valid
+
+    if extract_output:
+        output_directory = workspace.directory / layouts.Workspace.OUTPUT
+        package.unpack_data_to(output_directory)
 
     print('Extracted source into {}'.format(workspace.directory))
     # XXX: try to load smaller inputs?
