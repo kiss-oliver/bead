@@ -51,7 +51,7 @@ class Test_shared_repo(TestCase):
         alice.cli('develop', package, 'alicepkg')
         alice.cd('alicepkg')
         alice.write_file('output/datafile', '''Alice's new data''')
-        alice.cli('pack')
+        alice.cli('save')
 
         # update only one input
         bob.cli('input', 'update', 'alicepkg1')

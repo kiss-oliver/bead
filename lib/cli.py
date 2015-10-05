@@ -39,7 +39,7 @@ def make_argument_parser():
         [
             commands.workspace.new,
             commands.workspace.develop,
-            commands.workspace.pack,
+            commands.workspace.save,
             commands.workspace.status,
             commands.workspace.nuke,
             # TODO: #10 names for packages

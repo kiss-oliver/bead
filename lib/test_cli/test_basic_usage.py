@@ -39,7 +39,7 @@ class Test_basic_command_line(TestCase):
         self.assertNotIn('Inputs', robot.stdout)
 
         cli('repo', 'add', 'default', repo_dir)
-        cli('pack')
+        cli('save')
 
         cd('..')
         cli('develop', 'something', 'something-develop')

@@ -25,7 +25,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
         robot.cli('new', 'nextpkg')
         robot.cd('nextpkg')
         robot.cli('input', 'add', 'input1', 'pkg_with_history@' + fixtures.TS1)
-        robot.cli('pack')
+        robot.cli('save')
         robot.cd('..')
         robot.cli('nuke', 'nextpkg')
 

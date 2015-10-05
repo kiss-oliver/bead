@@ -70,9 +70,9 @@ USE_THE_ONLY_REPO = DefaultArgSentinel(
     'repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
     metavar='REPOSITORY', help='Name of repository to store package')
 @opt_workspace
-def pack(repo_name, workspace=CURRENT_DIRECTORY):
+def save(repo_name, workspace=CURRENT_DIRECTORY):
     '''
-    Create a new archive from the workspace.
+    Save workspace in a repository.
     '''
     assert_valid_workspace(workspace)
     if repo_name is USE_THE_ONLY_REPO:

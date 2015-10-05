@@ -15,13 +15,13 @@ from ..pkg.workspace import Workspace
 class Test(TestCase, fixtures.RobotAndPackages):
 
     def test_invalid_workspace_causes_error(self, robot):
-        self.assertRaises(SystemExit, robot.cli, 'pack')
+        self.assertRaises(SystemExit, robot.cli, 'save')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
     def test_on_success_there_is_feedback(self, robot, repo):
         robot.cli('new', 'pkg')
         robot.cd('pkg')
-        robot.cli('pack')
+        robot.cli('save')
         self.assertNotEquals(
             robot.stdout, '', 'Expected some feedback, but got none :(')
 
@@ -35,7 +35,7 @@ class Test_no_repo(TestCase):
     # tests
     def test_missing_repo_causes_error(self, robot):
         robot.cli('new', 'pkg')
-        self.assertRaises(SystemExit, robot.cli, 'pack', 'pkg')
+        self.assertRaises(SystemExit, robot.cli, 'save', 'pkg')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
 
@@ -64,19 +64,19 @@ class Test_more_than_one_repos(TestCase):
         return self.make_repo(robot, 'repo2')
 
     # tests
-    def test_pack_dies_without_explicit_repo(self, robot, repo1, repo2):
+    def test_save_dies_without_explicit_repo(self, robot, repo1, repo2):
         robot.cli('new', 'pkg')
-        self.assertRaises(SystemExit, robot.cli, 'pack', 'pkg')
+        self.assertRaises(SystemExit, robot.cli, 'save', 'pkg')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
-    def test_pack_stores_package_in_specified_repo(self, robot, repo1, repo2):
+    def test_save_stores_package_in_specified_repo(self, robot, repo1, repo2):
         robot.cli('new', 'pkg')
-        robot.cli('pack', repo1.name, '--workspace=pkg')
+        robot.cli('save', repo1.name, '--workspace=pkg')
         with robot.environment:
             pkg_uuid = Workspace('pkg').uuid
         self.assertEquals(1, package_count(robot, repo1, pkg_uuid))
         self.assertEquals(0, package_count(robot, repo2, pkg_uuid))
-        robot.cli('pack', repo2.name, '-w', 'pkg')
+        robot.cli('save', repo2.name, '-w', 'pkg')
         self.assertEquals(1, package_count(robot, repo1, pkg_uuid))
         self.assertEquals(1, package_count(robot, repo2, pkg_uuid))
 
@@ -84,5 +84,5 @@ class Test_more_than_one_repos(TestCase):
         robot.cli('new', 'pkg')
         self.assertRaises(
             SystemExit,
-            robot.cli, 'pack', 'unknown-repo', '--workspace', 'pkg')
+            robot.cli, 'save', 'unknown-repo', '--workspace', 'pkg')
         self.assertThat(robot.stderr, Contains('ERROR'))
