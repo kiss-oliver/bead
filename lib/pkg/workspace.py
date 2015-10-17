@@ -241,7 +241,7 @@ class _ZipCreator(object):
             return f not in {
                 layouts.Workspace.INPUT,
                 layouts.Workspace.OUTPUT,
-                layouts.Workspace.PKGMETA,
+                layouts.Workspace.META,
                 layouts.Workspace.TEMP
             }
 

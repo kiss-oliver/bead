@@ -77,6 +77,11 @@ class Test_pack(TestCase):
         self.when_archived()
         self.then_archive_contains_files_from_package_directory()
 
+    def test_not_saved_content(self):
+        self.given_a_package_directory()
+        self.when_archived()
+        self.then_archive_does_not_contain_workspace_meta_and_temp_files()
+
     # implementation
 
     __workspace_dir = None
@@ -94,7 +99,14 @@ class Test_pack(TestCase):
     def given_a_package_directory(self):
         self.__workspace_dir = self.new_temp_dir()
         self.workspace.create(A_PACKAGE_UUID)
-        write_file(self.__workspace_dir / 'output/output1', self.__OUTPUT1)
+        l = layouts.Workspace
+
+        write_file(
+            self.__workspace_dir / l.TEMP / 'README',
+            'temporary directory')
+        write_file(
+            self.__workspace_dir / l.OUTPUT / 'output1',
+            self.__OUTPUT1)
         write_file(self.__workspace_dir / 'source1', self.__SOURCE1)
         ensure_directory(self.__workspace_dir / 'subdir')
         write_file(self.__workspace_dir / 'subdir/source2', self.__SOURCE2)
@@ -119,6 +131,15 @@ class Test_pack(TestCase):
     def then_archive_is_valid_package(self):
         pkg = Archive(self.__zipfile)
         self.assertTrue(pkg.is_valid)
+
+    def then_archive_does_not_contain_workspace_meta_and_temp_files(self):
+        def does_not_contain(workspace_path):
+            z = zipfile.ZipFile(self.__zipfile)
+            archive_path = layouts.Archive.CODE / workspace_path
+            self.assertRaises(KeyError, z.getinfo, archive_path)
+
+        does_not_contain(layouts.Workspace.PKGMETA)
+        does_not_contain(layouts.Workspace.TEMP / 'README')
 
 
 class Test_pack_stability(TestCase):
