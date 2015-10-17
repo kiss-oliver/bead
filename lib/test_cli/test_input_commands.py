@@ -88,6 +88,14 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
         with robot.environment:
             self.assertFalse(Workspace('.').is_loaded('input_b'))
 
+    def test_partially_deleted_repo(self, robot, pkg_with_inputs):
+        deleted_repo = self.new_temp_dir()
+        robot.cli('repo', 'add', 'missing', deleted_repo)
+        os.rmdir(deleted_repo)
+        robot.cli('develop', pkg_with_inputs)
+        robot.cd(pkg_with_inputs)
+        robot.cli('input', 'load')
+
     def test_add_with_unrecognized_package_name_exits_with_error(
             self, robot, pkg_a):
         robot.cli('develop', pkg_a)

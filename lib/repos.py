@@ -50,7 +50,14 @@ class Repository(object):
 
     def find_packages(self, uuid, version=None):
         # -> [Package]
-        for name in os.listdir(self.directory):
+        try:
+            names = os.listdir(self.directory)
+        except OSError:
+            # ignore deleted repository
+            # XXX - we should log this problem
+            names = []
+
+        for name in names:
             candidate = self.directory / name
             try:
                 package = Archive(candidate)
