@@ -73,7 +73,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndPackages):
             self, robot, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
-        robot.cause_amnesia()
+        robot.reset()
         robot.cli('input', 'load')
         self.assertThat(robot.stderr, Contains('WARNING'))
         self.assertThat(robot.stderr, Contains('input_a'))

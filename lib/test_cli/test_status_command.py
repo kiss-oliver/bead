@@ -47,7 +47,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
             self, robot, packages, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
-        robot.cause_amnesia()
+        robot.reset()
         robot.cli('status')
 
         self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs)))
@@ -64,7 +64,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
             self, robot, packages, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
-        robot.cause_amnesia()
+        robot.reset()
         robot.cli('status', '--verbose')
 
         self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs)))

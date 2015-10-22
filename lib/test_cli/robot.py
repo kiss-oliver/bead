@@ -110,8 +110,10 @@ class Robot(fixtures.Fixture):
         assert not os.path.isabs(path)
         tech.fs.write_file(self.cwd / path, content)
 
-    def cause_amnesia(self):
+    def reset(self):
         '''
-        Forget all translations and repos by removing the user config.
+        Forget all translations and repos by removing the user's config.
+
+        All other files, workspaces remain available.
         '''
         tech.fs.rmtree(self.config_dir)
