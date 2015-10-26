@@ -64,12 +64,25 @@ def make_argument_parser():
             commands.repo.add,
             commands.repo.list,
             commands.repo.forget,
-            # TODO: rename repo
-            # add_token_to_repo
         ],
         namespace='repo',
         namespace_kwargs=dict(
             title='Manage package repositories...',
+        ))
+    parser.add_commands(
+        [
+            commands.dict.add,
+            commands.dict.merge,
+            # commands.dict.copy,
+            commands.dict.rename,
+            commands.dict.forget,
+            # commands.dict.list,
+            commands.dict.export,
+            commands.dict.import_,
+        ],
+        namespace='dict',
+        namespace_kwargs=dict(
+            title='Manage package names...',
         ))
     return parser
 

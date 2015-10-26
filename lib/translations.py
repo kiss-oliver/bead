@@ -37,6 +37,8 @@ class Peer(object):
     id = UUID_FIELD
     name = Field('VARCHAR NOT NULL UNIQUE')
 
+    SELF = ''
+
     #
     def __init__(self, name=None, id=None):
         self.name = name
@@ -49,7 +51,7 @@ class Peer(object):
     def by_name(cls, name):
         peers = list(omlite.filter(cls, 'name = ?', name))
         assert len(peers) <= 1
-
+        #
         if peers:
             return peers[0]
         raise LookupError(cls, name)
@@ -59,7 +61,7 @@ class Peer(object):
         '''
         Return special Peer referring to the user.
         '''
-        return cls.by_name('')
+        return cls.by_name(cls.SELF)
 
     def get_translation(self, package_name):
         translations = list(
@@ -68,7 +70,7 @@ class Peer(object):
                 'peer_id = ? AND name = ?',
                 self.id, package_name))
         assert len(translations) <= 1
-
+        #
         if translations:
             return translations[0]
         raise LookupError(self.name, package_name)
@@ -79,6 +81,9 @@ class Peer(object):
                 Translation,
                 'peer_id = ? AND package_uuid = ?',
                 self.id, package_uuid))
+
+    def all_translations(self):
+        return omlite.filter(Translation, 'peer_id = ?', self.id)
 
     def knows_about(self, package_name):
         try:
@@ -100,6 +105,12 @@ class Translation(object):
     peer_id = UUID_FIELD
     name = TEXT_FIELD
     package_uuid = UUID_FIELD
+
+    def save(self):
+        omlite.save(self)
+
+    def delete(self):
+        omlite.delete(self)
 
 
 def add_translation(name, uuid):
