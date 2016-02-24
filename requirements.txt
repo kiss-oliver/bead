@@ -1,3 +1,2 @@
 appdirs==1.4.0
 argh==0.26.1
--e git+https://github.com/krisztianfekete/omlite#egg=omlite

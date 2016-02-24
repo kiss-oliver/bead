@@ -19,7 +19,6 @@ import sys
 
 from argh import ArghParser
 from . import commands
-from . import db
 from . import PACKAGE, VERSION
 
 
@@ -28,8 +27,6 @@ def initialize_env(config_dir):
         os.makedirs(config_dir)
     except OSError:
         assert os.path.isdir(config_dir)
-    db_path = os.path.join(config_dir, 'config.sqlite')
-    db.connect(db_path)
 
 
 def make_argument_parser():
