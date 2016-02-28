@@ -8,4 +8,3 @@ from __future__ import print_function
 from . import workspace  # noqa
 from . import input      # noqa
 from . import repo       # noqa
-from . import dict       # noqa

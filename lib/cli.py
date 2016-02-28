@@ -1,13 +1,3 @@
-# TODO: names/translations management commands
-# - export [--peer name] filename
-# - import peer filename
-# - rename-peer old-name new-name
-# - delete-peer name
-# - rename-package old-name new-name
-# - delete-package package-name
-# - lift peer:name [local-name]
-
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -23,10 +13,8 @@ from . import PACKAGE, VERSION
 
 
 def initialize_env(config_dir):
-    try:
-        os.makedirs(config_dir)
-    except OSError:
-        assert os.path.isdir(config_dir)
+    import repos
+    repos.initialize(config_dir)
 
 
 def make_argument_parser():
@@ -65,21 +53,6 @@ def make_argument_parser():
         namespace='repo',
         namespace_kwargs=dict(
             title='Manage package repositories...',
-        ))
-    parser.add_commands(
-        [
-            commands.dict.add,
-            commands.dict.merge,
-            # commands.dict.copy,
-            commands.dict.rename,
-            commands.dict.forget,
-            # commands.dict.list,
-            commands.dict.export,
-            commands.dict.import_,
-        ],
-        namespace='dict',
-        namespace_kwargs=dict(
-            title='Manage package names...',
         ))
     return parser
 

@@ -10,29 +10,64 @@ from __future__ import print_function
 
 import os
 
-from omlite import storable_pk_netaddrtime_uuid1 as storable
-from omlite import Field
-import omlite
-
 from .pkg.archive import Archive
 from .import tech
 Path = tech.fs.Path
 
-
-TEXT_FIELD = Field('VARCHAR NOT NULL')
-UUID_FIELD = Field('VARCHAR NOT NULL')
+from .tech import persistence
 
 
-@omlite.sql_constraint('UNIQUE (name)')
-@omlite.sql_constraint('UNIQUE (location)')
-@omlite.table_name('repositories')
-@storable
+ENV_REPOS = 'repositories'
+REPO_NAME = 'name'
+REPO_LOCATION = 'directory'
+
+
+class Environment:
+
+    def __init__(self, filename):
+        self.filename = filename
+        self._content = {}
+
+    def load(self):
+        with open(self.filename, 'rb') as f:
+            self._content = persistence.load(f)
+
+    def save(self):
+        with open(self.filename, 'wb') as f:
+            persistence.dump(self._content, f)
+
+    def get_repos(self):
+        for repo_spec in self._content.get(ENV_REPOS, ()):
+            repo = Repository(
+                repo_spec.get(REPO_NAME),
+                repo_spec.get(REPO_LOCATION))
+            yield repo
+
+    def set_repos(self, repos):
+        self._content[ENV_REPOS] = [
+            {
+                REPO_NAME: repo.name,
+                REPO_LOCATION: repo.location
+            }
+            for repo in repos]
+
+
+env = None
+
+
+def initialize(config_dir):
+    try:
+        os.makedirs(config_dir)
+    except OSError:
+        assert os.path.isdir(config_dir)
+    global env
+    env_path = Path(config_dir) / 'env.json'
+    env = Environment(env_path)
+    if os.path.exists(env_path):
+        env.load()
+
+
 class Repository(object):
-
-    # id = UUID_FIELD
-    name = TEXT_FIELD
-    location = TEXT_FIELD
-
     # TODO: user maintained directory hierarchy
 
     def __init__(self, name=None, location=None):
@@ -85,8 +120,9 @@ def get(name):
     '''
     Return repository having :name or None.
     '''
-    for repo in omlite.filter(Repository, 'name=?', name):
-        return repo
+    for repo in env.get_repos:
+        if repo.name == name:
+            return repo
 
 
 def is_known(name):
@@ -94,20 +130,30 @@ def is_known(name):
 
 
 def get_all():
-    return omlite.get_all(Repository)
+    return env.get_repos()
 
 
 def add(name, directory):
-    repo = Repository(name, directory)
-    try:
-        omlite.save(repo)
-    except omlite.IntegrityError as e:
-        raise ValueError(e)
+    repos = list(env.get_repos())
+    # check unique repo
+    for repo in repos:
+        if repo.name == name:
+            raise ValueError(
+                'Repository with name {} already exists'.format(name))
+        if repo.location == directory:
+            raise ValueError(
+                'Repository with location {} already exists'.format(location))
+
+    env.set_repos(repos + [Repository(name, directory)])
+    env.save()
 
 
 def forget(name):
-    repo = get(name)
-    omlite.delete(repo)
+    env.set_repos(
+        repo
+        for repo in env.get_repos()
+        if repo.name != name)
+    env.save()
 
 
 def get_package(uuid, version):
