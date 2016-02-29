@@ -27,6 +27,6 @@ class Workspace:
     INPUT = Path('input')
     OUTPUT = Path('output')
     TEMP = Path('temp')
-    META = Path('.neuron-meta')
+    META = Path('.bead-meta')
 
     PKGMETA = META / 'package'
