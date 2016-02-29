@@ -112,7 +112,7 @@ class Robot(fixtures.Fixture):
 
     def reset(self):
         '''
-        Forget all translations and repos by removing the user's config.
+        Forget all repos by removing the user's config.
 
         All other files, workspaces remain available.
         '''

@@ -43,10 +43,11 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.version))
 
-    def test_missing_data_and_translations(
+    def test_inputs_not_in_known_repos(
             self, robot, packages, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
+
         robot.reset()
         robot.cli('status')
 
@@ -60,7 +61,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stdout, Not(Contains(pkg_a.timestamp_str)))
         self.assertThat(robot.stdout, Contains(pkg_a.version))
 
-    def test_verbose_missing_data_and_translations(
+    def test_verbose_inputs_not_in_known_repos(
             self, robot, packages, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)

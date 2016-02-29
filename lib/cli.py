@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import appdirs
-import os
 import sys
 
 from argh import ArghParser
@@ -13,7 +12,7 @@ from . import PACKAGE, VERSION
 
 
 def initialize_env(config_dir):
-    import repos
+    from . import repos
     repos.initialize(config_dir)
 
 

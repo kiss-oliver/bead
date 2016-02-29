@@ -29,11 +29,11 @@ class Environment:
         self._content = {}
 
     def load(self):
-        with open(self.filename, 'rb') as f:
+        with open(self.filename, 'r') as f:
             self._content = persistence.load(f)
 
     def save(self):
-        with open(self.filename, 'wb') as f:
+        with open(self.filename, 'w') as f:
             persistence.dump(self._content, f)
 
     def get_repos(self):
@@ -120,7 +120,7 @@ def get(name):
     '''
     Return repository having :name or None.
     '''
-    for repo in env.get_repos:
+    for repo in env.get_repos():
         if repo.name == name:
             return repo
 
@@ -142,7 +142,8 @@ def add(name, directory):
                 'Repository with name {} already exists'.format(name))
         if repo.location == directory:
             raise ValueError(
-                'Repository with location {} already exists'.format(location))
+                'Repository with location {} already exists'
+                .format(repo.location))
 
     env.set_repos(repos + [Repository(name, directory)])
     env.save()

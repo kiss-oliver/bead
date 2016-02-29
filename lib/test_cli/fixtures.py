@@ -12,7 +12,6 @@ import zipfile
 from ..pkg.workspace import Workspace
 from ..pkg import layouts
 from .. import tech
-from ..translations import add_translation
 from .robot import Robot
 from .. import repos
 
@@ -95,7 +94,6 @@ class RobotAndPackages(object):
                 tech.fs.rmtree(workspace_dir)
 
         with robot.environment:
-            add_translation(package_name, uuid)
             make_package(TS1)
             make_package(TS2)
         return package_name

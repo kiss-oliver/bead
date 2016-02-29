@@ -14,7 +14,6 @@ from .. import repos
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
 from ..pkg.spec import parse as parse_package_spec
-from ..translations import Peer
 from . import help
 from . import metavar
 
@@ -55,12 +54,9 @@ class PackageReference(object):
             return Archive(self.package_reference)
 
         package_spec = parse_package_spec(self.package_reference)
-        peer = Peer.by_name(package_spec.peer)
-        package_translation = peer.get_translation(package_spec.name)
-        uuid = package_translation.package_uuid
-        package = (
-            get_channel()
-            .get_package(uuid, package_spec.version, package_spec.offset))
+        # FIXME PackageReference.package
+        raise LookupError(package_spec)
+        package = get_channel().get_package(package_spec)
         return package
 
     @property

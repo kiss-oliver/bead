@@ -15,7 +15,6 @@ from .common import get_channel, opt_workspace
 from . import metavar
 from . import help
 from .. import repos
-from ..translations import Peer, add_translation
 
 
 timestamp = tech.timestamp.timestamp
@@ -32,9 +31,6 @@ def assert_may_be_valid_name(name):
     if not valid_syntax:
         die('Invalid name "{}"'.format(name))
 
-    if Peer.self().knows_about(name):
-        die('"{}" is already used, rename it if you insist'.format(name))
-
 
 @arg(
     'workspace', type=Workspace, metavar='WORKSPACE',
@@ -43,12 +39,10 @@ def new(workspace):
     '''
     Create and initialize new workspace directory with a new package.
     '''
-    uuid = tech.identifier.uuid()
-
     assert_may_be_valid_name(workspace.package_name)
     # FIXME: die with message when directory already exists
-    add_translation(workspace.package_name, uuid)
 
+    uuid = tech.identifier.uuid()
     workspace.create(uuid)
     print('Created {}'.format(workspace.package_name))
 
@@ -102,7 +96,7 @@ DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
 @arg_workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME)
 @arg(
     '-x', '--extract-output', dest='extract_output',
-    help='Extract canned output as well.')
+    help='Extract output data as well (normally it is not needed!).')
 def develop(package_ref, workspace, extract_output=False):
     '''
     Unpack a package as a source tree.
@@ -141,28 +135,26 @@ def indent(lines):
     return ('\t' + line for line in lines)
 
 
-def _status_version_timestamp(input, peer):
+def _status_version_timestamp(input):
     return (
         'Release time',
         get_channel().get_package(input.package, input.version).timestamp_str)
 
 
-def get_package_name(package_uuid, peer):
-    translations = peer.get_translations(package_uuid)
-    if translations:
-        return translations[0].name
-    raise LookupError(peer.name, package_uuid)
+def get_package_name(package_uuid):
+    # FIXME workspace.get_package_name
+    raise LookupError(package_uuid)
 
 
-def _status_package_name(input, peer):
-    return ('Package name', get_package_name(input.package, peer))
+def _status_package_name(input):
+    return ('Package name', get_package_name(input.package))
 
 
-def _status_package_uuid(input, peer):
+def _status_package_uuid(input):
     return ('Package UUID', input.package)
 
 
-def _status_version_hash(input, peer):
+def _status_version_hash(input):
     return ('Version hash', input.version)
 
 
@@ -170,10 +162,10 @@ def first(*fields):
     '''
     First available field
     '''
-    def field(input, peer):
+    def field(input):
         for field in fields:
             try:
-                return field(input, peer)
+                return field(input)
             except LookupError:
                 pass
         raise LookupError()
@@ -194,18 +186,18 @@ DEFAULT_FIELDS = (
 )
 
 
-def format_input(input, peer, fields):
+def format_input(input, fields):
     yield '- {0} (input/{0})'.format(input.name)
     for field in fields:
         try:
-            name, value = field(input, peer)
+            name, value = field(input)
         except LookupError:
             pass
         else:
             yield '\t{}: {}'.format(name, value)
 
 
-def print_inputs(workspace, peer, fields=ALL_FIELDS):
+def print_inputs(workspace, fields=ALL_FIELDS):
     assert_valid_workspace(workspace)
     inputs = sorted(workspace.inputs)
 
@@ -216,7 +208,7 @@ def print_inputs(workspace, peer, fields=ALL_FIELDS):
         for input in inputs:
             print(input_separator, end='')
             print(
-                '\n'.join(indent(format_input(input, peer, fields)))
+                '\n'.join(indent(format_input(input, fields)))
                 .expandtabs(2))
             input_separator = os.linesep
 
@@ -239,11 +231,12 @@ def status(workspace=CURRENT_DIRECTORY, verbose=False):
     Show workspace status - name of package, inputs and their unpack status.
     '''
     # TODO: use a template and render it with passing in all data
-    peer = Peer.self()
     uuid_needed = verbose
     if workspace.is_valid:
         try:
-            package_name = get_package_name(workspace.uuid, peer)
+            # FIXME: workspace.status
+            raise LookupError(workspace)
+            package_name = 'get_package_name()'
             print('Package Name: {}'.format(package_name))
         except LookupError:
             uuid_needed = True
@@ -251,7 +244,7 @@ def status(workspace=CURRENT_DIRECTORY, verbose=False):
             print('Package UUID: {}'.format(workspace.uuid))
         print()
         print_inputs(
-            workspace, peer, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
+            workspace, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
     else:
         warning('Invalid workspace ({})'.format(workspace.directory))
 

@@ -39,7 +39,8 @@ class AllAvailable(object):
     def __init__(self, repositories):
         self.repositories = tuple(repositories)
 
-    def get_package(self, package_uuid, version_pattern=None, offset=0):
+    def get_package(self, spec):
+        # package_uuid, version_pattern=None, offset=0):
         '''
         Look up and return package.
 
@@ -51,18 +52,18 @@ class AllAvailable(object):
         - `offset` selects an older version relative to the current selection
           within the history
         '''
-        assert offset >= 0
+        assert spec.offset >= 0
 
         history = []
         for repo in self.repositories:
             history.extend(
                 package
-                for package in repo.find_packages(package_uuid)
-                if _matching(package, version_pattern))
+                for package in repo.find_packages(spec.name)
+                if _matching(package, spec.version))
         history.sort(key=lambda p: p.timestamp_str)
 
         if not history:
             raise LookupError('No package found')
 
-        position = max(0, len(history) - 1 - offset)
+        position = max(0, len(history) - 1 - spec.offset)
         return history[position]
