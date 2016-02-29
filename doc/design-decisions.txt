@@ -5,7 +5,7 @@ D for decision
 P: separate sensitive data
 D: multiple local repos
 D: multiple output repos
-D:
+?:
   - packages has token sets assigned
   - repos has token sets assigned
   - a package can be stored in a repo that has all of the tokens of the package
@@ -21,14 +21,10 @@ D: local repos
       -: introduces a reserved name?
 
 
-P: bijectively map package names to uuids and back
-D: personal config has a name<->uuid map database, not necessarily bijective
-?: local repos encode the map in the directory/file names
- -: needs further thinking how to do it
- -: easy to be corrupted manually, thus making packages unavailable
- -: extra tool to check and fix corruptions
+P: resolve packages via human memorizable names
+D: use file name [fragments]
+ - ambiguous map, needs to handle ambiguity
  +: trivial discoverability of packages
-
 
 
 P: personal config needs to be protected from crashes
