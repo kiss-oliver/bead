@@ -14,8 +14,8 @@ from .. import repos
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
 from ..pkg.spec import parse as parse_package_spec
-from . import help
-from . import metavar
+from . import arg_help
+from . import arg_metavar
 
 ERROR_EXIT = 1
 
@@ -38,9 +38,9 @@ def opt_workspace(func):
     Define `workspace` as option, defaulting to current directory
     '''
     decorate = arg(
-        '--workspace', '-w', metavar=metavar.WORKSPACE,
+        '--workspace', '-w', metavar=arg_metavar.WORKSPACE,
         type=Workspace, default=CurrentDirWorkspace(),
-        help=help.WORKSPACE)
+        help=arg_help.WORKSPACE)
     return decorate(func)
 
 

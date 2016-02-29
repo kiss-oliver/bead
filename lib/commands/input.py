@@ -5,7 +5,8 @@ from __future__ import print_function
 
 
 from argh.decorators import arg
-from ..commands import metavar, help
+from ..commands import arg_metavar
+from ..commands import arg_help
 from ..commands.common import (
     opt_workspace, PackageReference, DefaultArgSentinel, get_channel,
     CurrentDirWorkspace,
@@ -18,10 +19,10 @@ from .. import repos
 ALL_INPUTS = DefaultArgSentinel('all inputs')
 opt_input_nick = arg(
     'input_nick', type=type(''), nargs='?', default=ALL_INPUTS,
-    metavar=metavar.INPUT_NICK, help=help.INPUT_NICK)
+    metavar=arg_metavar.INPUT_NICK, help=arg_help.INPUT_NICK)
 arg_input_nick = arg(
     'input_nick',
-    metavar=metavar.INPUT_NICK, help=help.INPUT_NICK)
+    metavar=arg_metavar.INPUT_NICK, help=arg_help.INPUT_NICK)
 
 
 # package_ref
@@ -33,7 +34,7 @@ CURRENT_DIRECTORY = CurrentDirWorkspace()
 @arg_input_nick
 @arg(
     'package_ref', type=PackageReference,
-    metavar=metavar.PACKAGE_REF, help=help.PACKAGE_LOAD)
+    metavar=arg_metavar.PACKAGE_REF, help=arg_help.PACKAGE_LOAD)
 @opt_workspace
 def add(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     '''
@@ -62,7 +63,7 @@ def delete(input_nick, workspace=CURRENT_DIRECTORY):
 @opt_input_nick
 @arg(
     'package_ref', type=PackageReference, nargs='?', default=NEWEST_VERSION,
-    metavar=metavar.PACKAGE_REF, help=help.PACKAGE_LOAD)
+    metavar=arg_metavar.PACKAGE_REF, help=arg_help.PACKAGE_LOAD)
 @opt_workspace
 def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
     '''

@@ -12,8 +12,8 @@ from ..pkg import layouts
 from .common import arg, die, warning
 from .common import DefaultArgSentinel, PackageReference
 from .common import get_channel, opt_workspace
-from . import metavar
-from . import help
+from . import arg_metavar
+from . import arg_help
 from .. import repos
 
 
@@ -33,7 +33,7 @@ def assert_may_be_valid_name(name):
 
 
 @arg(
-    'workspace', type=Workspace, metavar='WORKSPACE',
+    'workspace', type=Workspace, metavar=arg_metavar.WORKSPACE,
     help='package and directory to create')
 def new(workspace):
     '''
@@ -53,7 +53,7 @@ CURRENT_DIRECTORY = CurrentDirWorkspace()
 def arg_workspace_defaulting_to(default_workspace):
     return arg(
         'workspace', nargs='?', type=Workspace, default=default_workspace,
-        metavar=metavar.WORKSPACE, help=help.WORKSPACE)
+        metavar=arg_metavar.WORKSPACE, help=arg_help.WORKSPACE)
 
 
 USE_THE_ONLY_REPO = DefaultArgSentinel(
@@ -92,7 +92,7 @@ DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
 
 @arg(
     'package_ref', type=PackageReference,
-    metavar=metavar.PACKAGE_REF, help=help.PACKAGE_REF)
+    metavar=arg_metavar.PACKAGE_REF, help=arg_help.PACKAGE_REF)
 @arg_workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME)
 @arg(
     '-x', '--extract-output', dest='extract_output',
