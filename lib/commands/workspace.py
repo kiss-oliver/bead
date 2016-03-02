@@ -11,7 +11,7 @@ from ..pkg import layouts
 
 from .common import arg, die, warning
 from .common import DefaultArgSentinel, PackageReference
-from .common import get_channel, opt_workspace
+from .common import opt_workspace
 from . import arg_metavar
 from . import arg_help
 from .. import repos
@@ -138,7 +138,7 @@ def indent(lines):
 def _status_version_timestamp(input):
     return (
         'Release time',
-        get_channel().get_package(input.package, input.version).timestamp_str)
+        repos.get_package(input.package, input.version).timestamp_str)
 
 
 def get_package_name(package_uuid):
