@@ -3,14 +3,6 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import re
-from collections import namedtuple
-
-
-# TODO: parse and return 'offset' - "offset to last matching version"
-PackageSpec = namedtuple('PackageSpec', 'repo name version offset')
-ALL_REPOSITORIES = object()
-
 
 '''
 -r, --repo, --repository
@@ -29,73 +21,24 @@ match reducers
 -O, --oldest
 '''
 
-_parse = re.compile(
-    r'''
-    ^
-    # repo is optional
-    (
-        (?P<repo>[^:@]*)
-        :
-    )?
-
-    # name is mandatory
-    (?P<name>[^:@]+)
-
-    # version is optional
-    (
-        @
-        (?P<version>[^-:@]+)?
-        (-(?P<offset>[0-9]+))?
-    )?
-    $
-    ''', re.VERBOSE).match
-
-
-def parse(string):
-    '''
-    Parse a string based package specification.
-
-    Parts of the returned package specification:
-    - repo (optional, defaults to all repositories)
-    - name (mandatory)
-    - version (optional, defaults to None)
-    '''
-    match = _parse(string)
-    if match:
-        m = match.groupdict()
-        return PackageSpec(
-            m['repo'] or ALL_REPOSITORIES,
-            m['name'],
-            m['version'],
-            int(m['offset'] or '0'))
-    raise ValueError('Not a valid package specification', string)
-
 
 class PackageQuery:
-
-    def __init__(self, repositories, spec, first_matches=False):
-        self.repositories = repositories
-        self.spec = spec
-        self.first_matches = first_matches
-
-    def get_packages(self):
-        packages = []
-        for repo in self.repositories:
-            for package in self.query_repo(repo):
-                if self.matching_package(package):
-                    packages.append(package)
-                    packages = self.fold_packages(packages)
-                    if self.first_matches and packages:
-                        return packages
-        return packages
-
-
-class PackageSpec:
 
     def __init__(self):
         self.repo_queries = []
         self.package_filters = []
         self.match_reducers = []
+
+    def get_packages(self, repositories):
+        '''
+            Generate matching packages
+        '''
+        packages = (
+            package
+            for repo in self.repositories
+            for package in self.query_repo(repo)
+            if self.matching_package(package))
+        return self.fold_packages(packages)
 
     def query_repo(self, repo):
         '''
@@ -184,11 +127,23 @@ def timestamp_prefix(timestamp_str):
 
 # match reducers
 def newest(packages):
-    return sorted(packages, key=lambda pkg: pkg.timestamp, reverse=True)[:1]
+    newer_pkg = functools.partial(max, key=lambda pkg: pkg.timestamp)
+    try:
+        # squeze the first item, so empty candidate list can be recognized & handled
+        yield reduce(newer_pkg, packages, next(packages))
+    except StopIteration:
+        return
+    # return sorted(packages, key=lambda pkg: pkg.timestamp, reverse=True)[:1]
 
 
 def oldest(packages):
-    return sorted(packages, key=lambda pkg: pkg.timestamp)[:1]
+    older_pkg = functools.partial(min, key=lambda pkg: pkg.timestamp)
+    try:
+        # squeze the first item, so empty candidate list can be recognized & handled
+        yield reduce(older_pkg, packages, next(packages))
+    except StopIteration:
+        return
+    # return sorted(packages, key=lambda pkg: pkg.timestamp)[:1]
 
 
 
@@ -214,10 +169,10 @@ def parse_package_spec_kwargs(kwargs):
         'newer_than': newer_than,
         'date': timestamp_prefix,
     }
-    spec = PackageSpec()
+    query = PackageQuery()
     for attr in arg_to_filter:
-        spec.add_package_filter(arg_to_filter[attr](kwargs[attr]))
-    return spec
+        query.add_package_filter(arg_to_filter[attr](kwargs[attr]))
+    return query
 
 
 if __name__ == '__main__':
