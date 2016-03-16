@@ -164,10 +164,7 @@ def get_package(uuid, version):
     raise LookupError('Package {} {} not found'.format(uuid, version))
 
 
-# TODO nuke channels, implement env.package_by_spec, env.package_by_time
+# TODO implement env.package_by_spec, env.package_by_time
 def by_spec(spec):
     # FIXME by_spec
-    raise NotImplementedError
-def by_time(uuid, timestamp):
-    # FIXME by_time
     raise NotImplementedError

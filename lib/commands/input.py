@@ -8,7 +8,7 @@ from argh.decorators import arg
 from ..commands import arg_metavar
 from ..commands import arg_help
 from ..commands.common import (
-    opt_workspace, PackageReference, DefaultArgSentinel, get_channel,
+    opt_workspace, PackageReference, DefaultArgSentinel,
     CurrentDirWorkspace,
     die, warning
 )
@@ -79,7 +79,12 @@ def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
 
 def _update(workspace, input, package_ref=NEWEST_VERSION):
     if package_ref is NEWEST_VERSION:
-        replacement = get_channel().get_package(input.package)
+        # FIXME: input._update
+        query = PackageQuery()
+        query.add_repo_query(query_by_uuid(input.package))
+        query.add_package_filter(newer_than(input.timestamp))
+        query.add_match_reducer(newest)
+        replacement = next(query.get_package(env.get_repos()))
     else:
         replacement = package_ref.package
 

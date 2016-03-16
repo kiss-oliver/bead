@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import functools
+
 
 '''
 -r, --repo, --repository
@@ -90,7 +92,7 @@ class PackageQuery:
 # repo queries
 def query_by_name(package_name):
     def query(repo):
-        return repo.all_by_name(name)
+        return repo.all_by_name(package_name)
     return query
 
 
@@ -130,7 +132,7 @@ def newest(packages):
     newer_pkg = functools.partial(max, key=lambda pkg: pkg.timestamp)
     try:
         # squeze the first item, so empty candidate list can be recognized & handled
-        yield reduce(newer_pkg, packages, next(packages))
+        yield functools.reduce(newer_pkg, packages, next(packages))
     except StopIteration:
         return
     # return sorted(packages, key=lambda pkg: pkg.timestamp, reverse=True)[:1]
@@ -140,7 +142,7 @@ def oldest(packages):
     older_pkg = functools.partial(min, key=lambda pkg: pkg.timestamp)
     try:
         # squeze the first item, so empty candidate list can be recognized & handled
-        yield reduce(older_pkg, packages, next(packages))
+        yield functools.reduce(older_pkg, packages, next(packages))
     except StopIteration:
         return
     # return sorted(packages, key=lambda pkg: pkg.timestamp)[:1]

@@ -7,13 +7,11 @@ from argh.decorators import arg
 import os
 import sys
 
-# get_channel
-from .. import channels
 from .. import repos
 
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
-from ..pkg.spec import parse as parse_package_spec
+from ..pkg.spec import parse_package_spec
 from . import arg_help
 from . import arg_metavar
 
@@ -53,11 +51,10 @@ class PackageReference(object):
         if os.path.isfile(self.package_reference):
             return Archive(self.package_reference)
 
-        package_spec = parse_package_spec(self.package_reference)
+        query = parse_package_spec(self.package_reference)
         # FIXME PackageReference.package
         raise LookupError(package_spec)
-        package = get_channel().get_package(package_spec)
-        return package
+        return next(query.get_packages(env.get_repos()))
 
     @property
     def default_workspace(self):
@@ -84,7 +81,3 @@ class DefaultArgSentinel(object):
 
     def __repr__(self):
         return self.description
-
-
-def get_channel():
-    return channels.AllAvailable(repos.get_all())
