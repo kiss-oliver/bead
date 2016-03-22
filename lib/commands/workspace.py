@@ -10,7 +10,8 @@ from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg import layouts
 
 from .common import arg, die, warning
-from .common import DefaultArgSentinel, PackageReference
+from .common import DefaultArgSentinel
+from ..pkg.spec import PackageReference  # FIXME: delete PackageReference
 from .common import opt_workspace
 from . import arg_metavar
 from . import arg_help

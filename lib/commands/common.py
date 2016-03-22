@@ -11,7 +11,7 @@ from .. import repos
 
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg.archive import Archive
-from ..pkg.spec import parse_package_spec
+from ..pkg import spec as pkg_spec
 from . import arg_help
 from . import arg_metavar
 
@@ -42,31 +42,6 @@ def opt_workspace(func):
     return decorate(func)
 
 
-class PackageReference(object):
-    def __init__(self, package_reference):
-        self.package_reference = package_reference
-
-    @property
-    def package(self):
-        if os.path.isfile(self.package_reference):
-            return Archive(self.package_reference)
-
-        query = parse_package_spec(self.package_reference)
-        # FIXME PackageReference.package
-        raise LookupError(package_spec)
-        return next(query.get_packages(env.get_repos()))
-
-    @property
-    def default_workspace(self):
-        if os.path.isfile(self.package_reference):
-            archive_filename = os.path.basename(self.package_reference)
-            workspace_dir = os.path.splitext(archive_filename)[0]
-        else:
-            package_spec = parse_package_spec(self.package_reference)
-            workspace_dir = package_spec.name
-        return Workspace(workspace_dir)
-
-
 class DefaultArgSentinel(object):
     '''
     I am a sentinel for @argh.arg default values.
@@ -81,3 +56,59 @@ class DefaultArgSentinel(object):
 
     def __repr__(self):
         return self.description
+
+
+def package_spec_kwargs(func):
+    # TODO: implement more options
+    for modifier in [
+        # -r, --repo, --repository
+
+        # package_filters
+        arg('-o', '--older', '--older-than', dest='older_than', metavar='TIMEDELTA'),
+        arg('-n', '--newer', '--newer-than', dest='newer_than', metavar='TIMEDELTA'),
+        arg('-d', '--date', dest='date'),
+
+        # match reducers
+        # -N, --next
+        # -P, --prev, --previous
+        # --newest, --latest (default)
+        # --oldest
+    ]:
+        func = modifier(func)
+    return func
+
+
+def parse_package_spec_kwargs(kwargs):
+    arg_to_filter = {
+        'older_than': pkg_spec.older_than,
+        'newer_than': pkg_spec.newer_than,
+        'date': pkg_spec.timestamp_prefix,
+    }
+    query = pkg_spec.PackageQuery()
+    for attr in arg_to_filter:
+        query.add_package_filter(arg_to_filter[attr](kwargs[attr]))
+    return query
+
+
+
+# TODO: delete experimental code
+
+if __name__ == '__main__':
+    # parse time-delta
+    # TODO: make
+    import re
+    re.match(r'(([+-]?\d+) *([ymwdHMS]))*$', '2w12H  13M')
+    re.findall(r'([+-]?\d+) *([ymwdHMS])', 'asd +-12H +13M x')
+
+    from argh import ArghParser, arg, named
+    @named('get')
+    @package_spec_kwargs
+    def cmd(other, **kwargs):
+        spec = parse_package_spec_kwargs(kwargs)
+        print(spec.package_filters)
+        print(other, kwargs)
+
+    p = ArghParser()
+    # p.set_default_command(cmd)
+    p.add_commands([cmd])
+    p.dispatch()

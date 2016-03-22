@@ -4,24 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import functools
-
-
-'''
--r, --repo, --repository
-
-
-package_filters
--o, --older, --older-than
--n, --newer, --newer-than
--d, --date
--N, --next
--P, --prev, --previous
---timedelta
-
-match reducers
---newest (default)
--O, --oldest
-'''
+import os.path
 
 
 class PackageQuery:
@@ -150,42 +133,28 @@ def oldest(packages):
 
 
 
+# FIXME: PackageReference is currently broken - should it be dropped or fixed?
+from .archive import Archive
+class PackageReference(object):
+    def __init__(self, package_reference):
+        self.package_reference = package_reference
 
-# FIXME: find proper place for spec.package_spec_kwargs, parse_package_spec_kwargs
+    @property
+    def package(self):
+        if os.path.isfile(self.package_reference):
+            return Archive(self.package_reference)
 
-from argh import ArghParser, arg, named
+        query = parse_package_spec(self.package_reference)
+        # FIXME PackageReference.package
+        raise LookupError(package_spec)
+        return next(query.get_packages(env.get_repos()))
 
-def package_spec_kwargs(func):
-    for modifier in [
-        arg('-o', '--older', '--older-than', dest='older_than'),
-        arg('-n', '--newer', '--newer-than', dest='newer_than'),
-        arg('-d', '--date', dest='date'),
-    ]:
-        func = modifier(func)
-    return func
-
-
-def parse_package_spec_kwargs(kwargs):
-    arg_to_filter = {
-        'older_than': older_than,
-        'newer_than': newer_than,
-        'date': timestamp_prefix,
-    }
-    query = PackageQuery()
-    for attr in arg_to_filter:
-        query.add_package_filter(arg_to_filter[attr](kwargs[attr]))
-    return query
-
-
-if __name__ == '__main__':
-    @named('get')
-    @package_spec_kwargs
-    def cmd(other, **kwargs):
-        spec = parse_package_spec_kwargs(kwargs)
-        print(spec.package_filters)
-        print(other, kwargs)
-
-    p = ArghParser()
-    # p.set_default_command(cmd)
-    p.add_commands([cmd])
-    p.dispatch()
+    @property
+    def default_workspace(self):
+        if os.path.isfile(self.package_reference):
+            archive_filename = os.path.basename(self.package_reference)
+            workspace_dir = os.path.splitext(archive_filename)[0]
+        else:
+            package_spec = parse_package_spec(self.package_reference)
+            workspace_dir = package_spec.name
+        return Workspace(workspace_dir)

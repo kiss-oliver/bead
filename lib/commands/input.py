@@ -8,10 +8,11 @@ from argh.decorators import arg
 from ..commands import arg_metavar
 from ..commands import arg_help
 from ..commands.common import (
-    opt_workspace, PackageReference, DefaultArgSentinel,
+    opt_workspace, DefaultArgSentinel,
     CurrentDirWorkspace,
     die, warning
 )
+from ..pkg.spec import PackageReference  # FIXME: delete PackageReference
 from .. import repos
 
 
