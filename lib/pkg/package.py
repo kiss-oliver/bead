@@ -17,13 +17,6 @@ class Package(object):
     def timestamp(self):
         return time_from_timestamp(self.timestamp_str)
 
-    @abstractmethod
-    def export(self, exported_archive_path):
-        '''
-        I pack my content (everything!) as a zip-Archive to requested location.
-        '''
-        pass
-
     def unpack_to(self, workspace):
         self.unpack_code_to(workspace.directory)
         workspace.create_directories()

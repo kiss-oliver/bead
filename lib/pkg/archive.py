@@ -40,13 +40,6 @@ class Archive(Package):
                 self.zipfile = None
         return f
 
-    def export(self, exported_archive_path):
-        '''
-        I pack my content (everything!) as a zip-Archive to requested location.
-        '''
-        # FIXME: Implement Archive.export
-        pass
-
     # -
     @property
     @__zipfile_user
