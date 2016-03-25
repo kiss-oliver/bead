@@ -26,10 +26,8 @@ def make_argument_parser():
             commands.workspace.save,
             commands.workspace.status,
             commands.workspace.nuke,
-            # TODO: #10 names for packages
-            # rename  # package
         ])
-    # FIXME: ArghParser.add_subcommands
+    # TODO: ArghParser.add_subcommands
     # https://github.com/neithere/argh/issues/88
     parser.add_commands(
         [
