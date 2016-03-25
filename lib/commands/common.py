@@ -4,13 +4,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from argh.decorators import arg
-import os
 import sys
 
-from .. import repos
-
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
-from ..pkg.archive import Archive
 from ..pkg import spec as pkg_spec
 from . import arg_help
 from . import arg_metavar
@@ -64,8 +60,10 @@ def package_spec_kwargs(func):
         # -r, --repo, --repository
 
         # package_filters
-        arg('-o', '--older', '--older-than', dest='older_than', metavar='TIMEDELTA'),
-        arg('-n', '--newer', '--newer-than', dest='newer_than', metavar='TIMEDELTA'),
+        arg('-o', '--older', '--older-than', dest='older_than',
+            metavar='TIMEDELTA'),
+        arg('-n', '--newer', '--newer-than', dest='newer_than',
+            metavar='TIMEDELTA'),
         arg('-d', '--date', dest='date'),
 
         # match reducers
@@ -90,7 +88,7 @@ def parse_package_spec_kwargs(kwargs):
     return query
 
 
-
+# ----------------------------------------------------------------------------------
 # TODO: delete experimental code
 
 if __name__ == '__main__':
@@ -100,7 +98,8 @@ if __name__ == '__main__':
     re.match(r'(([+-]?\d+) *([ymwdHMS]))*$', '2w12H  13M')
     re.findall(r'([+-]?\d+) *([ymwdHMS])', 'asd +-12H +13M x')
 
-    from argh import ArghParser, arg, named
+    from argh import ArghParser, named
+
     @named('get')
     @package_spec_kwargs
     def cmd(other, **kwargs):
