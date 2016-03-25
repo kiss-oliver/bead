@@ -81,10 +81,11 @@ def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
 def _update(workspace, input, package_ref=NEWEST_VERSION):
     if package_ref is NEWEST_VERSION:
         # FIXME: input._update
-        query = PackageQuery()
-        query.add_repo_query(query_by_uuid(input.package))
-        query.add_package_filter(newer_than(input.timestamp))
-        query.add_match_reducer(newest)
+        query = (
+            PackageQuery()
+            .by_uuid(input.package)
+            .is_newer_than(input.timestamp)
+            .keep_newest())
         replacement = next(query.get_package(env.get_repos()))
     else:
         replacement = package_ref.package

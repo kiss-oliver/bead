@@ -53,68 +53,78 @@ class PackageQuery:
         return packages
 
     # Construct
-    def add_repo_query(self, pkg_query):
+    def _add_repo_query(self, pkg_query):
         '''
             Use :pkg_query: for querying repos for package candidates.
         '''
         self.repo_queries.append(pkg_query)
 
-    def add_package_filter(self, pkg_filter):
+    def _add_package_filter(self, pkg_filter):
         '''
             Restrict packages to those matching :pkg_filter:
         '''
         self.package_filters.append(pkg_filter)
 
-    def add_match_reducer(self, match_reducer):
+    def _add_match_reducer(self, match_reducer):
         '''
             Reduce matches - keep only the best one[s]
         '''
         self.match_reducers.append(match_reducer)
 
+    # repo queries
+    def by_name(self, package_name):
+        def query(repo):
+            return repo.all_by_name(package_name)
+        self._add_repo_query(query)
+        return self
 
-# repo queries
-def query_by_name(package_name):
-    def query(repo):
-        return repo.all_by_name(package_name)
-    return query
+    def query_by_uuid(self, package_uuid, content_hash=None):
+        def query(repo):
+            return repo.all_by_uuid(package_uuid, content_hash)
+        self._add_repo_query(query)
+        return self
 
+    # package filters
+    def is_newer_than(self, timestamp):
+        def filter(pkg):
+            return pkg.timestamp > timestamp
+        self._add_package_filter(filter)
+        return self
 
-def query_by_uuid(package_uuid, content_hash=None):
-    def query(repo):
-        return repo.all_by_uuid(package_uuid, content_hash)
-    return query
+    def is_older_than(self, timestamp):
+        def filter(pkg):
+            return pkg.timestamp < timestamp
+        self._add_package_filter(filter)
+        return self
 
+    def has_content_prefix(self, hash_prefix):
+        def filter(pkg):
+            return pkg.version.startswith(hash_prefix)
+        self._add_package_filter(filter)
+        return self
 
-# package filters
-def newer_than(timestamp):
-    def filter(pkg):
-        return pkg.timestamp > timestamp
-    return filter
+    def has_timestamp_prefix(self, timestamp_str):
+        def filter(pkg):
+            return pkg.timestamp_str.startswith(timestamp_str)
+        self._add_package_filter(filter)
+        return self
 
+    # match reducers
+    def keep_newest(self):
+        self._add_match_reducer(newest)
+        return self
 
-def older_than(timestamp):
-    def filter(pkg):
-        return pkg.timestamp < timestamp
-    return filter
-
-
-def content_prefix(hash_prefix):
-    def filter(pkg):
-        return pkg.version.startswith(hash_prefix)
-    return filter
-
-
-def timestamp_prefix(timestamp_str):
-    def filter(pkg):
-        return pkg.timestamp_str.startswith(timestamp_str)
-    return filter
+    def keep_oldest(self):
+        self._add_match_reducer(oldest)
+        return self
 
 
 # match reducers
 def newest(packages):
     newer_pkg = functools.partial(max, key=lambda pkg: pkg.timestamp)
     try:
-        # squeze the first item, so empty candidate list can be recognized & handled
+        # squeze the first item,
+        # so empty candidate list can be recognized & handled
         yield functools.reduce(newer_pkg, packages, next(packages))
     except StopIteration:
         return
@@ -124,17 +134,19 @@ def newest(packages):
 def oldest(packages):
     older_pkg = functools.partial(min, key=lambda pkg: pkg.timestamp)
     try:
-        # squeze the first item, so empty candidate list can be recognized & handled
+        # squeze the first item,
+        # so empty candidate list can be recognized & handled
         yield functools.reduce(older_pkg, packages, next(packages))
     except StopIteration:
         return
     # return sorted(packages, key=lambda pkg: pkg.timestamp)[:1]
 
-
-
-
+# ----------------------------------------------------------------------------
 # FIXME: PackageReference is currently broken - should it be dropped or fixed?
 from .archive import Archive
+from .workspace import Workspace
+
+
 class PackageReference(object):
     def __init__(self, package_reference):
         self.package_reference = package_reference
