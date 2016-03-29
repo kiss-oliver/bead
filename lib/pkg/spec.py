@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import functools
-import os.path
 
 
 class PackageQuery:
@@ -20,7 +19,7 @@ class PackageQuery:
         '''
         packages = (
             package
-            for repo in self.repositories
+            for repo in repositories
             for package in self.query_repo(repo)
             if self.matching_package(package))
         return self.fold_packages(packages)
@@ -141,32 +140,9 @@ def oldest(packages):
         return
     # return sorted(packages, key=lambda pkg: pkg.timestamp)[:1]
 
+
 # ----------------------------------------------------------------------------
 # FIXME: PackageReference is currently broken - should it be dropped or fixed?
-from .archive import Archive
-from .workspace import Workspace
-
 
 class PackageReference(object):
-    def __init__(self, package_reference):
-        self.package_reference = package_reference
-
-    @property
-    def package(self):
-        if os.path.isfile(self.package_reference):
-            return Archive(self.package_reference)
-
-        query = parse_package_spec(self.package_reference)
-        # FIXME PackageReference.package
-        raise LookupError(package_spec)
-        return next(query.get_packages(env.get_repos()))
-
-    @property
-    def default_workspace(self):
-        if os.path.isfile(self.package_reference):
-            archive_filename = os.path.basename(self.package_reference)
-            workspace_dir = os.path.splitext(archive_filename)[0]
-        else:
-            package_spec = parse_package_spec(self.package_reference)
-            workspace_dir = package_spec.name
-        return Workspace(workspace_dir)
+    pass

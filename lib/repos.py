@@ -8,7 +8,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
+from glob import iglob
 import os
+import re
 
 from .pkg.archive import Archive
 from .import tech
@@ -67,6 +69,33 @@ def initialize(config_dir):
         env.load()
 
 
+# TODO: Is this the final place of package_name_from_file_path()?
+RE_PEEL_PACKAGE_FILENAME = re.compile(
+    '''
+    [.].*$          # everything after .
+    |
+    [-_][-_.0-9]*$  # standalone numbers - keeps e.g. name-v1 name-v2
+    ''', flags=re.VERBOSE)
+
+
+def _peel_package_filename(path):
+    return RE_PEEL_PACKAGE_FILENAME.sub('', path)
+
+
+def package_name_from_file_path(path):
+    '''
+    Parse package name from a file path - might return a simpler name than intended
+    '''
+    base = ''
+    new_base = os.path.basename(path)
+    while base != new_base:
+        base = new_base
+        new_base = _peel_package_filename(base)
+    return base
+
+assert 'complex-2015v3' == package_name_from_file_path('complex-2015v3-2015-09-23.utf8-csvs.zip')
+
+
 class Repository(object):
     # TODO: user maintained directory hierarchy
 
@@ -82,6 +111,12 @@ class Repository(object):
         Valid only for local repositories.
         '''
         return Path(self.location)
+
+    def all_by_name(self, package_name):
+        assert package_name
+        for path in iglob(self.directory / package_name + '*'):
+            if package_name_from_file_path(path) == package_name:
+                yield Archive(path)
 
     def find_packages(self, uuid, version=None):
         # -> [Package]

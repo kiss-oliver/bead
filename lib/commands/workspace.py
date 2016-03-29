@@ -11,8 +11,8 @@ from ..pkg import layouts
 
 from .common import arg, die, warning
 from .common import DefaultArgSentinel
-from ..pkg.spec import PackageReference  # FIXME: delete PackageReference
 from .common import opt_workspace
+from .common import package_spec_kwargs, get_package_ref
 from . import arg_metavar
 from . import arg_help
 from .. import repos
@@ -91,20 +91,22 @@ def save(repo_name, workspace=CURRENT_DIRECTORY):
 DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
 
 
-@arg(
-    'package_ref', type=PackageReference,
-    metavar=arg_metavar.PACKAGE_REF, help=arg_help.PACKAGE_REF)
+@package_spec_kwargs
+# TODO: delete arg_metavar.PACKAGE_REF, arg_help.PACKAGE_REF
 @arg_workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME)
 @arg(
     '-x', '--extract-output', dest='extract_output',
     help='Extract output data as well (normally it is not needed!).')
-def develop(package_ref, workspace, extract_output=False):
+@arg('package_name', metavar='package-name')
+def develop(package_name, workspace, extract_output=False, **kwargs):
     '''
     Unpack a package as a source tree.
 
     Package directory layout is created, but only the source files are
     extracted by default.
     '''
+    # assert False, (package_name, kwargs)
+    package_ref = get_package_ref(package_name, kwargs)
     try:
         package = package_ref.package
     except LookupError:

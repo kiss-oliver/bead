@@ -4,10 +4,13 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from argh.decorators import arg
+import os
 import sys
 
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg import spec as pkg_spec
+from ..pkg.archive import Archive
+from .. import repos
 from . import arg_help
 from . import arg_metavar
 
@@ -64,7 +67,7 @@ def package_spec_kwargs(func):
             metavar='TIMEDELTA'),
         arg('-n', '--newer', '--newer-than', dest='newer_than',
             metavar='TIMEDELTA'),
-        arg('-d', '--date', dest='date'),
+        # arg('-d', '--date', dest='date'),
 
         # match reducers
         # -N, --next
@@ -77,15 +80,65 @@ def package_spec_kwargs(func):
 
 
 def parse_package_spec_kwargs(kwargs):
-    arg_to_filter = {
-        'older_than': pkg_spec.older_than,
-        'newer_than': pkg_spec.newer_than,
-        'date': pkg_spec.timestamp_prefix,
-    }
+    # assert False, kwargs
     query = pkg_spec.PackageQuery()
-    for attr in arg_to_filter:
-        query.add_package_filter(arg_to_filter[attr](kwargs[attr]))
+    query_modifier = {
+        'older_than': query.is_older_than,
+        'newer_than': query.is_newer_than,
+    }
+    for attr in kwargs:
+        if kwargs[attr] is not None:
+            query = query_modifier[attr](kwargs[attr])
     return query
+
+
+class PackageReference:
+    package = Archive
+    default_workspace = str
+
+
+class ArchiveReference(PackageReference):
+    def __init__(self, package_path):
+        self.package_path = package_path
+
+    @property
+    def package(self):
+        if os.path.isfile(self.package_path):
+            return Archive(self.package_path)
+        raise LookupError('Not a file', self.package_path)
+
+    @property
+    def default_workspace(self):
+        # FIXME: ArchiveReference.default_workspace: also remove trailing extension, and '[-_.0-9]'' characters
+        return Workspace(repos.package_name_from_file_path(self.package_path))
+
+
+class RepoQueryReference(PackageReference):
+    def __init__(self, package_name, query, repositories):
+        self.package_name = package_name
+        self.query = query
+        self.repositories = repositories
+
+    @property
+    def package(self):
+        try:
+            package = next(self.query.get_packages(self.repositories))
+        except StopIteration:
+            raise LookupError
+        return package
+
+    @property
+    def default_workspace(self):
+        return Workspace(self.package_name)
+
+
+def get_package_ref(package_name, kwargs):
+    if os.path.isfile(package_name) and not kwargs:
+        return ArchiveReference(package_name)
+    # assert False, 'FIXME: get_package_ref - repo search'
+    query = parse_package_spec_kwargs(kwargs)
+    query.by_name(package_name)
+    return RepoQueryReference(package_name, query, repos.env.get_repos())
 
 
 # ----------------------------------------------------------------------------------
