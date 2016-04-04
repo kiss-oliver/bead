@@ -120,11 +120,12 @@ class AbstractWorkspace(object):
         return os.path.isdir(
             self.directory / layouts.Workspace.INPUT / input_nick)
 
-    def add_input(self, input_nick, uuid, version):
+    def add_input(self, input_nick, uuid, version, timestamp_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
             meta.INPUT_PACKAGE: uuid,
             meta.INPUT_VERSION: version,
+            meta.INPUT_TIME: timestamp_str,
         }
         self.meta = m
 
@@ -143,7 +144,7 @@ class AbstractWorkspace(object):
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
-            self.add_input(input_nick, package.uuid, package.version)
+            self.add_input(input_nick, package.uuid, package.version, package.timestamp_str)
             destination_dir = input_dir / input_nick
             package.unpack_data_to(destination_dir)
             for f in fs.all_subpaths(destination_dir):
@@ -266,6 +267,7 @@ class _ZipCreator(object):
                 input.name: {
                     meta.INPUT_PACKAGE: input.package,
                     meta.INPUT_VERSION: input.version,
+                    meta.INPUT_TIME: input.timestamp,
                 }
                 for input in workspace.inputs
             },

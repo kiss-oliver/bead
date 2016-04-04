@@ -9,10 +9,12 @@ with the following minimum structure:
         'nick1' : {
             package uuid: ...,
             version hash: ...,
+            version time: ...,
         },
         'nick2' : {
             package uuid: ...,
             version hash: ...,
+            version time: ...,
         },
         ...
     },
@@ -37,9 +39,9 @@ INPUTS = 'inputs'
 
 INPUT_PACKAGE = 'package uuid'
 INPUT_VERSION = 'version hash'
+INPUT_TIME = 'version time'
 
-
-InputSpec = namedtuple('InputSpec', 'name package version')
+InputSpec = namedtuple('InputSpec', 'name package version timestamp')
 
 
 def parse_inputs(meta):
@@ -49,7 +51,7 @@ def parse_inputs(meta):
     inputs = meta[INPUTS]
     for name in inputs:
         spec = inputs[name]
-        yield InputSpec(name, spec[INPUT_PACKAGE], spec[INPUT_VERSION])
+        yield InputSpec(name, spec[INPUT_PACKAGE], spec[INPUT_VERSION], spec[INPUT_TIME])
 
 
 # Archive meta:
