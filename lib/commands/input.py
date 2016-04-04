@@ -12,6 +12,7 @@ from ..commands.common import (
     CurrentDirWorkspace,
     die, warning
 )
+from ..commands.common import package_spec_kwargs, get_package_ref
 from ..pkg.spec import PackageReference  # FIXME: delete PackageReference
 from .. import repos
 
@@ -28,27 +29,33 @@ arg_input_nick = arg(
 
 # package_ref
 NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
+USE_INPUT_NICK = DefaultArgSentinel('use {}'.format(arg_metavar.INPUT_NICK))
 # default workspace
 CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 
-@arg_input_nick
+@package_spec_kwargs
 @arg(
-    'package_ref', type=PackageReference,
-    metavar=arg_metavar.PACKAGE_REF, help=arg_help.PACKAGE_LOAD)
+    'package_name', metavar='package-name', nargs='?',
+    help=arg_help.PACKAGE_LOAD)
+@arg_input_nick
+# TODO: delete arg_metavar.PACKAGE_REF
 @opt_workspace
-def add(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
+def add(input_nick, package_name, workspace=CURRENT_DIRECTORY, **kwargs):
     '''
     Make data from another package available in the input directory.
     '''
+    # assert False, vars()
+    if package_name is USE_INPUT_NICK:
+        package_name = input_nick
+    package_ref = get_package_ref(package_name, kwargs)
     try:
         package = package_ref.package
     except LookupError:
-        die('Not a known package name: {}'
-            .format(package_ref.package_reference))
+        die('Not a known package name: {}'.format(package_name))
 
     _check_load_with_feedback(
-        workspace, input_nick, package, package_ref.package_reference)
+        workspace, input_nick, package, package_name)
 
 
 @arg_input_nick

@@ -89,6 +89,7 @@ def parse_package_spec_kwargs(kwargs):
     for attr in kwargs:
         if kwargs[attr] is not None:
             query = query_modifier[attr](kwargs[attr])
+    # FIXME: parse_package_spec_kwargs: determine reducers
     return query
 
 
@@ -133,7 +134,7 @@ class RepoQueryReference(PackageReference):
 
 
 def get_package_ref(package_name, kwargs):
-    if os.path.isfile(package_name) and not kwargs:
+    if os.path.sep in package_name and os.path.isfile(package_name):
         return ArchiveReference(package_name)
     # assert False, 'FIXME: get_package_ref - repo search'
     query = parse_package_spec_kwargs(kwargs)
