@@ -139,3 +139,7 @@ def oldest(packages):
     except StopIteration:
         return
     # return sorted(packages, key=lambda pkg: pkg.timestamp)[:1]
+
+
+# FIXME: selecting packages from repositories matching a query should be the responsibility of class Repository!
+# this implies, that the above query should become hidden and queries should be described as data (e.g. a dictionary)
