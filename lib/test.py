@@ -6,6 +6,8 @@ from __future__ import print_function
 import functools
 import testtools
 import fixtures
+from unittest import skip
+
 
 from . import tech
 import os

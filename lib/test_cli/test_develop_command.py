@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase
+from ..test import TestCase, skip
 from testtools.matchers import FileContains, Contains, FileExists
 
 from ..pkg.workspace import Workspace
@@ -40,17 +40,21 @@ class Test_develop(TestCase, fixtures.RobotAndPackages):
     def test_without_version(self, robot, pkg_with_history):
         self.assert_develop_version(robot, 'pkg_with_history', fixtures.TS2)
 
+    @skip('package version')
     def test_without_offset(self, robot, pkg_with_history):
         self.assert_develop_version(robot, 'pkg_with_history@', fixtures.TS2)
 
+    @skip('package version')
     def test_with_offset(self, robot, pkg_with_history):
         self.assert_develop_version(robot, 'pkg_with_history@-1', fixtures.TS1)
 
+    @skip('package version')
     def test_with_version_without_offset(self, robot, pkg_with_history):
         self.assert_develop_version(
             robot, 'pkg_with_history@' + fixtures.TS1,
             fixtures.TS1)
 
+    @skip('package version')
     def test_available_matches_to_version_are_less_than_offset(
             self, robot, pkg_with_history):
         self.assert_develop_version(
