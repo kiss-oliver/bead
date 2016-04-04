@@ -77,7 +77,7 @@ class PackageQuery:
         self._add_repo_query(query)
         return self
 
-    def query_by_uuid(self, package_uuid, content_hash=None):
+    def by_uuid(self, package_uuid, content_hash=None):
         def query(repo):
             return repo.all_by_uuid(package_uuid, content_hash)
         self._add_repo_query(query)
@@ -139,10 +139,3 @@ def oldest(packages):
     except StopIteration:
         return
     # return sorted(packages, key=lambda pkg: pkg.timestamp)[:1]
-
-
-# ----------------------------------------------------------------------------
-# FIXME: PackageReference is currently broken - should it be dropped or fixed?
-
-class PackageReference(object):
-    pass
