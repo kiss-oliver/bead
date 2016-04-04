@@ -12,8 +12,8 @@ from ..commands.common import (
     CurrentDirWorkspace,
     die, warning
 )
+from ..pkg.spec import PackageQuery
 from ..commands.common import package_spec_kwargs, get_package_ref
-from ..pkg.spec import PackageReference  # FIXME: delete PackageReference
 from .. import repos
 
 
@@ -36,10 +36,10 @@ CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 @package_spec_kwargs
 @arg(
-    'package_name', metavar='package-name', nargs='?',
+    'package_name', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
+    default=USE_INPUT_NICK,
     help=arg_help.PACKAGE_LOAD)
 @arg_input_nick
-# TODO: delete arg_metavar.PACKAGE_REF
 @opt_workspace
 def add(input_nick, package_name, workspace=CURRENT_DIRECTORY, **kwargs):
     '''
@@ -68,12 +68,14 @@ def delete(input_nick, workspace=CURRENT_DIRECTORY):
     print('Input {} is deleted.'.format(input_nick))
 
 
-@opt_input_nick
+@package_spec_kwargs
 @arg(
-    'package_ref', type=PackageReference, nargs='?', default=NEWEST_VERSION,
-    metavar=arg_metavar.PACKAGE_REF, help=arg_help.PACKAGE_LOAD)
+    'package_ref', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
+    default=NEWEST_VERSION,
+    help=arg_help.PACKAGE_LOAD)
+@opt_input_nick
 @opt_workspace
-def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
+def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY, **kwargs):
     '''
     Update input[s] to newest version or defined package.
     '''
@@ -82,6 +84,9 @@ def update(input_nick, package_ref, workspace=CURRENT_DIRECTORY):
             _update(workspace, input)
         print('All inputs are up to date.')
     else:
+        # FIXME: update: fix to allow to select previous/next/closest to a timestamp package
+        if package_ref is not NEWEST_VERSION:
+            package_ref = get_package_ref(package_ref, kwargs)
         _update(workspace, workspace.get_input(input_nick), package_ref)
 
 
@@ -93,7 +98,7 @@ def _update(workspace, input, package_ref=NEWEST_VERSION):
             .by_uuid(input.package)
             .is_newer_than(input.timestamp)
             .keep_newest())
-        replacement = next(query.get_package(env.get_repos()))
+        replacement = next(query.get_packages(repos.env.get_repos()))
     else:
         replacement = package_ref.package
 

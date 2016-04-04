@@ -118,6 +118,18 @@ class Repository(object):
             if package_name_from_file_path(path) == package_name:
                 yield Archive(path)
 
+    def all_by_uuid(self, package_uuid, content_hash=None):
+        assert package_uuid
+        for path in os.listdir(self.directory):
+            try:
+                pkg = Archive(path)
+                if pkg.uuid == package_uuid:
+                    if content_hash is None or content_hash == pkg.version:
+                        yield pkg
+            except:
+                # XXX: log error?
+                pass
+
     def find_packages(self, uuid, version=None):
         # -> [Package]
         try:
