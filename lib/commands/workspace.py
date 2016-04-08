@@ -39,7 +39,7 @@ class CmdNew(Command):
     Create and initialize new workspace directory with a new package.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg('workspace', type=Workspace, metavar=arg_metavar.WORKSPACE,
             help='package and directory to create')
 
@@ -74,7 +74,7 @@ class CmdSave(Command):
     Save workspace in a repository.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg('repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
             metavar='REPOSITORY', help='Name of repository to store package')
         arg(OPTIONAL_WORKSPACE)
@@ -111,7 +111,7 @@ class CmdDevelop(Command):
     extracted by default.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg(package_spec_kwargs)
         # TODO: delete arg_metavar.PACKAGE_REF, arg_help.PACKAGE_REF
         arg(workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME))
@@ -252,7 +252,7 @@ class CmdStatus(Command):
     Show workspace status - name of package, inputs and their unpack status.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg(OPTIONAL_WORKSPACE)
         arg('-v', '--verbose', default=False, action='store_true',
             help='show more detailed information')
@@ -284,7 +284,7 @@ class CmdNuke(Command):
     Delete the workspace, inluding data, code and documentation.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg(workspace_defaulting_to(CURRENT_DIRECTORY))
 
     def run(self, args):

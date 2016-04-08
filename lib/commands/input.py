@@ -47,7 +47,7 @@ class CmdAdd(Command):
     Make data from another package available in the input directory.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg(package_spec_kwargs)
         arg('package_name', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
             default=USE_INPUT_NICK,
@@ -78,7 +78,7 @@ class CmdDelete(Command):
     Forget all about an input.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg(MANDATORY_INPUT_NICK)
         arg(OPTIONAL_WORKSPACE)
 
@@ -94,7 +94,7 @@ class CmdUpdate(Command):
     Update input[s] to newest version or defined package.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg(package_spec_kwargs)
         arg(
             'package_ref', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
@@ -139,7 +139,7 @@ class CmdLoad(Command):
     Put defined input data in place.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg(OPTIONAL_INPUT_NICK)
         arg(OPTIONAL_WORKSPACE)
 

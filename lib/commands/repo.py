@@ -14,7 +14,7 @@ class CmdAdd(Command):
     Define a repository.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg('name')
         arg('directory')
 
@@ -63,7 +63,7 @@ class CmdForget(Command):
     Remove the named repository from the repositories known by the tool.
     '''
 
-    def arguments(self, arg):
+    def declare(self, arg):
         arg('name')
 
     def run(self, args):
