@@ -9,9 +9,10 @@ from .. import tech
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg import layouts
 
-from .common import arg, die, warning
+from cliscape import Command
+from .common import die, warning
 from .common import DefaultArgSentinel
-from .common import opt_workspace
+from .common import OPTIONAL_WORKSPACE
 from .common import package_spec_kwargs, get_package_ref
 from . import arg_metavar
 from . import arg_help
@@ -33,28 +34,34 @@ def assert_may_be_valid_name(name):
         die('Invalid name "{}"'.format(name))
 
 
-@arg(
-    'workspace', type=Workspace, metavar=arg_metavar.WORKSPACE,
-    help='package and directory to create')
-def new(workspace):
+class CmdNew(Command):
     '''
     Create and initialize new workspace directory with a new package.
     '''
-    assert_may_be_valid_name(workspace.package_name)
-    # FIXME: die with message when directory already exists
 
-    uuid = tech.identifier.uuid()
-    workspace.create(uuid)
-    print('Created {}'.format(workspace.package_name))
+    def arguments(self, arg):
+        arg('workspace', type=Workspace, metavar=arg_metavar.WORKSPACE,
+            help='package and directory to create')
+
+    def run(self, args):
+        workspace = args.workspace
+        assert_may_be_valid_name(workspace.package_name)
+        # FIXME: die with message when directory already exists
+
+        uuid = tech.identifier.uuid()
+        workspace.create(uuid)
+        print('Created {}'.format(workspace.package_name))
 
 
 CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 
-def arg_workspace_defaulting_to(default_workspace):
-    return arg(
-        'workspace', nargs='?', type=Workspace, default=default_workspace,
-        metavar=arg_metavar.WORKSPACE, help=arg_help.WORKSPACE)
+def workspace_defaulting_to(default_workspace):
+    def opt_workspace(parser):
+        parser.arg('workspace', nargs='?', type=Workspace,
+            default=default_workspace,
+            metavar=arg_metavar.WORKSPACE, help=arg_help.WORKSPACE)
+    return opt_workspace
 
 
 USE_THE_ONLY_REPO = DefaultArgSentinel(
@@ -62,71 +69,84 @@ USE_THE_ONLY_REPO = DefaultArgSentinel(
     ' store there, otherwise it MUST be specified')
 
 
-@arg(
-    'repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
-    metavar='REPOSITORY', help='Name of repository to store package')
-@opt_workspace
-def save(repo_name, workspace=CURRENT_DIRECTORY):
+class CmdSave(Command):
     '''
     Save workspace in a repository.
     '''
-    assert_valid_workspace(workspace)
-    if repo_name is USE_THE_ONLY_REPO:
-        repositories = list(repos.get_all())
-        if not repositories:
-            die('No repositories defined, please define one!')
-        if len(repositories) > 1:
-            die(
-                'REPOSITORY parameter is not optional!\n' +
-                '(more than one repositories exists)')
-        repo = repositories[0]
-    else:
-        repo = repos.get(repo_name)
-        if repo is None:
-            die('Unknown repository: {}'.format(repo_name))
-    repo.store(workspace, timestamp())
-    print('Successfully stored package.')
+
+    def arguments(self, arg):
+        arg('repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
+            metavar='REPOSITORY', help='Name of repository to store package')
+        arg(OPTIONAL_WORKSPACE)
+
+    def run(self, args):
+        repo_name = args.repo_name
+        workspace = args.workspace
+        assert_valid_workspace(workspace)
+        if repo_name is USE_THE_ONLY_REPO:
+            repositories = list(repos.get_all())
+            if not repositories:
+                die('No repositories defined, please define one!')
+            if len(repositories) > 1:
+                die(
+                    'REPOSITORY parameter is not optional!\n' +
+                    '(more than one repositories exists)')
+            repo = repositories[0]
+        else:
+            repo = repos.get(repo_name)
+            if repo is None:
+                die('Unknown repository: {}'.format(repo_name))
+        repo.store(workspace, timestamp())
+        print('Successfully stored package.')
 
 
 DERIVE_FROM_PACKAGE_NAME = DefaultArgSentinel('derive one from package name')
 
 
-@package_spec_kwargs
-# TODO: delete arg_metavar.PACKAGE_REF, arg_help.PACKAGE_REF
-@arg_workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME)
-@arg(
-    '-x', '--extract-output', dest='extract_output',
-    help='Extract output data as well (normally it is not needed!).')
-@arg('package_name', metavar='package-name')
-def develop(package_name, workspace, extract_output=False, **kwargs):
+class CmdDevelop(Command):
     '''
     Unpack a package as a source tree.
 
     Package directory layout is created, but only the source files are
     extracted by default.
     '''
-    # assert False, (package_name, kwargs)
-    package_ref = get_package_ref(package_name, kwargs)
-    try:
-        package = package_ref.package
-    except LookupError:
-        die('Package not found!')
-    if not package.is_valid:
-        die('Package is found but damaged')
-    if workspace is DERIVE_FROM_PACKAGE_NAME:
-        workspace = package_ref.default_workspace
 
-    package.unpack_to(workspace)
-    assert workspace.is_valid
+    def arguments(self, arg):
+        arg(package_spec_kwargs)
+        # TODO: delete arg_metavar.PACKAGE_REF, arg_help.PACKAGE_REF
+        arg(workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME))
+        arg('-x', '--extract-output', dest='extract_output',
+            default=False, action='store_true',
+            help='Extract output data as well (normally it is not needed!).')
+        arg('package_name', metavar='package-name')
 
-    if extract_output:
-        output_directory = workspace.directory / layouts.Workspace.OUTPUT
-        package.unpack_data_to(output_directory)
+    def run(self, args):
+        package_name = args.package_name
+        workspace = args.workspace
+        extract_output = args.extract_output
+        kwargs = dict(args.query or {})
+        # assert False, (package_name, kwargs)
+        package_ref = get_package_ref(package_name, kwargs)
+        try:
+            package = package_ref.package
+        except LookupError:
+            die('Package not found!')
+        if not package.is_valid:
+            die('Package is found but damaged')
+        if workspace is DERIVE_FROM_PACKAGE_NAME:
+            workspace = package_ref.default_workspace
 
-    print('Extracted source into {}'.format(workspace.directory))
-    # XXX: try to load smaller inputs?
-    if workspace.inputs:
-        print('Input data not loaded, update if needed and load manually')
+        package.unpack_to(workspace)
+        assert workspace.is_valid
+
+        if extract_output:
+            output_directory = workspace.directory / layouts.Workspace.OUTPUT
+            package.unpack_data_to(output_directory)
+
+        print('Extracted source into {}'.format(workspace.directory))
+        # XXX: try to load smaller inputs?
+        if workspace.inputs:
+            print('Input data not loaded, update if needed and load manually')
 
 
 def assert_valid_workspace(workspace):
@@ -227,37 +247,49 @@ def print_inputs(workspace, fields=ALL_FIELDS):
             print('You can "load" or "update" them manually.')
 
 
-@opt_workspace
-@arg('-v', '--verbose', help='show more detailed information')
-def status(workspace=CURRENT_DIRECTORY, verbose=False):
+class CmdStatus(Command):
     '''
     Show workspace status - name of package, inputs and their unpack status.
     '''
-    # TODO: use a template and render it with passing in all data
-    uuid_needed = verbose
-    if workspace.is_valid:
-        try:
-            # FIXME: workspace.status
-            raise LookupError(workspace)
-            package_name = 'get_package_name()'
-            print('Package Name: {}'.format(package_name))
-        except LookupError:
-            uuid_needed = True
-        if uuid_needed:
-            print('Package UUID: {}'.format(workspace.uuid))
-        print()
-        print_inputs(
-            workspace, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
-    else:
-        warning('Invalid workspace ({})'.format(workspace.directory))
+
+    def arguments(self, arg):
+        arg(OPTIONAL_WORKSPACE)
+        arg('-v', '--verbose', default=False, action='store_true',
+            help='show more detailed information')
+
+    def run(self, args):
+        workspace = args.workspace
+        verbose = args.verbose
+        # TODO: use a template and render it with passing in all data
+        uuid_needed = verbose
+        if workspace.is_valid:
+            try:
+                # FIXME: workspace.status
+                raise LookupError(workspace)
+                package_name = 'get_package_name()'
+                print('Package Name: {}'.format(package_name))
+            except LookupError:
+                uuid_needed = True
+            if uuid_needed:
+                print('Package UUID: {}'.format(workspace.uuid))
+            print()
+            print_inputs(
+                workspace, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
+        else:
+            warning('Invalid workspace ({})'.format(workspace.directory))
 
 
-@arg_workspace_defaulting_to(CURRENT_DIRECTORY)
-def nuke(workspace):
+class CmdNuke(Command):
     '''
     Delete the workspace, inluding data, code and documentation.
     '''
-    assert_valid_workspace(workspace)
-    directory = workspace.directory
-    tech.fs.rmtree(directory)
-    print('Deleted workspace {}'.format(directory))
+
+    def arguments(self, arg):
+        arg(workspace_defaulting_to(CURRENT_DIRECTORY))
+
+    def run(self, args):
+        workspace = args.workspace
+        assert_valid_workspace(workspace)
+        directory = workspace.directory
+        tech.fs.rmtree(directory)
+        print('Deleted workspace {}'.format(directory))

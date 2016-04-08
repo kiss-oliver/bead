@@ -3,7 +3,6 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from argh.decorators import arg
 import os
 import sys
 
@@ -30,24 +29,23 @@ def warning(msg):
     sys.stderr.write('\n')
 
 
-def opt_workspace(func):
+def OPTIONAL_WORKSPACE(parser):
     '''
     Define `workspace` as option, defaulting to current directory
     '''
-    decorate = arg(
+    parser.arg(
         '--workspace', '-w', metavar=arg_metavar.WORKSPACE,
         type=Workspace, default=CurrentDirWorkspace(),
         help=arg_help.WORKSPACE)
-    return decorate(func)
 
 
 class DefaultArgSentinel(object):
     '''
-    I am a sentinel for @argh.arg default values.
+    I am a sentinel for default values.
 
     I.e. If you see me, it means that you got the default value.
 
-    I also provide sensible description for the default value.
+    I also provide human sensible description for the default value.
     '''
 
     def __init__(self, description):
@@ -57,26 +55,30 @@ class DefaultArgSentinel(object):
         return self.description
 
 
-def package_spec_kwargs(func):
+def tag(tag):
+    '''
+    Make a function that tags its input
+    '''
+    return lambda value: (tag, value)
+
+
+def package_spec_kwargs(parser):
+    arg = parser.arg
     # TODO: implement more options
-    for modifier in [
-        # -r, --repo, --repository
+    # -r, --repo, --repository
 
-        # package_filters
-        arg('-o', '--older', '--older-than', dest='older_than',
-            metavar='TIMEDELTA'),
-        arg('-n', '--newer', '--newer-than', dest='newer_than',
-            metavar='TIMEDELTA'),
-        # arg('-d', '--date', dest='date'),
+    # package_filters
+    arg('-o', '--older', '--older-than', dest='query',
+        metavar='TIMEDELTA', type=tag('older_than'))
+    arg('-n', '--newer', '--newer-than', dest='query',
+        metavar='TIMEDELTA', type=tag('newer_than'))
+    # arg('-d', '--date', dest='date'),
 
-        # match reducers
-        # -N, --next
-        # -P, --prev, --previous
-        # --newest, --latest (default)
-        # --oldest
-    ]:
-        func = modifier(func)
-    return func
+    # match reducers
+    # -N, --next
+    # -P, --prev, --previous
+    # --newest, --latest (default)
+    # --oldest
 
 
 def parse_package_spec_kwargs(kwargs):
@@ -151,17 +153,3 @@ if __name__ == '__main__':
     import re
     re.match(r'(([+-]?\d+) *([ymwdHMS]))*$', '2w12H  13M')
     re.findall(r'([+-]?\d+) *([ymwdHMS])', 'asd +-12H +13M x')
-
-    from argh import ArghParser, named
-
-    @named('get')
-    @package_spec_kwargs
-    def cmd(other, **kwargs):
-        spec = parse_package_spec_kwargs(kwargs)
-        print(spec.package_filters)
-        print(other, kwargs)
-
-    p = ArghParser()
-    # p.set_default_command(cmd)
-    p.add_commands([cmd])
-    p.dispatch()

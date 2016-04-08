@@ -165,7 +165,7 @@ class AbstractWorkspace(object):
             fs.make_readonly(input_dir)
 
     def __repr__(self):
-        # argh prints default value as repr of the value
+        # default values are printed as repr of the value
         return self.directory
 
 
