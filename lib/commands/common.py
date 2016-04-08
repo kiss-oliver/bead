@@ -63,7 +63,9 @@ def tag(tag):
 
 
 def package_spec_kwargs(parser):
-    arg = parser.arg
+    group = parser.argparser.add_argument_group(
+        'package query', 'Restrict the package version with these options')
+    arg = group.add_argument
     # TODO: implement more options
     # -r, --repo, --repository
 
