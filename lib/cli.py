@@ -49,7 +49,9 @@ def make_argument_parser():
             commands.workspace.CmdNuke,
             'Delete workspace.',
 
-            'version', CmdVersion, 'Show program version.'))
+            'version',
+            CmdVersion,
+            'Show program version.'))
     (parser
         .group('input', 'Manage data loaded from other packages')
         .commands(
