@@ -27,7 +27,8 @@ class CmdVersion(Command):
 
 def make_argument_parser():
     parser = Parser.new(prog=__name__)
-    parser.commands(
+    (parser
+        .commands(
             'new',
             commands.workspace.CmdNew,
             'Create and initialize new workspace directory with a new package.',
@@ -48,7 +49,7 @@ def make_argument_parser():
             commands.workspace.CmdNuke,
             'Delete workspace.',
 
-            'version', CmdVersion, 'Show program version.')
+            'version', CmdVersion, 'Show program version.'))
     (parser
         .group('input', 'Manage data loaded from other packages')
         .commands(

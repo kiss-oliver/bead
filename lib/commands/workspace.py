@@ -58,7 +58,8 @@ CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 def workspace_defaulting_to(default_workspace):
     def opt_workspace(parser):
-        parser.arg('workspace', nargs='?', type=Workspace,
+        parser.arg(
+            'workspace', nargs='?', type=Workspace,
             default=default_workspace,
             metavar=arg_metavar.WORKSPACE, help=arg_help.WORKSPACE)
     return opt_workspace
