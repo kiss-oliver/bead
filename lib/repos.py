@@ -13,11 +13,9 @@ import os
 import re
 
 from .pkg.archive import Archive
+from .tech import persistence
 from .import tech
 Path = tech.fs.Path
-
-from .tech import persistence
-
 
 ENV_REPOS = 'repositories'
 REPO_NAME = 'name'
@@ -78,13 +76,15 @@ RE_PEEL_PACKAGE_FILENAME = re.compile(
     ''', flags=re.VERBOSE)
 
 
-def _peel_package_filename(path):
-    return RE_PEEL_PACKAGE_FILENAME.sub('', path)
+def _peel_package_filename(filename):
+    return RE_PEEL_PACKAGE_FILENAME.sub('', filename)
 
 
 def package_name_from_file_path(path):
     '''
-    Parse package name from a file path - might return a simpler name than intended
+    Parse package name from a file path.
+
+    Might return a simpler name than intended
     '''
     base = ''
     new_base = os.path.basename(path)
@@ -93,7 +93,8 @@ def package_name_from_file_path(path):
         new_base = _peel_package_filename(base)
     return base
 
-assert 'complex-2015v3' == package_name_from_file_path('complex-2015v3-2015-09-23.utf8-csvs.zip')
+assert 'complex-2015v3' == package_name_from_file_path(
+    'complex-2015v3-2015-09-23.utf8-csvs.zip')
 
 
 class Repository(object):
