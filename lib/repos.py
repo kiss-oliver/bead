@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
+import bisect
+import functools
 from glob import iglob
 import os
 import re
@@ -97,6 +99,29 @@ assert 'complex-2015v3' == package_name_from_file_path(
     'complex-2015v3-2015-09-23.utf8-csvs.zip')
 
 
+class _Wrapper(object):
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+    def __eq__(self, other):
+        return self.wrapped.timestamp == other.wrapped.timestamp
+
+@functools.total_ordering
+class _MoreIsLess(_Wrapper):
+    def __lt__(self, other):
+        return self.wrapped.timestamp > other.wrapped.timestamp
+
+@functools.total_ordering
+class _LessIsLess(_Wrapper):
+    def __lt__(self, other):
+        return self.wrapped.timestamp < other.wrapped.timestamp
+
+@functools.total_ordering
+class _AllIsEqual(_Wrapper):
+    def __eq__(self, other):
+        return True
+    def __lt__(self, other):
+        return False
+
 class Repository(object):
     # TODO: user maintained directory hierarchy
 
@@ -112,6 +137,47 @@ class Repository(object):
         Valid only for local repositories.
         '''
         return Path(self.location)
+
+    def find_packages(self, conditions, order=NEWEST_FIRST, limit=None):
+        '''
+        Retrieve matching packages.
+        '''
+        # FIXME: import/move over constants from pkg.spec
+        # FIXME: implement compile_conditions
+        match = compile_conditions(conditions)
+
+        # FUTURE IMPLEMENTATIONS: check for package uuid & content hash
+        # they are good candidates for indexing
+        package_name_globs = [
+            value
+            for tag, value in conditions
+            if tag == PACKAGE_NAME_GLOB]
+        if package_name_globs:
+            glob = package_name_globs[0] + '*'
+        else:
+            glob = '*'
+
+        paths = iglob(self.directory / glob)
+        packages = (Archive(path) for path in paths)
+        candidates = (pkg for pkg in packages if match(pkg))
+
+        # FUTURE IMPLEMENTATIONS: can there be more than one valid match?
+        # compare_wrap: provides comparison of packages according to their
+        # timestamps
+        compare_wrap = {
+            NEWEST_FIRST: _MoreIsLess,
+            OLDEST_FIRST: _LessIsLess,
+            UNSORTED: _AllIsEqual
+        }[order]
+
+        wrapped_results = []
+        for pkg in candidates:
+            bisect.insort_right(wrapped_results, compare_wrap(pkg))
+            if limit and len(wrapped_results) > limit:
+                del wrapped_results[limit]
+
+        # unwrap wrapped_results
+        return [wrapper.wrapped for wrapper in wrapped_results]
 
     def all_by_name(self, package_name):
         assert package_name

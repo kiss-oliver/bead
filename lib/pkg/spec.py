@@ -6,8 +6,24 @@ from __future__ import print_function
 import functools
 
 
-class PackageQuery:
+# QUERY_ORDER:
+NEWEST_FIRST = 'newest_first'
+OLDEST_FIRST = 'oldest_first'
+UNSORTED     = 'unsorted'
 
+# QUERY_WHERE:
+OLDER_THAN               = 'OLDER_THAN'
+NEWER_THAN               = 'NEWER_THAN'
+PACKAGE_NAME_GLOB        = 'PACKAGE_NAME_GLOB'
+PACKAGE_UUID             = 'PACKAGE_UUID'
+CONTENT_HASH             = 'CONTENT_HASH'
+
+
+# private and specific to Repository implementation, when Repository gains
+# more power, it should change how it handles queries (e.g. using PACKAGE_UUID
+# or CONTENT_HASH directly through an index)
+
+class PackageQuery:
     def __init__(self):
         self.repo_queries = []
         self.package_filters = []
