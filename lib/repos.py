@@ -105,22 +105,44 @@ class _Wrapper(object):
     def __eq__(self, other):
         return self.wrapped.timestamp == other.wrapped.timestamp
 
+
 @functools.total_ordering
 class _MoreIsLess(_Wrapper):
     def __lt__(self, other):
         return self.wrapped.timestamp > other.wrapped.timestamp
+
 
 @functools.total_ordering
 class _LessIsLess(_Wrapper):
     def __lt__(self, other):
         return self.wrapped.timestamp < other.wrapped.timestamp
 
-@functools.total_ordering
-class _AllIsEqual(_Wrapper):
-    def __eq__(self, other):
-        return True
-    def __lt__(self, other):
-        return False
+
+def order_and_limit_packages(packages, order=NEWEST_FIRST, limit=None):
+    '''
+    Order packages by timestamps and keep only the closest ones.
+    '''
+    # wrap packages so that they can be compared by timestamps
+    compare_wrap = {
+        NEWEST_FIRST: _MoreIsLess,
+        OLDEST_FIRST: _LessIsLess,
+    }[order]
+    comparable_packages = (compare_wrap(pkg) for pkg in packages)
+
+    if limit:
+        # assume we have lots of packages, so do it with memory limited
+        # XXX: heapq might be faster a bit?
+        wrapped_results = []
+        for pkg in comparable_packages:
+            bisect.insort_right(wrapped_results, pkg)
+            if len(wrapped_results) > limit:
+                del wrapped_results[limit]
+    else:
+        wrapped_results = sorted(comparable_packages)
+
+    # unwrap wrapped_results
+    return [wrapper.wrapped for wrapper in wrapped_results]
+
 
 class Repository(object):
     # TODO: user maintained directory hierarchy
@@ -141,6 +163,10 @@ class Repository(object):
     def find_packages(self, conditions, order=NEWEST_FIRST, limit=None):
         '''
         Retrieve matching packages.
+
+        (future possibility), it might run in another process,
+        potentially on another machine, so it might be faster to restrict
+        the results here and not send the whole list over the network.
         '''
         # FIXME: import/move over constants from pkg.spec
         # FIXME: implement compile_conditions
@@ -157,27 +183,13 @@ class Repository(object):
         else:
             glob = '*'
 
+        # XXX: directory itself might be a pattern - is it OK?
         paths = iglob(self.directory / glob)
         packages = (Archive(path) for path in paths)
         candidates = (pkg for pkg in packages if match(pkg))
 
         # FUTURE IMPLEMENTATIONS: can there be more than one valid match?
-        # compare_wrap: provides comparison of packages according to their
-        # timestamps
-        compare_wrap = {
-            NEWEST_FIRST: _MoreIsLess,
-            OLDEST_FIRST: _LessIsLess,
-            UNSORTED: _AllIsEqual
-        }[order]
-
-        wrapped_results = []
-        for pkg in candidates:
-            bisect.insort_right(wrapped_results, compare_wrap(pkg))
-            if limit and len(wrapped_results) > limit:
-                del wrapped_results[limit]
-
-        # unwrap wrapped_results
-        return [wrapper.wrapped for wrapper in wrapped_results]
+        return order_and_limit_packages(candidates, order, limit)
 
     def all_by_name(self, package_name):
         assert package_name

@@ -9,7 +9,8 @@ import functools
 # QUERY_ORDER:
 NEWEST_FIRST = 'newest_first'
 OLDEST_FIRST = 'oldest_first'
-UNSORTED     = 'unsorted'
+# XXX - is there any practical use for this?
+# UNSORTED     = 'unsorted'
 
 # QUERY_WHERE:
 OLDER_THAN               = 'OLDER_THAN'
