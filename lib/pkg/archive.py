@@ -7,6 +7,7 @@ from copy import deepcopy
 import functools
 import io
 import os
+import re
 import zipfile
 
 from .package import Package
@@ -20,10 +21,41 @@ securehash = tech.securehash
 persistence = tech.persistence
 
 
+_RE_PEEL_PACKAGE_FILENAME = re.compile(
+    '''
+    [.].*$          # everything after .
+    |
+    [-_][-_.0-9]*$  # standalone numbers - keeps e.g. name-v1 name-v2
+    ''', flags=re.VERBOSE)
+
+
+def _peel_package_filename(filename):
+    return _RE_PEEL_PACKAGE_FILENAME.sub('', filename)
+
+
+def package_name_from_file_path(path):
+    '''
+    Parse package name from a file path.
+
+    Might return a simpler name than intended
+    '''
+    base = ''
+    new_base = os.path.basename(path)
+    while base != new_base:
+        base = new_base
+        new_base = _peel_package_filename(base)
+    return base
+
+assert 'complex-2015v3' == package_name_from_file_path(
+    'complex-2015v3-2015-09-23.utf8-csvs.zip')
+
+
 class Archive(Package):
 
-    def __init__(self, filename):
+    def __init__(self, filename, repository_name=''):
         self.archive_filename = filename
+        self.repo = repository_name
+        self.name = package_name_from_file_path(filename)
         self.zipfile = None
         self._meta = self._load_meta()
 

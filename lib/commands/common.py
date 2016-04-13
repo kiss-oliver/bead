@@ -115,8 +115,7 @@ class ArchiveReference(PackageReference):
 
     @property
     def default_workspace(self):
-        # FIXME: ArchiveReference.default_workspace: also remove trailing extension, and '[-_.0-9]'' characters
-        return Workspace(repos.package_name_from_file_path(self.package_path))
+        return Workspace(self.package.name)
 
 
 class RepoQueryReference(PackageReference):

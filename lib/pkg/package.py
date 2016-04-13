@@ -10,8 +10,11 @@ class Package(object):
     __metaclass__ = ABCMeta
 
     uuid = str
+    # FIXME: version -> content_hash
     version = str
     timestamp_str = str
+    repo = str
+    name = str
 
     @property
     def timestamp(self):

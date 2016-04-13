@@ -69,36 +69,6 @@ def initialize(config_dir):
         env.load()
 
 
-# TODO: Is this the final place of package_name_from_file_path()?
-RE_PEEL_PACKAGE_FILENAME = re.compile(
-    '''
-    [.].*$          # everything after .
-    |
-    [-_][-_.0-9]*$  # standalone numbers - keeps e.g. name-v1 name-v2
-    ''', flags=re.VERBOSE)
-
-
-def _peel_package_filename(filename):
-    return RE_PEEL_PACKAGE_FILENAME.sub('', filename)
-
-
-def package_name_from_file_path(path):
-    '''
-    Parse package name from a file path.
-
-    Might return a simpler name than intended
-    '''
-    base = ''
-    new_base = os.path.basename(path)
-    while base != new_base:
-        base = new_base
-        new_base = _peel_package_filename(base)
-    return base
-
-assert 'complex-2015v3' == package_name_from_file_path(
-    'complex-2015v3-2015-09-23.utf8-csvs.zip')
-
-
 class _Wrapper(object):
     def __init__(self, wrapped):
         self.wrapped = wrapped
@@ -185,50 +155,11 @@ class Repository(object):
 
         # XXX: directory itself might be a pattern - is it OK?
         paths = iglob(self.directory / glob)
-        packages = (Archive(path) for path in paths)
+        packages = (Archive(path, self.name) for path in paths)
         candidates = (pkg for pkg in packages if match(pkg))
 
         # FUTURE IMPLEMENTATIONS: can there be more than one valid match?
         return order_and_limit_packages(candidates, order, limit)
-
-    def all_by_name(self, package_name):
-        assert package_name
-        for path in iglob(self.directory / package_name + '*'):
-            if package_name_from_file_path(path) == package_name:
-                yield Archive(path)
-
-    def all_by_uuid(self, package_uuid, content_hash=None):
-        assert package_uuid
-        for path in os.listdir(self.directory):
-            try:
-                pkg = Archive(path)
-                if pkg.uuid == package_uuid:
-                    if content_hash is None or content_hash == pkg.version:
-                        yield pkg
-            except:
-                # XXX: log error?
-                pass
-
-    def find_packages(self, uuid, version=None):
-        # -> [Package]
-        try:
-            names = os.listdir(self.directory)
-        except OSError:
-            # ignore deleted repository
-            # XXX - we should log this problem
-            names = []
-
-        for name in names:
-            candidate = self.directory / name
-            try:
-                package = Archive(candidate)
-                if package.uuid == uuid:
-                    if version in (None, package.version):
-                        yield package
-            except:
-                # ignore invalid packages
-                # XXX - we should log them
-                pass
 
     def store(self, workspace, timestamp):
         # -> Package
