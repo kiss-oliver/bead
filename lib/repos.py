@@ -12,13 +12,15 @@ import bisect
 import functools
 from glob import iglob
 import os
-import re
 
 from .pkg.archive import Archive
+from .pkg import spec as pkg_spec
 from .tech import persistence
 from .import tech
 Path = tech.fs.Path
 
+
+# FIXME: create environment module
 ENV_REPOS = 'repositories'
 REPO_NAME = 'name'
 REPO_LOCATION = 'directory'
@@ -72,6 +74,7 @@ def initialize(config_dir):
 class _Wrapper(object):
     def __init__(self, wrapped):
         self.wrapped = wrapped
+
     def __eq__(self, other):
         return self.wrapped.timestamp == other.wrapped.timestamp
 
@@ -88,14 +91,14 @@ class _LessIsLess(_Wrapper):
         return self.wrapped.timestamp < other.wrapped.timestamp
 
 
-def order_and_limit_packages(packages, order=NEWEST_FIRST, limit=None):
+def order_and_limit_packages(packages, order=pkg_spec.NEWEST_FIRST, limit=None):
     '''
     Order packages by timestamps and keep only the closest ones.
     '''
     # wrap packages so that they can be compared by timestamps
     compare_wrap = {
-        NEWEST_FIRST: _MoreIsLess,
-        OLDEST_FIRST: _LessIsLess,
+        pkg_spec.NEWEST_FIRST: _MoreIsLess,
+        pkg_spec.OLDEST_FIRST: _LessIsLess,
     }[order]
     comparable_packages = (compare_wrap(pkg) for pkg in packages)
 
@@ -130,7 +133,7 @@ class Repository(object):
         '''
         return Path(self.location)
 
-    def find_packages(self, conditions, order=NEWEST_FIRST, limit=None):
+    def find_packages(self, conditions, order=pkg_spec.NEWEST_FIRST, limit=None):
         '''
         Retrieve matching packages.
 
@@ -138,16 +141,14 @@ class Repository(object):
         potentially on another machine, so it might be faster to restrict
         the results here and not send the whole list over the network.
         '''
-        # FIXME: import/move over constants from pkg.spec
-        # FIXME: implement compile_conditions
-        match = compile_conditions(conditions)
+        match = pkg_spec.compile_conditions(conditions)
 
         # FUTURE IMPLEMENTATIONS: check for package uuid & content hash
         # they are good candidates for indexing
         package_name_globs = [
             value
             for tag, value in conditions
-            if tag == PACKAGE_NAME_GLOB]
+            if tag == pkg_spec.PACKAGE_NAME_GLOB]
         if package_name_globs:
             glob = package_name_globs[0] + '*'
         else:
