@@ -144,14 +144,3 @@ def get_package_ref(package_name, kwargs):
     query = parse_package_spec_kwargs(kwargs)
     query.by_name(package_name)
     return RepoQueryReference(package_name, query, repos.env.get_repos())
-
-
-# ----------------------------------------------------------------------------------
-# TODO: delete experimental code
-
-if __name__ == '__main__':
-    # parse time-delta
-    # TODO: make
-    import re
-    re.match(r'(([+-]?\d+) *([ymwdHMS]))*$', '2w12H  13M')
-    re.findall(r'([+-]?\d+) *([ymwdHMS])', 'asd +-12H +13M x')
