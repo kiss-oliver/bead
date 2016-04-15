@@ -38,6 +38,7 @@ PACKAGE = 'package uuid'
 INPUTS = 'inputs'
 
 INPUT_PACKAGE = 'package uuid'
+# FIXME: rename `version` to `content-hash`
 INPUT_VERSION = 'version hash'
 INPUT_TIME = 'version time'
 
