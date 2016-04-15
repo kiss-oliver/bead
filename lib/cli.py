@@ -6,7 +6,7 @@ from __future__ import print_function
 import appdirs
 import sys
 
-from cliscape import Parser, Command
+from .commands.cmdparse import Parser, Command
 from . import commands
 from . import PACKAGE, VERSION
 

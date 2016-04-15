@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from cliscape import Command
+from .cmdparse import Command
 
 from ..commands import arg_metavar
 from ..commands import arg_help
@@ -19,6 +19,8 @@ from .. import repos
 
 # input_nick
 ALL_INPUTS = DefaultArgSentinel('all inputs')
+
+
 def OPTIONAL_INPUT_NICK(parser):
     '''
     Declare `input_nick` as optional parameter
@@ -26,6 +28,8 @@ def OPTIONAL_INPUT_NICK(parser):
     parser.arg(
         'input_nick', type=type(''), nargs='?', default=ALL_INPUTS,
         metavar=arg_metavar.INPUT_NICK, help=arg_help.INPUT_NICK)
+
+
 def MANDATORY_INPUT_NICK(parser):
     '''
     Declare `input_nick` as mandatory parameter

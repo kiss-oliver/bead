@@ -6,7 +6,7 @@ from __future__ import print_function
 import os
 
 from ..import repos
-from cliscape import Command
+from .cmdparse import Command
 
 
 class CmdAdd(Command):

@@ -9,7 +9,7 @@ from .. import tech
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
 from ..pkg import layouts
 
-from cliscape import Command
+from .cmdparse import Command
 from .common import die, warning
 from .common import DefaultArgSentinel
 from .common import OPTIONAL_WORKSPACE
