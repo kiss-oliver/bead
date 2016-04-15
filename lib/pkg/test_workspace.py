@@ -145,7 +145,7 @@ class Test_pack(TestCase):
 class Test_pack_stability(TestCase):
 
     def test_directory_name_data_and_timestamp_determines_versions(self):
-        TS = '20150910_093724_802366'
+        TS = '20150910T093724802366+0200'
 
         # note: it is important to create the same package in
         # two different directories
@@ -265,7 +265,7 @@ class Test_is_valid(TestCase):
         return workspace
 
     def timestamp(self):
-        return '20150930_093724_802366'
+        return '20150930T093724802366+0200'
 
     def archive_path(self, workspace, timestamp):
         archive_path = self.new_temp_dir() / 'package.zip'

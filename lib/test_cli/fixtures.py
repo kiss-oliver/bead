@@ -17,8 +17,8 @@ from .. import repos
 
 
 # timestamps
-TS1 = '20150901_151015_1'
-TS2 = '20150901_151016_2'
+TS1 = '20150901T151015000001+0200'
+TS2 = '20150901T151016000002+0200'
 
 
 class RobotAndPackages(object):
