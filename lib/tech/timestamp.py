@@ -131,7 +131,7 @@ _parse_default_timestamp = _compile_parser(_DEFAULT_FULL_TIMESTAMP)
 
 _ISO8601_PARSERS = [
     _parse_default_timestamp
-    ] + [
+] + [
     _compile_parser(template) for template in (
         '{YEAR}',
         '{YEAR}{MONTH}',
@@ -141,7 +141,7 @@ _ISO8601_PARSERS = [
         '{YEAR}{MONTH}{DAY}T{HOUR}{MINUTE}{SECOND}{TIMEZONE}',
         '{YEAR}-{MONTH}-{DAY}T{HOUR}:{MINUTE}:{SECOND}{TIMEZONE}',
         '{YEAR}-{MONTH}-{DAY}T{HOUR}:{MINUTE}:{SECOND}.{MICROSEC}{TIMEZONE}',
-        )]
+    )]
 
 
 def parse_iso8601(timeish):
