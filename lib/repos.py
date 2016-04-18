@@ -216,6 +216,7 @@ def forget(name):
 
 
 def get_package(uuid, version):
+    raise NotImplementedError
     for repo in get_all():
         for package in repo.find_packages(uuid, version):
             return package

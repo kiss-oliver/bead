@@ -9,6 +9,7 @@ from testtools.matchers import Contains
 from . import fixtures
 from collections import namedtuple
 from .. import repos
+from ..pkg import spec as pkg_spec
 from ..pkg.workspace import Workspace
 
 
@@ -44,7 +45,8 @@ Repo = namedtuple('Repo', 'name directory')
 
 def package_count(robot, repo, pkg_uuid):
     with robot.environment:
-        return sum(1 for _ in repos.get(repo.name).find_packages(pkg_uuid))
+        query = [(pkg_spec.PACKAGE_UUID, pkg_uuid)]
+        return sum(1 for _ in repos.get(repo.name).find_packages(query))
 
 
 class Test_more_than_one_repos(TestCase):

@@ -12,6 +12,7 @@ from ..pkg.archive import Archive
 from .. import repos
 from . import arg_help
 from . import arg_metavar
+from ..tech.timestamp import time_from_user
 
 ERROR_EXIT = 1
 
@@ -55,11 +56,22 @@ class DefaultArgSentinel(object):
         return self.description
 
 
-def tag(tag):
+def tag(tag, parse):
     '''
-    Make a function that tags its input
+    Make a function that parses and tags its input
+
+    parse is a function with one parameter,
+    it is expected to raise a ValueError if there is any problem
     '''
-    return lambda value: (tag, value)
+    return lambda value: (tag, parse(value))
+
+
+def _parse_time(timeish):
+    return time_from_user(timeish)
+
+
+def _parse_start_of_name(name):
+    return name + '*'
 
 
 def package_spec_kwargs(parser):
@@ -71,11 +83,14 @@ def package_spec_kwargs(parser):
     # -r, --repo, --repository
 
     # package_filters
-    arg('-o', '--older', '--older-than', dest='query',
-        metavar='TIMEDELTA', type=tag('older_than'))
-    arg('-n', '--newer', '--newer-than', dest='query',
-        metavar='TIMEDELTA', type=tag('newer_than'))
-    # arg('-d', '--date', dest='date'),
+    PACKAGE_QUERY = 'package_query'
+    arg('-o', '--older', '--older-than', dest=PACKAGE_QUERY,
+        metavar='TIMESTAMP', type=tag(pkg_spec.OLDER_THAN, _parse_time))
+    arg('-n', '--newer', '--newer-than', dest=PACKAGE_QUERY,
+        metavar='TIMESTAMP', type=tag(pkg_spec.NEWER_THAN, _parse_time))
+    arg('--start-of-name', dest=PACKAGE_QUERY,
+        metavar='START-OF-PACKAGE-NAME',
+        type=tag(pkg_spec.PACKAGE_NAME_GLOB, _parse_start_of_name))
 
     # match reducers
     # -N, --next
@@ -84,23 +99,9 @@ def package_spec_kwargs(parser):
     # --oldest
 
 
-def parse_package_spec_kwargs(kwargs):
-    # assert False, kwargs
-    query = pkg_spec.PackageQuery()
-    query_modifier = {
-        'older_than': query.is_older_than,
-        'newer_than': query.is_newer_than,
-    }
-    for attr in kwargs:
-        if kwargs[attr] is not None:
-            query = query_modifier[attr](kwargs[attr])
-    # FIXME: parse_package_spec_kwargs: determine reducers
-    return query
-
-
 class PackageReference:
     package = Archive
-    default_workspace = str
+    default_workspace = Workspace
 
 
 class ArchiveReference(PackageReference):
@@ -119,28 +120,42 @@ class ArchiveReference(PackageReference):
 
 
 class RepoQueryReference(PackageReference):
-    def __init__(self, package_name, query, repositories):
-        self.package_name = package_name
+    def __init__(self, workspace_name, query, repositories, index=-1):
+        # index: like python list indices 0 = first, -1 = last
+        self.workspace_name = workspace_name
         self.query = query
+        if index < 0:
+            self.order = pkg_spec.NEWEST_FIRST
+            self.limit = -index
+        else:
+            self.order = pkg_spec.OLDEST_FIRST
+            self.limit = index + 1
         self.repositories = repositories
 
     @property
     def package(self):
-        try:
-            package = next(self.query.get_packages(self.repositories))
-        except StopIteration:
-            raise LookupError
-        return package
+        matches = []
+        for repo in self.repositories:
+            matches.extend(repo.find_packages(self.query, self.order, self.limit))
+            # XXX order_and_limit_packages is called twice - first in find_packages
+            matches = repos.order_and_limit_packages(matches, self.order, self.limit)
+        if len(matches) == self.limit:
+            return matches[-1]
+        raise LookupError
 
     @property
     def default_workspace(self):
-        return Workspace(self.package_name)
+        return Workspace(self.workspace_name)
 
 
-def get_package_ref(package_name, kwargs):
+def get_package_ref(package_name, package_query):
     if os.path.sep in package_name and os.path.isfile(package_name):
         return ArchiveReference(package_name)
-    # assert False, 'FIXME: get_package_ref - repo search'
-    query = parse_package_spec_kwargs(kwargs)
-    query.by_name(package_name)
+
+    query = list(package_query or [])
+
+    if package_name:
+        query = [(pkg_spec.PACKAGE_NAME_GLOB, package_name + '*')] + query
+
+    # TODO: calculate and add index parameter (--next, --prev)
     return RepoQueryReference(package_name, query, repos.env.get_repos())

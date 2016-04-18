@@ -74,8 +74,3 @@ def compile_conditions(conditions):
                 return False
         return True
     return match
-
-
-# FIXME: remove PackageQuery
-class PackageQuery:
-    pass

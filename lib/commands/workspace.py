@@ -113,29 +113,27 @@ class CmdDevelop(Command):
     '''
 
     def declare(self, arg):
+        arg('package_name', metavar='package-name')
         arg(package_spec_kwargs)
         # TODO: delete arg_metavar.PACKAGE_REF, arg_help.PACKAGE_REF
         arg(workspace_defaulting_to(DERIVE_FROM_PACKAGE_NAME))
         arg('-x', '--extract-output', dest='extract_output',
             default=False, action='store_true',
             help='Extract output data as well (normally it is not needed!).')
-        arg('package_name', metavar='package-name')
 
     def run(self, args):
-        package_name = args.package_name
-        workspace = args.workspace
         extract_output = args.extract_output
-        kwargs = dict(args.query or {})
-        # assert False, (package_name, kwargs)
-        package_ref = get_package_ref(package_name, kwargs)
+        package_ref = get_package_ref(args.package_name, args.package_query)
         try:
             package = package_ref.package
         except LookupError:
             die('Package not found!')
         if not package.is_valid:
             die('Package is found but damaged')
-        if workspace is DERIVE_FROM_PACKAGE_NAME:
+        if args.workspace is DERIVE_FROM_PACKAGE_NAME:
             workspace = package_ref.default_workspace
+        else:
+            workspace = args.workspace
 
         package.unpack_to(workspace)
         assert workspace.is_valid

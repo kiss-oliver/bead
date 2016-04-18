@@ -12,8 +12,8 @@ from ..commands.common import (
     CurrentDirWorkspace,
     die, warning
 )
-from ..pkg.spec import PackageQuery
 from ..commands.common import package_spec_kwargs, get_package_ref
+from ..pkg import spec as pkg_spec
 from .. import repos
 
 
@@ -52,29 +52,29 @@ class CmdAdd(Command):
     '''
 
     def declare(self, arg):
-        arg(package_spec_kwargs)
+        arg(MANDATORY_INPUT_NICK)
         arg('package_name', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
             default=USE_INPUT_NICK,
             help=arg_help.PACKAGE_LOAD)
-        arg(MANDATORY_INPUT_NICK)
+        arg(package_spec_kwargs)
         arg(OPTIONAL_WORKSPACE)
 
     def run(self, args):
         input_nick = args.input_nick
         package_name = args.package_name
         workspace = args.workspace
-        kwargs = dict(args.query or {})
-        # assert False, vars()
+
         if package_name is USE_INPUT_NICK:
             package_name = input_nick
-        package_ref = get_package_ref(package_name, kwargs)
+
+        package_ref = get_package_ref(package_name, args.package_query)
         try:
             package = package_ref.package
         except LookupError:
             die('Not a known package name: {}'.format(package_name))
 
         _check_load_with_feedback(
-            workspace, input_nick, package, package_name)
+            workspace, args.input_nick, package, package_name)
 
 
 class CmdDelete(Command):
@@ -111,7 +111,6 @@ class CmdUpdate(Command):
         input_nick = args.input_nick
         package_ref = args.package_ref
         workspace = args.workspace
-        kwargs = dict(args.query or {})
         if input_nick is ALL_INPUTS:
             for input in workspace.inputs:
                 _update(workspace, input)
@@ -119,21 +118,19 @@ class CmdUpdate(Command):
         else:
             # FIXME: update: fix to allow to select previous/next/closest to a timestamp package
             if package_ref is not NEWEST_VERSION:
-                package_ref = get_package_ref(package_ref, kwargs)
+                package_ref = get_package_ref(package_ref, args.package_query)
             _update(workspace, workspace.get_input(input_nick), package_ref)
 
 
 def _update(workspace, input, package_ref=NEWEST_VERSION):
     if package_ref is NEWEST_VERSION:
         # FIXME: input._update
-        query = (
-            PackageQuery()
-            .by_uuid(input.package)
-            .is_newer_than(input.timestamp)
-            .keep_newest())
-        replacement = next(query.get_packages(repos.env.get_repos()))
-    else:
-        replacement = package_ref.package
+        query = [
+            (pkg_spec.PACKAGE_UUID, input.package),
+            (pkg_spec.NEWER_THAN, input.timestamp)]
+        workspace_name = ''  # no workspace!
+        package_ref = pkg_spec.RepoQueryReference(workspace_name, query, repos.eng.get_repos())
+    replacement = package_ref.package
 
     _check_load_with_feedback(workspace, input.name, replacement)
 
