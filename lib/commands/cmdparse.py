@@ -18,6 +18,7 @@ from __future__ import print_function
 
 
 import argparse
+import pipes
 
 
 __all__ = 'Command Parser'.split()
@@ -80,9 +81,9 @@ class Parser:
         # subparsers should be an `argparse` implementation detail, but is not
         self.__subparsers = None
 
-        def print_help(args):
-            self.argparser.print_help()
-        self.argparser.set_defaults(_cmdparse__run=print_help)
+        # XXX revisit when python 2.x no longer supported
+        # it might be tempting to use argparser.set_defaults()
+        # to set default command to print help, but it works only on 3.x!
 
     @classmethod
     def new(cls, *args, **kwargs):
@@ -188,5 +189,13 @@ class Parser:
         '''
         Parse `argv` and dispatch to the appropriate command.
         '''
+        def print_help(args):
+            print(
+                'ERROR: not a full command <%s>\n'
+                % ' '.join(pipes.quote(arg) for arg in argv))
+            self.argparser.print_help()
+            return 2
+
         args = self.argparser.parse_args(argv)
-        args._cmdparse__run(args)
+        run = getattr(args, '_cmdparse__run', print_help)
+        return run(args)
