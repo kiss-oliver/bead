@@ -6,4 +6,5 @@ cd $(dirname "$0")
 
 pwd
 flake8 lib
-exec green lib "$@"
+set -x
+exec green "${@:-lib}"
