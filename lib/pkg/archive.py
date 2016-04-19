@@ -21,33 +21,21 @@ securehash = tech.securehash
 persistence = tech.persistence
 
 
-_RE_PEEL_PACKAGE_FILENAME = re.compile(
-    '''
-    [.].*$          # everything after .
-    |
-    [-_][-_.0-9]*$  # standalone numbers - keeps e.g. name-v1 name-v2
-    ''', flags=re.VERBOSE)
-
-
-def _peel_package_filename(filename):
-    return _RE_PEEL_PACKAGE_FILENAME.sub('', filename)
-
-
 def package_name_from_file_path(path):
     '''
     Parse package name from a file path.
 
     Might return a simpler name than intended
     '''
-    base = ''
-    new_base = os.path.basename(path)
-    while base != new_base:
-        base = new_base
-        new_base = _peel_package_filename(base)
-    return base
+    name_with_timestamp, ext = os.path.splitext(os.path.basename(path).lower())
+    assert ext == '.zip'
+    name = re.sub('_[0-9]{8}[+-t0-9]*$', '', name_with_timestamp)
+    return name
 
-assert 'complex-2015v3' == package_name_from_file_path(
-    'complex-2015v3-2015-09-23.utf8-csvs.zip')
+
+assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3.zip')
+assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923.zip')
+assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923T010203012345+0200.zip')
 
 
 class Archive(Package):

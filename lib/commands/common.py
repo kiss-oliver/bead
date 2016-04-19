@@ -130,7 +130,7 @@ class RepoQueryReference(PackageReference):
         else:
             self.order = pkg_spec.OLDEST_FIRST
             self.limit = index + 1
-        self.repositories = repositories
+        self.repositories = list(repositories)
 
     @property
     def package(self):
@@ -155,7 +155,7 @@ def get_package_ref(package_name, package_query):
     query = list(package_query or [])
 
     if package_name:
-        query = [(pkg_spec.PACKAGE_NAME_GLOB, package_name + '*')] + query
+        query = [(pkg_spec.PACKAGE_NAME_GLOB, package_name)] + query
 
     # TODO: calculate and add index parameter (--next, --prev)
     return RepoQueryReference(package_name, query, repos.env.get_repos())

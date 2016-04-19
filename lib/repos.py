@@ -166,9 +166,9 @@ class Repository(object):
         # -> Package
         zipfilename = (
             self.directory / (
-                '{package}_{timestamp}.zip'
+                '{package_name}_{timestamp}.zip'
                 .format(
-                    package=workspace.package_name,
+                    package_name=workspace.package_name,
                     timestamp=timestamp)))
         workspace.pack(zipfilename, timestamp=timestamp)
         return Archive(zipfilename)
