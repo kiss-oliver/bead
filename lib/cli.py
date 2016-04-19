@@ -92,15 +92,18 @@ def make_argument_parser():
 
 def run(argv):
     parser = make_argument_parser()
-    parser.dispatch(argv)
-    # TODO verify exit status
+    return parser.dispatch(argv)
 
 
 def main():
     config_dir = appdirs.user_config_dir(
         PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
     initialize_env(config_dir)
-    run(sys.argv[1:])
+    try:
+        retval = run(sys.argv[1:])
+    except BaseException as e:
+        retval = e
+    sys.exit(retval)
 
 
 if __name__ == '__main__':
