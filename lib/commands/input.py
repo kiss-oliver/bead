@@ -12,9 +12,10 @@ from ..commands.common import (
     CurrentDirWorkspace,
     die, warning
 )
-from ..commands.common import package_spec_kwargs, get_package_ref
+from ..commands.common import package_spec_kwargs, get_package_ref, RepoQueryReference
 from ..pkg import spec as pkg_spec
 from .. import repos
+from ..tech.timestamp import time_from_timestamp
 
 
 # input_nick
@@ -127,11 +128,11 @@ def _update(workspace, input, package_ref=NEWEST_VERSION):
         # FIXME: input._update
         query = [
             (pkg_spec.PACKAGE_UUID, input.package),
-            (pkg_spec.NEWER_THAN, input.timestamp)]
+            (pkg_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
-        package_ref = pkg_spec.RepoQueryReference(workspace_name, query, repos.eng.get_repos())
-    replacement = package_ref.package
+        package_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())
 
+    replacement = package_ref.package
     _check_load_with_feedback(workspace, input.name, replacement)
 
 
