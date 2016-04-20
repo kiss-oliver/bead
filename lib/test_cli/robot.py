@@ -6,6 +6,7 @@ from __future__ import print_function
 import contextlib
 import os
 import fixtures
+from tracelog import TRACELOG
 
 from .. import tech
 
@@ -50,6 +51,7 @@ class Robot(fixtures.Fixture):
     def setUp(self):
         super(Robot, self).setUp()
         self.base_dir = self.useFixture(TempDir()).path
+        TRACELOG('Create', 'directory', self.home)
         os.makedirs(self.home)
         self.cd(self.home)
 
@@ -79,6 +81,7 @@ class Robot(fixtures.Fixture):
         Change to directory
         '''
         self.cwd = self._path(dir)
+        TRACELOG(dir, realdir=self.cwd)
         assert os.path.isdir(self.cwd)
 
     @property
@@ -92,13 +95,19 @@ class Robot(fixtures.Fixture):
         '''
         Imitate calling the command line tool with the given args
         '''
+        TRACELOG(*args)
         with self.environment:
             with CaptureStdout() as stdout, CaptureStderr() as stderr:
                 try:
                     self.retval = cli.run(args)
+                except BaseException as e:
+                    TRACELOG(EXCEPTION=e)
+                    raise
                 finally:
                     self.stdout = stdout.text
                     self.stderr = stderr.text
+                    if self.stdout: TRACELOG(STDOUT=self.stdout)
+                    if self.stderr: TRACELOG(STDERR=self.stderr)
 
     def ls(self, directory=None):
         directory = self._path(directory or self.cwd)
@@ -108,6 +117,7 @@ class Robot(fixtures.Fixture):
 
     def write_file(self, path, content):
         assert not os.path.isabs(path)
+        TRACELOG(path, content, realpath=self.cwd / path)
         tech.fs.write_file(self.cwd / path, content)
 
     def reset(self):
@@ -116,4 +126,5 @@ class Robot(fixtures.Fixture):
 
         All other files, workspaces remain available.
         '''
+        TRACELOG('rmtree', self.config_dir)
         tech.fs.rmtree(self.config_dir)
