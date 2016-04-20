@@ -51,7 +51,7 @@ class Robot(fixtures.Fixture):
     def setUp(self):
         super(Robot, self).setUp()
         self.base_dir = self.useFixture(TempDir()).path
-        TRACELOG('Create', 'directory', self.home)
+        TRACELOG('makedirs', self.home)
         os.makedirs(self.home)
         self.cd(self.home)
 

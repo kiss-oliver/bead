@@ -24,6 +24,7 @@ __all__ = ('TRACELOG')
 
 
 trace_file_name = os.environ.get('TRACELOG')
+trim_path = os.path.dirname(__file__) + os.path.sep
 
 trace_file = None
 if trace_file_name:
@@ -48,7 +49,14 @@ atexit.register(_cleanup)
 def _get_test(stack):
     for _frame, filename, lineno, function, code_context, _index in stack:
         if function.startswith('test'):
-            return '{} {}'.format(filename, function)
+            return '{} {}()'.format(_shorten(filename), function)
+
+
+def _shorten(filepath):
+    relpath = os.path.relpath(filepath, trim_path)
+    if len(relpath) < len(filepath):
+        return relpath
+    return filepath
 
 
 def _write(message):
@@ -78,25 +86,15 @@ def TRACELOG(*args, **kwargs):
     # caller info
     _frame, filename, lineno, function, _code_context, _index = stack[1]
 
-    location = '{filename}:{lineno:<4d} {function:5s}'.format(
-        filename=filename, lineno=lineno, function=function)
+    location = '{filename}:{lineno:<4d} @{function:5s}'.format(
+        filename=_shorten(filename), lineno=lineno, function=function)
 
-    def fmt(value):
-        if isinstance(value, BaseException):
-            return repr(value)
-        value_str = str(value)
-        if ' ' in value_str or "'" in value_str:
-            return repr(value)
-        return value_str
-
-    message = ' '.join(fmt(arg) for arg in args)
+    message = ' '.join(repr(arg) for arg in args)
     if kwargs:
-        if message:
-            message += '   '
-        message += '** ' + ' | '.join('{}: {}'.format(fmt(key), fmt(value)) for key, value in sorted(kwargs.items()))
+        message += '   ** ' + ' | '.join('{}: {!r}'.format(key, value) for key, value in sorted(kwargs.items()))
 
     if test_function:
         # we have time in the test header-footer
-        _write('  {location} () {message}'.format(location=location, message=message))
+        _write('  {location} {message}'.format(location=location, message=message))
     else:
-        _write('{time} {location} () {message}'.format(time=now, location=location, message=message))
+        _write('{time} {location} {message}'.format(time=now, location=location, message=message))
