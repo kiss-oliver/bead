@@ -20,7 +20,7 @@ import inspect
 import os
 
 
-__all__ = ('TRACELOG')
+__all__ = ('TRACELOG',)
 
 
 trace_file_name = os.environ.get('TRACELOG')
@@ -78,10 +78,10 @@ def TRACELOG(*args, **kwargs):
     test = _get_test(stack)
     if test != test_function:
         if test_function:
-            _write('{time} END OF TRACELOG FROM TEST {test}\n'.format(time=now, test=test_function))
+            _write('{time} END TEST {test}\n'.format(time=now, test=test_function))
         test_function = test
         if test_function:
-            _write('\n{time} TRACELOG FROM TEST {test}'.format(time=now, test=test_function))
+            _write('\n{time} BEGIN TEST {test}'.format(time=now, test=test_function))
 
     # caller info
     _frame, filename, lineno, function, _code_context, _index = stack[1]
