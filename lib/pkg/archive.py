@@ -29,13 +29,14 @@ def package_name_from_file_path(path):
     '''
     name_with_timestamp, ext = os.path.splitext(os.path.basename(path).lower())
     assert ext == '.zip'
-    name = re.sub('_[0-9]{8}[+-t0-9]*$', '', name_with_timestamp)
+    name = re.sub('_[0-9]{8}(?:t[-+0-9]*)?$', '', name_with_timestamp)
     return name
 
 
 assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3.zip')
 assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923.zip')
 assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923T010203012345+0200.zip')
+assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923T010203012345-0200.zip')
 
 
 class Archive(Package):
