@@ -223,14 +223,13 @@ def time_from_user(timeish):
         pass
     try:
         # fall back to interpreting it as a time-delta added to `now`
-        # FIXME: implement parse_timedelta()
         return datetime.now(Local) + parse_timedelta(timeish)
     except ValueError:
         raise ValueError(
             'Can not interpret string either as time or as delta', timeish)
 
 
-# TODO: add tests for timestamps
+# TODO: add tests for timestamps, parse_iso8601, parse_timedelta
 # ts = timestamp()
 # print(ts, time_from_timestamp(ts))
 # print(ts, parse_iso8601(ts))
