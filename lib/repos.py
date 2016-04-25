@@ -215,15 +215,10 @@ def forget(name):
     env.save()
 
 
+# FIXME: move get_package to Environment.get_package
 def get_package(uuid, version):
-    raise NotImplementedError
+    query = ((pkg_spec.PACKAGE_UUID, uuid), (pkg_spec.CONTENT_HASH, version))
     for repo in get_all():
-        for package in repo.find_packages(uuid, version):
+        for package in repo.find_packages(query):
             return package
     raise LookupError('Package {} {} not found'.format(uuid, version))
-
-
-# TODO implement env.package_by_spec, env.package_by_time
-def by_spec(spec):
-    # FIXME by_spec
-    raise NotImplementedError
