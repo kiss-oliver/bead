@@ -101,11 +101,11 @@ class CmdUpdate(Command):
 
     def declare(self, arg):
         arg(package_spec_kwargs)
+        arg(OPTIONAL_INPUT_NICK)
         arg(
             'package_ref', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
             default=NEWEST_VERSION,
             help=arg_help.PACKAGE_LOAD)
-        arg(OPTIONAL_INPUT_NICK)
         arg(OPTIONAL_WORKSPACE)
 
     def run(self, args):
@@ -114,13 +114,22 @@ class CmdUpdate(Command):
         workspace = args.workspace
         if input_nick is ALL_INPUTS:
             for input in workspace.inputs:
-                _update(workspace, input)
+                try:
+                    _update(workspace, input)
+                except LookupError:
+                    if workspace.is_loaded(input.name):
+                        print('{} is already newest ({})'.format(input.name, input.timestamp))
+                    else:
+                        warning('Can not find package for {}'.format(input.name))
             print('All inputs are up to date.')
         else:
             # FIXME: update: fix to allow to select previous/next/closest to a timestamp package
             if package_ref is not NEWEST_VERSION:
                 package_ref = get_package_ref(package_ref, args.package_query)
-            _update(workspace, workspace.get_input(input_nick), package_ref)
+            try:
+                _update(workspace, workspace.get_input(input_nick), package_ref)
+            except LookupError:
+                die('Can not find matching package')
 
 
 def _update(workspace, input, package_ref=NEWEST_VERSION):
