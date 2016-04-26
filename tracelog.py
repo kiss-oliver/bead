@@ -30,13 +30,13 @@ trace_file = None
 if trace_file_name:
     trace_file = open(trace_file_name, 'a')
 
-test_function = None
+last_test_function = None
 
 
 def _cleanup():
     global trace_file
-    global test_function
-    test_function = None
+    global last_test_function
+    last_test_function = None
 
     _write('END')
     if trace_file:
@@ -67,7 +67,7 @@ def _write(message):
 
 
 def TRACELOG(*args, **kwargs):
-    global test_function
+    global last_test_function
 
     if not trace_file:
         return
@@ -87,24 +87,24 @@ def TRACELOG(*args, **kwargs):
 
     try:
         # assume calls from tests
-        test = _get_test(stack)
+        test_function = _get_test(stack)
 
         # caller info
         _frame, filename, lineno, function, _code_context, _index = stack[1]
     finally:
         del stack
 
-    if test != test_function:
-        if test_function:
-            _write('{time} END TEST {test}\n'.format(time=now, test=test_function))
-        test_function = test
+    if test_function != last_test_function:
+        if last_test_function:
+            _write('{time} END TEST {test}\n'.format(time=now, test=last_test_function))
         if test_function:
             _write('\n{time} BEGIN TEST {test}'.format(time=now, test=test_function))
+        last_test_function = test_function
 
     location = '{filename}:{lineno:<4d} @{function:5s}'.format(
         filename=_shorten(filename), lineno=lineno, function=function)
 
-    if test_function:
+    if last_test_function:
         # we have time in the test header-footer
         _write('  {location} {message}'.format(location=location, message=message))
     else:
