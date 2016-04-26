@@ -12,7 +12,9 @@ from unittest import skip
 from . import tech
 import os
 import tempfile
+
 import arglinker
+from tracelog import TRACELOG
 
 
 def xfail(test, why=""):
@@ -40,6 +42,14 @@ TestCase = arglinker.add_test_linker(testtools.TestCase)
 
 
 class TestCase(TestCase):
+
+    def setUp(self, *args, **kwargs):
+        super(TestCase, self).setUp(*args, **kwargs)
+        TRACELOG(self.__class__.__module__, self.__class__.__name__)
+
+    def tearDown(self, *args, **kwargs):
+        super(TestCase, self).tearDown(*args, **kwargs)
+        TRACELOG(self.__class__.__module__, self.__class__.__name__)
 
     def new_temp_dir(self):
         return self.useFixture(TempDir()).path

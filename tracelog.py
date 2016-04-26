@@ -63,6 +63,7 @@ def _write(message):
     if trace_file:
         trace_file.write(message)
         trace_file.write('\n')
+        trace_file.flush()
 
 
 def TRACELOG(*args, **kwargs):
@@ -72,10 +73,27 @@ def TRACELOG(*args, **kwargs):
         return
 
     now = datetime.now()
-    stack = inspect.stack()
 
-    # assume calls from tests
-    test = _get_test(stack)
+    message = ' '.join(repr(arg) for arg in args)
+    if kwargs:
+        message += '   ** ' + ' | '.join('{}: {!r}'.format(key, value) for key, value in sorted(kwargs.items()))
+
+    try:
+        stack = inspect.stack()
+    except OSError:
+        # it can happen e.g. if the current directory is deleted
+        _write('{time} (?) {message}'.format(time=now, message=message))
+        return
+
+    try:
+        # assume calls from tests
+        test = _get_test(stack)
+
+        # caller info
+        _frame, filename, lineno, function, _code_context, _index = stack[1]
+    finally:
+        del stack
+
     if test != test_function:
         if test_function:
             _write('{time} END TEST {test}\n'.format(time=now, test=test_function))
@@ -83,15 +101,8 @@ def TRACELOG(*args, **kwargs):
         if test_function:
             _write('\n{time} BEGIN TEST {test}'.format(time=now, test=test_function))
 
-    # caller info
-    _frame, filename, lineno, function, _code_context, _index = stack[1]
-
     location = '{filename}:{lineno:<4d} @{function:5s}'.format(
         filename=_shorten(filename), lineno=lineno, function=function)
-
-    message = ' '.join(repr(arg) for arg in args)
-    if kwargs:
-        message += '   ** ' + ' | '.join('{}: {!r}'.format(key, value) for key, value in sorted(kwargs.items()))
 
     if test_function:
         # we have time in the test header-footer

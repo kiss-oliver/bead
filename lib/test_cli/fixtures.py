@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from ..test import TempDir
+from tracelog import TRACELOG
 
 import os
 import warnings
@@ -49,6 +50,7 @@ class RobotAndPackages(object):
         self._add_inputs(robot, inputs)
         repo = self.repo(robot)
         with robot.environment:
+            TRACELOG('store', robot.cwd, TS1, 'to', repo.location)
             packages[package_name] = repo.store(Workspace('.'), TS1)
         robot.cd('..')
         robot.cli('nuke', package_name)
