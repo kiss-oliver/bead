@@ -3,7 +3,6 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import functools
 import testtools
 import fixtures
 from unittest import skip
@@ -15,27 +14,6 @@ import tempfile
 
 import arglinker
 from tracelog import TRACELOG
-
-
-def xfail(test, why=""):
-    """testtools' version of unittest's expectedFailure decorator
-
-    The one from unittest does not work with testtools.TestCase!
-    """
-    @functools.wraps(test)
-    def expect_to_fail(self):
-        def errors_to_failure(f):
-            # convert all exceptions including SystemExit
-            # and other heavy ones to failure
-            try:
-                f(self)
-            except BaseException as e:
-                self.fail(e)
-        self.expectFailure(
-            why,
-            errors_to_failure, arglinker.func_with_fixture_resolver(test)
-        )
-    return expect_to_fail
 
 
 TestCase = arglinker.add_test_linker(testtools.TestCase)
