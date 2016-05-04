@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.org/krisztianfekete/lib.svg?branch=master)](https://travis-ci.org/krisztianfekete/lib)
+[![Build Status](https://travis-ci.org/e3krisztian/lib.svg?branch=translation-removal)](https://travis-ci.org/e3krisztian/lib)
 
 **`lib`** will be a data package manager, it is in the early testing phase, with most important stuff implemented for demo/testing purposes.
 
-It will be renamed, its internal working modified backward incompatibly, ....
+It will be renamed (to *bead*), its internal working modified backward incompatibly (metadata key names are to change!), ....
 
 Documentation is non-existent at this point - except for command line help.
 

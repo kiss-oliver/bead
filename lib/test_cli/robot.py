@@ -106,8 +106,11 @@ class Robot(fixtures.Fixture):
                 finally:
                     self.stdout = stdout.text
                     self.stderr = stderr.text
-                    if self.stdout: TRACELOG(STDOUT=self.stdout)
-                    if self.stderr: TRACELOG(STDERR=self.stderr)
+                    #
+                    if self.stdout:
+                        TRACELOG(STDOUT=self.stdout)
+                    if self.stderr:
+                        TRACELOG(STDERR=self.stderr)
 
     def ls(self, directory=None):
         directory = self._path(directory or self.cwd)
