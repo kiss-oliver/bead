@@ -33,7 +33,7 @@ EXTRAS:
 
 tools
 
-ws - v1.0 (workspace with file packages, without channels)
+bead - v1.0 (workspace with file packages, without channels)
 	new name
 	develop package-file
 	mount package-file input_nick
@@ -48,7 +48,7 @@ repo - data store
 	rename id name
 	list [(name | id) [channel]]
 
-ws - v2.0 (workspace with repo packages and channels)
+bead - v2.0 (workspace with repo packages and channels)
 	new name [channel]
 	develop repo package [channel] [version]
 	mount [repo] name channel [version] input_nick

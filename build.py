@@ -16,9 +16,9 @@ BUILD = 'build'
 PKGS = BUILD + '/pkgs'
 SRC = BUILD + '/src'
 CHECKOUT = BUILD + '/checkout'
-TOOL_PYZ = BUILD + '/ws.pyz'
-UNIX_TOOL = BUILD + '/ws'
-WIN_TOOL = BUILD + '/ws.cmd'
+TOOL_PYZ = BUILD + '/bead.pyz'
+UNIX_TOOL = BUILD + '/bead'
+WIN_TOOL = BUILD + '/bead.cmd'
 
 def mkdir(dir):
     if not os.path.isdir(dir):

@@ -5,6 +5,6 @@ cd $(dirname "$0")
 . test-env/bin/activate
 
 pwd
-flake8 lib
+flake8 bead
 set -x
-exec green "${@:-lib}"
+exec green "${@:-bead}"
