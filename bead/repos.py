@@ -9,6 +9,7 @@ from __future__ import print_function
 
 
 import bisect
+from datetime import timedelta
 import functools
 from glob import iglob
 import os
@@ -16,6 +17,7 @@ import os
 from .pkg.archive import Archive
 from .pkg import spec as pkg_spec
 from .tech import persistence
+from .tech.timestamp import time_from_timestamp
 from .import tech
 Path = tech.fs.Path
 
@@ -172,6 +174,46 @@ class Repository(object):
                     timestamp=timestamp)))
         workspace.pack(zipfilename, timestamp=timestamp)
         return Archive(zipfilename)
+
+    def find_names(self, package_uuid, version_hash, timestamp):
+        '''
+        -> (exact_match, best_guess, best_guess_timestamp, names)
+        where
+            exact_match          = name (package_uuid & version_hash matched)
+            best_guess           = name (package_uuid matched, timestamp is closest to input's)
+            best_guess_timestamp = timestamp ()
+            names                = sequence of names (package_uuid matched)
+        '''
+        assert isinstance
+        paths = os.listdir(self.directory)
+        packages = (Archive(path, self.name) for path in paths)
+        candidates = (pkg for pkg in packages if pkg.uuid == package_uuid)
+
+        exact_match          = None
+        best_guess           = None
+        best_guess_timestamp = None
+        best_guess_timedelta = None
+        names                = set()
+        for pkg in candidates:
+            if pkg.version == version_hash:
+                exact_match = pkg.name
+            #
+            pkg_timestamp = time_from_timestamp(pkg.timestamp_str)
+            pkg_timedelta = pkg_timestamp - timestamp
+            if pkg_timedelta < timedelta():
+                pkg_timedelta = -pkg_timedelta
+            if (
+                (best_guess_timedelta is None) or
+                (pkg_timedelta < best_guess_timedelta) or
+                (pkg_timedelta == best_guess_timedelta and pkg_timestamp > best_guess_timestamp)
+            ):
+                best_guess = pkg.name
+                best_guess_timestamp = pkg_timestamp
+                best_guess_timedelta = pkg_timedelta
+            #
+            names.add(pkg.name)
+
+        return exact_match, best_guess, best_guess_timestamp, names
 
 
 def get(name):
