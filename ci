@@ -6,7 +6,7 @@ set -e
 # debugging
 # set -x
 
-git remote get-url origin | {
+git config --get remote.origin.url | {
   read origin
   # git@github.com:e3krisztian/bead.git
   origin=${origin#*github.com?}
@@ -14,7 +14,7 @@ git remote get-url origin | {
   USER=${origin%/*}
   PROJECT=${origin#*/}
   # get branch
-  BRANCH=$(git status -b --porcelain | head -1 | sed 's/^## \([-a-zA-Z0-9_]*\).*/\1/')
+  BRANCH=$(git symbolic-ref --short -q HEAD)
 
   # static correctness
   flake8 --max-line-length=100 --show-source $PROJECT
