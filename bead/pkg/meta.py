@@ -37,6 +37,7 @@ PACKAGE = 'package uuid'
 
 INPUTS = 'inputs'
 
+# FIXME: new constant names: INPUT_BEAD_ID, INPUT_CONTENT_HASH, INPUT_FREEZE_TIME
 INPUT_PACKAGE = 'package uuid'
 # FIXME: rename `version` to `content-hash`
 INPUT_VERSION = 'version hash'
@@ -56,5 +57,6 @@ def parse_inputs(meta):
 
 
 # Archive meta:
+# FIXME: new constant names: FREEZE_TIME, FREEZE_NAME
 PACKAGE_TIMESTAMP = 'timestamp'
 DEFAULT_NAME = 'default name'
