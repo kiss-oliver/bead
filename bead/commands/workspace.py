@@ -262,13 +262,7 @@ class CmdStatus(Command):
         # TODO: use a template and render it with passing in all data
         uuid_needed = verbose
         if workspace.is_valid:
-            try:
-                # FIXME: workspace.status
-                raise LookupError(workspace)
-                package_name = 'get_package_name()'
-                print('Package Name: {}'.format(package_name))
-            except LookupError:
-                uuid_needed = True
+            print('Package Name: {}'.format(workspace.package_name))
             if uuid_needed:
                 print('Package UUID: {}'.format(workspace.uuid))
             print()

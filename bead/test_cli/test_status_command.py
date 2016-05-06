@@ -51,12 +51,11 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         robot.reset()
         robot.cli('status')
 
-        self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs)))
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Not(Contains(pkg_a)))
 
         pkg_a = packages[pkg_a]
-        pkg_with_inputs = packages[pkg_with_inputs]
-        self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Contains(pkg_a.uuid))
         self.assertThat(robot.stdout, Not(Contains(pkg_a.timestamp_str)))
         self.assertThat(robot.stdout, Contains(pkg_a.version))
@@ -68,7 +67,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         robot.reset()
         robot.cli('status', '--verbose')
 
-        self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs)))
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Not(Contains(pkg_a)))
 
         pkg_a = packages[pkg_a]

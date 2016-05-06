@@ -90,7 +90,6 @@ Updated by script, text in this section and afterwards will be overwritten
 - [# XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/master/bead/commands/workspace.py#L146)
 - [# FIXME workspace.get_package_name](https://github.com/e3krisztian/bead/blob/master/bead/commands/workspace.py#L167)
 - [# TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/master/bead/commands/workspace.py#L262)
-- [# FIXME: workspace.status](https://github.com/e3krisztian/bead/blob/master/bead/commands/workspace.py#L266)
 - [# FIXME: rename `version` to `content-hash`](https://github.com/e3krisztian/bead/blob/master/bead/pkg/meta.py#L41)
 - [# FIXME: version -> content_hash](https://github.com/e3krisztian/bead/blob/master/bead/pkg/package.py#L13)
 - [# XXX - is there any practical use for this?](https://github.com/e3krisztian/bead/blob/master/bead/pkg/spec.py#L12)
