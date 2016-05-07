@@ -41,7 +41,7 @@ class CmdList(Command):
     '''
 
     def run(self, args):
-        repositories = repos.get_all()
+        repositories = repos.env.get_repos()
 
         def print_repo(repo):
             print('{0.name}: {0.location}'.format(repo))

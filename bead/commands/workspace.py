@@ -85,7 +85,7 @@ class CmdSave(Command):
         workspace = args.workspace
         assert_valid_workspace(workspace)
         if repo_name is USE_THE_ONLY_REPO:
-            repositories = list(repos.get_all())
+            repositories = list(repos.env.get_repos())
             if not repositories:
                 die('No repositories defined, please define one!')
             if len(repositories) > 1:

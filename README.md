@@ -101,6 +101,6 @@ Updated by script, text in this section and afterwards will be overwritten
 - [# XXX: heapq might be faster a bit?](https://github.com/e3krisztian/bead/blob/master/bead/repos.py#L109)
 - [# TODO: user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/master/bead/repos.py#L123)
 - [# XXX: directory itself might be a pattern - is it OK?](https://github.com/e3krisztian/bead/blob/master/bead/repos.py#L159)
-- [# FIXME: move get_package to Environment.get_package](https://github.com/e3krisztian/bead/blob/master/bead/repos.py#L260)
+- [# FIXME: move get_package to Environment.get_package](https://github.com/e3krisztian/bead/blob/master/bead/repos.py#L256)
 - [# TODO: add tests for timestamps, parse_iso8601, parse_timedelta](https://github.com/e3krisztian/bead/blob/master/bead/tech/timestamp.py#L232)
 - [assert False, 'FIXME: no direct tests for new'](https://github.com/e3krisztian/bead/blob/master/bead/test_cli/test_new_command.py#L13)

@@ -229,10 +229,6 @@ def is_known(name):
     return get(name) is not None
 
 
-def get_all():
-    return env.get_repos()
-
-
 def add(name, directory):
     repos = list(env.get_repos())
     # check unique repo
@@ -260,7 +256,7 @@ def forget(name):
 # FIXME: move get_package to Environment.get_package
 def get_package(uuid, version):
     query = ((pkg_spec.PACKAGE_UUID, uuid), (pkg_spec.CONTENT_HASH, version))
-    for repo in get_all():
+    for repo in env.get_repos():
         for package in repo.find_packages(query):
             return package
     raise LookupError('Package {} {} not found'.format(uuid, version))
