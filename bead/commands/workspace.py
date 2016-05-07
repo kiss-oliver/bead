@@ -20,6 +20,7 @@ from .. import repos
 
 
 timestamp = tech.timestamp.timestamp
+time_from_timestamp = tech.timestamp.time_from_timestamp
 
 
 def assert_may_be_valid_name(name):
@@ -153,86 +154,37 @@ def assert_valid_workspace(workspace):
         die('{} is not a valid workspace'.format(workspace.directory))
 
 
-def indent(lines):
-    return ('\t' + line for line in lines)
-
-
-def _status_version_timestamp(input):
-    return (
-        'Release time',
-        repos.get_package(input.package, input.version).timestamp_str)
-
-
-def get_package_name(package_uuid):
-    # FIXME workspace.get_package_name
-    raise LookupError(package_uuid)
-
-
-def _status_package_name(input):
-    return ('Package name', get_package_name(input.package))
-
-
-def _status_package_uuid(input):
-    return ('Package UUID', input.package)
-
-
-def _status_version_hash(input):
-    return ('Version hash', input.version)
-
-
-def first(*fields):
-    '''
-    First available field
-    '''
-    def field(input):
-        for field in fields:
-            try:
-                return field(input)
-            except LookupError:
-                pass
-        raise LookupError()
-    return field
-
-
-ALL_FIELDS = (
-    _status_package_name,
-    _status_package_uuid,
-    _status_version_timestamp,
-    _status_version_hash,
-)
-
-
-DEFAULT_FIELDS = (
-    first(_status_package_name, _status_package_uuid),
-    first(_status_version_timestamp, _status_version_hash),
-)
-
-
-def format_input(input, fields):
-    yield '- {0} (input/{0})'.format(input.name)
-    for field in fields:
-        try:
-            name, value = field(input)
-        except LookupError:
-            pass
-        else:
-            yield '\t{}: {}'.format(name, value)
-
-
-def print_inputs(workspace, fields=ALL_FIELDS):
+def print_inputs(workspace, verbose):
     assert_valid_workspace(workspace)
     inputs = sorted(workspace.inputs)
 
     if inputs:
-        print('Inputs:')
+        repositories = repos.env.get_repos()
 
-        input_separator = ''
+        print('Inputs:')
         for input in inputs:
-            print(input_separator, end='')
-            print(
-                '\n'.join(indent(format_input(input, fields)))
-                .expandtabs(2))
-            input_separator = os.linesep
+            print('input/' + input.name)
+            print('\tName[s]:')
+            has_name = False
+            for repo in repositories:
+                timestamp = time_from_timestamp(input.timestamp)
+                (
+                    exact_match, best_guess, best_guess_timestamp, names
+                ) = repo.find_names(input.package, input.version, timestamp)
+                #
+                has_name = has_name or exact_match or best_guess or names
+                if exact_match:
+                    print('\t * -r {} {}'.format(repo.name, exact_match))
+                    names.remove(exact_match)
+                elif best_guess:
+                    print('\t ? -r {} {}'.format(repo.name, best_guess))
+                    names.remove(best_guess)
+                for name in sorted(names):
+                    print('\t [-r {} {}]'.format(repo.name, name))
+            if verbose or not has_name:
+                print('\tPackage UUID', input.package)
+                print('\tVersion', input.version)
+                print('\tTime', input.timestamp)
 
         print('')
         unloaded = [
@@ -244,6 +196,8 @@ def print_inputs(workspace, fields=ALL_FIELDS):
             unloaded_list = '\t- ' + '\n\t- '.join(unloaded)
             print(unloaded_list.expandtabs(2))
             print('You can "load" or "update" them manually.')
+    else:
+        print('No inputs defined')
 
 
 class CmdStatus(Command):
@@ -266,8 +220,7 @@ class CmdStatus(Command):
             if uuid_needed:
                 print('Package UUID: {}'.format(workspace.uuid))
             print()
-            print_inputs(
-                workspace, DEFAULT_FIELDS if not verbose else ALL_FIELDS)
+            print_inputs(workspace, verbose)
         else:
             warning('Invalid workspace ({})'.format(workspace.directory))
 

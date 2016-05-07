@@ -158,6 +158,7 @@ class Repository(object):
 
         # XXX: directory itself might be a pattern - is it OK?
         paths = iglob(self.directory / glob)
+        # FIXME: Repository.find_packages dies on non package in the directory
         packages = (Archive(path, self.name) for path in paths)
         candidates = (pkg for pkg in packages if match(pkg))
 
@@ -185,7 +186,8 @@ class Repository(object):
             names                = sequence of names (package_uuid matched)
         '''
         assert isinstance
-        paths = os.listdir(self.directory)
+        paths = (self.directory / fname for fname in os.listdir(self.directory))
+        # FIXME: Repository.find_names dies on non package in the directory
         packages = (Archive(path, self.name) for path in paths)
         candidates = (pkg for pkg in packages if pkg.uuid == package_uuid)
 

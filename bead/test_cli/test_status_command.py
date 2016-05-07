@@ -57,7 +57,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         pkg_a = packages[pkg_a]
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Contains(pkg_a.uuid))
-        self.assertThat(robot.stdout, Not(Contains(pkg_a.timestamp_str)))
+        self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.version))
 
     def test_verbose_inputs_not_in_known_repos(
@@ -74,7 +74,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         pkg_with_inputs = packages[pkg_with_inputs]
         self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.uuid))
-        self.assertThat(robot.stdout, Not(Contains(pkg_a.timestamp_str)))
+        self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.version))
 
     def test_invalid_workspace(self, robot):
