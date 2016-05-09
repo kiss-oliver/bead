@@ -145,7 +145,7 @@ class Repository(object):
         '''
         match = pkg_spec.compile_conditions(conditions)
 
-        # FUTURE IMPLEMENTATIONS: check for package uuid & content hash
+        # FUTURE IMPLEMENTATIONS: check for bead_uuid & content hash
         # they are good candidates for indexing
         package_name_globs = [
             value

@@ -71,7 +71,7 @@ class Archive(Package):
           file and they match their checksums (extra files are allowed
           in the archive, but not as data or code files)
         - the pkgmeta file is valid
-            - has package uuid
+            - has bead_uuid
             - has timestamp
             - has unofficial package name
             - has inputs (even if empty)

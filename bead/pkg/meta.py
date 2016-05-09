@@ -7,18 +7,18 @@ with the following minimum structure:
 {
     inputs: {
         'nick1' : {
-            package uuid: ...,
+            bead_uuid: ...,
             version hash: ...,
             version time: ...,
         },
         'nick2' : {
-            package uuid: ...,
+            bead_uuid: ...,
             version hash: ...,
             version time: ...,
         },
         ...
     },
-    package uuid: ...,
+    bead_uuid: ...,
     timestamp: ...,     # only archives - naive ordering
     default name: ...,  # only archives, package name for bootstrapping
 }
@@ -33,12 +33,12 @@ from __future__ import print_function
 from collections import namedtuple
 
 
-PACKAGE = 'package uuid'
+PACKAGE = 'bead_uuid'
 
 INPUTS = 'inputs'
 
 # FIXME: new constant names: INPUT_BEAD_ID, INPUT_CONTENT_HASH, INPUT_FREEZE_TIME
-INPUT_PACKAGE = 'package uuid'
+INPUT_PACKAGE = 'bead_uuid'
 # FIXME: rename `version` to `content-hash`
 INPUT_VERSION = 'version hash'
 INPUT_TIME = 'version time'
