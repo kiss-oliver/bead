@@ -85,7 +85,6 @@ Updated by script, text in this section and afterwards will be overwritten
 - [# FIXME: update: fix to allow to select previous/next/closest to a timestamp bead](https://github.com/e3krisztian/bead/blob/renames/bead/cli/input.py#L126)
 - [# FIXME: input._update](https://github.com/e3krisztian/bead/blob/renames/bead/cli/input.py#L137)
 - [# XXX use tabulate?](https://github.com/e3krisztian/bead/blob/renames/bead/cli/repo.py#L53)
-- [assert False, 'FIXME: no direct tests for new'](https://github.com/e3krisztian/bead/blob/renames/bead/cli/test_new_command.py#L13)
 - [# FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/renames/bead/cli/workspace.py#L50)
 - [# TODO: delete arg_metavar.BEAD_REF](https://github.com/e3krisztian/bead/blob/renames/bead/cli/workspace.py#L119)
 - [# XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/renames/bead/cli/workspace.py#L147)
