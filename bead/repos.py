@@ -255,8 +255,8 @@ def forget(name):
     env.save()
 
 
-# FIXME: move get_package to Environment.get_package
-def get_package(bead_uuid, content_hash):
+# FIXME: move get_bead to Environment.get_bead
+def get_bead(bead_uuid, content_hash):
     query = ((pkg_spec.PACKAGE_UUID, bead_uuid), (pkg_spec.CONTENT_HASH, content_hash))
     for repo in env.get_repos():
         for package in repo.find_packages(query):

@@ -172,7 +172,7 @@ def _load(workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
-            package = repos.get_package(input.package, input.version)
+            package = repos.get_bead(input.package, input.version)
         except LookupError:
             warning(
                 'Could not find archive for {} - not loaded!'
