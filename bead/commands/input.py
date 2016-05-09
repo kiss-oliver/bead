@@ -54,9 +54,9 @@ class CmdAdd(Command):
 
     def declare(self, arg):
         arg(MANDATORY_INPUT_NICK)
-        arg('package_name', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
+        arg('package_name', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
             default=USE_INPUT_NICK,
-            help=arg_help.PACKAGE_LOAD)
+            help=arg_help.BEAD_LOAD)
         arg(package_spec_kwargs)
         arg(OPTIONAL_WORKSPACE)
 
@@ -103,9 +103,9 @@ class CmdUpdate(Command):
         arg(package_spec_kwargs)
         arg(OPTIONAL_INPUT_NICK)
         arg(
-            'package_ref', metavar=arg_metavar.PACKAGE_REF, nargs='?', type=str,
+            'package_ref', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
             default=NEWEST_VERSION,
-            help=arg_help.PACKAGE_LOAD)
+            help=arg_help.BEAD_LOAD)
         arg(OPTIONAL_WORKSPACE)
 
     def run(self, args):
@@ -136,7 +136,7 @@ def _update(workspace, input, package_ref=NEWEST_VERSION):
     if package_ref is NEWEST_VERSION:
         # FIXME: input._update
         query = [
-            (pkg_spec.PACKAGE_UUID, input.package),
+            (pkg_spec.BEAD_UUID, input.package),
             (pkg_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
         package_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())

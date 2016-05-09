@@ -52,7 +52,7 @@ class AbstractWorkspace(object):
 
     @property
     def uuid(self):
-        return self.meta[meta.PACKAGE]
+        return self.meta[meta.BEAD_UUID]
 
     @property
     def inputs(self):
@@ -78,7 +78,7 @@ class AbstractWorkspace(object):
         self.create_directories()
 
         pkgmeta = {
-            meta.PACKAGE: uuid,
+            meta.BEAD_UUID: uuid,
             meta.INPUTS: {},
         }
         fs.write_file(
@@ -123,7 +123,7 @@ class AbstractWorkspace(object):
     def add_input(self, input_nick, uuid, version, timestamp_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
-            meta.INPUT_BEAD_ID: uuid,
+            meta.INPUT_BEAD_UUID: uuid,
             meta.INPUT_CONTENT_HASH: version,
             meta.INPUT_FREEZE_TIME: timestamp_str,
         }
@@ -261,11 +261,11 @@ class _ZipCreator(object):
 
     def add_meta(self, workspace, timestamp):
         pkgmeta = {
-            meta.PACKAGE: workspace.uuid,
+            meta.BEAD_UUID: workspace.uuid,
             meta.FREEZE_TIME: timestamp,
             meta.INPUTS: {
                 input.name: {
-                    meta.INPUT_BEAD_ID: input.package,
+                    meta.INPUT_BEAD_UUID: input.package,
                     meta.INPUT_CONTENT_HASH: input.version,
                     meta.INPUT_FREEZE_TIME: input.timestamp,
                 }

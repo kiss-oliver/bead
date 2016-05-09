@@ -87,7 +87,7 @@ class Archive(Package):
     def _has_well_formed_meta(self):
         m = self.meta
         keys = (
-            meta.PACKAGE,
+            meta.BEAD_UUID,
             meta.FREEZE_TIME,
             meta.INPUTS,
             meta.FREEZE_NAME)
@@ -140,7 +140,7 @@ class Archive(Package):
 
     @property
     def uuid(self):
-        return self._meta[meta.PACKAGE]
+        return self._meta[meta.BEAD_UUID]
 
     @property
     def timestamp_str(self):

@@ -45,7 +45,7 @@ Repo = namedtuple('Repo', 'name directory')
 
 def package_count(robot, repo, pkg_uuid):
     with robot.environment:
-        query = [(pkg_spec.PACKAGE_UUID, pkg_uuid)]
+        query = [(pkg_spec.BEAD_UUID, pkg_uuid)]
         return sum(1 for _ in repos.get(repo.name).find_packages(query))
 
 

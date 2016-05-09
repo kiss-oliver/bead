@@ -33,14 +33,13 @@ from __future__ import print_function
 from collections import namedtuple
 
 
-# FIXME: meta.PACKAGE -> meta.BEAD_UUID
-PACKAGE = 'bead_uuid'
+BEAD_UUID = 'bead_uuid'
 
 INPUTS = 'inputs'
 
-INPUT_BEAD_ID = 'bead_uuid'
+INPUT_BEAD_UUID    = 'bead_uuid'
 INPUT_CONTENT_HASH = 'content_hash'
-INPUT_FREEZE_TIME = 'freeze_time'
+INPUT_FREEZE_TIME  = 'freeze_time'
 
 # FIXME: rename `version` to `content-hash`
 InputSpec = namedtuple('InputSpec', 'name package version timestamp')
@@ -55,11 +54,11 @@ def parse_inputs(meta):
         spec = inputs[name]
         yield InputSpec(
             name,
-            spec[INPUT_BEAD_ID],
+            spec[INPUT_BEAD_UUID],
             spec[INPUT_CONTENT_HASH],
             spec[INPUT_FREEZE_TIME])
 
 
 # Archive meta:
-FREEZE_TIME = 'timestamp'
-FREEZE_NAME = 'default name'
+FREEZE_TIME = 'freeze_time'
+FREEZE_NAME = 'freeze_name'

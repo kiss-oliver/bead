@@ -83,14 +83,14 @@ def package_spec_kwargs(parser):
     # -r, --repo, --repository
 
     # package_filters
-    PACKAGE_QUERY = 'package_query'
-    arg('-o', '--older', '--older-than', dest=PACKAGE_QUERY,
-        metavar='TIMESTAMP', type=tag(pkg_spec.OLDER_THAN, _parse_time))
-    arg('-n', '--newer', '--newer-than', dest=PACKAGE_QUERY,
-        metavar='TIMESTAMP', type=tag(pkg_spec.NEWER_THAN, _parse_time))
-    arg('--start-of-name', dest=PACKAGE_QUERY,
-        metavar='START-OF-PACKAGE-NAME',
-        type=tag(pkg_spec.PACKAGE_NAME_GLOB, _parse_start_of_name))
+    BEAD_QUERY = 'package_query'
+    arg('-o', '--older', '--older-than', dest=BEAD_QUERY,
+        metavar='TIMEDEF', type=tag(pkg_spec.OLDER_THAN, _parse_time))
+    arg('-n', '--newer', '--newer-than', dest=BEAD_QUERY,
+        metavar='TIMEDEF', type=tag(pkg_spec.NEWER_THAN, _parse_time))
+    arg('--start-of-name', dest=BEAD_QUERY,
+        metavar='START-OF-BEAD-NAME',
+        type=tag(pkg_spec.BEAD_NAME_GLOB, _parse_start_of_name))
 
     # match reducers
     # -N, --next
@@ -155,7 +155,7 @@ def get_package_ref(package_name, package_query):
     query = list(package_query or [])
 
     if package_name:
-        query = [(pkg_spec.PACKAGE_NAME_GLOB, package_name)] + query
+        query = [(pkg_spec.BEAD_NAME_GLOB, package_name)] + query
 
     # TODO: calculate and add index parameter (--next, --prev)
     return RepoQueryReference(package_name, query, repos.env.get_repos())

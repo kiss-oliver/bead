@@ -150,7 +150,7 @@ class Repository(object):
         package_name_globs = [
             value
             for tag, value in conditions
-            if tag == pkg_spec.PACKAGE_NAME_GLOB]
+            if tag == pkg_spec.BEAD_NAME_GLOB]
         if package_name_globs:
             glob = package_name_globs[0] + '*'
         else:
@@ -257,7 +257,7 @@ def forget(name):
 
 # FIXME: move get_bead to Environment.get_bead
 def get_bead(bead_uuid, content_hash):
-    query = ((pkg_spec.PACKAGE_UUID, bead_uuid), (pkg_spec.CONTENT_HASH, content_hash))
+    query = ((pkg_spec.BEAD_UUID, bead_uuid), (pkg_spec.CONTENT_HASH, content_hash))
     for repo in env.get_repos():
         for package in repo.find_packages(query):
             return package
