@@ -98,7 +98,7 @@ class AbstractWorkspace(object):
         fs.ensure_directory(dir / layouts.Workspace.META)
 
     @property
-    def package_name(self):
+    def bead_name(self):
         return os.path.basename(self.directory)
 
     def pack(self, zipfilename, timestamp):
@@ -273,7 +273,7 @@ class _ZipCreator(object):
                 }
                 for input in workspace.inputs
             },
-            meta.FREEZE_NAME: workspace.package_name,
+            meta.FREEZE_NAME: workspace.bead_name,
         }
 
         self.add_string_content(

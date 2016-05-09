@@ -13,7 +13,7 @@ from .cmdparse import Command
 from .common import die, warning
 from .common import DefaultArgSentinel
 from .common import OPTIONAL_WORKSPACE
-from .common import package_spec_kwargs, get_package_ref
+from .common import bead_spec_kwargs, get_bead_ref
 from . import arg_metavar
 from . import arg_help
 from .. import repos
@@ -46,12 +46,12 @@ class CmdNew(Command):
 
     def run(self, args):
         workspace = args.workspace
-        assert_may_be_valid_name(workspace.package_name)
+        assert_may_be_valid_name(workspace.bead_name)
         # FIXME: die with message when directory already exists
 
         bead_uuid = tech.identifier.uuid()
         workspace.create(bead_uuid)
-        print('Created {}'.format(workspace.package_name))
+        print('Created {}'.format(workspace.bead_name))
 
 
 CURRENT_DIRECTORY = CurrentDirWorkspace()
@@ -114,8 +114,8 @@ class CmdDevelop(Command):
     '''
 
     def declare(self, arg):
-        arg('package_name', metavar='package-name')
-        arg(package_spec_kwargs)
+        arg('bead_name', metavar='package-name')
+        arg(bead_spec_kwargs)
         # TODO: delete arg_metavar.BEAD_REF
         arg(workspace_defaulting_to(DERIVE_FROM_BEAD_NAME))
         arg('-x', '--extract-output', dest='extract_output',
@@ -124,15 +124,15 @@ class CmdDevelop(Command):
 
     def run(self, args):
         extract_output = args.extract_output
-        package_ref = get_package_ref(args.package_name, args.package_query)
+        bead_ref = get_bead_ref(args.bead_name, args.bead_query)
         try:
-            package = package_ref.package
+            package = bead_ref.package
         except LookupError:
             die('Bead not found!')
         if not package.is_valid:
             die('Bead is found but damaged')
         if args.workspace is DERIVE_FROM_BEAD_NAME:
-            workspace = package_ref.default_workspace
+            workspace = bead_ref.default_workspace
         else:
             workspace = args.workspace
 
@@ -216,7 +216,7 @@ class CmdStatus(Command):
         # TODO: use a template and render it with passing in all data
         uuid_needed = verbose
         if workspace.is_valid:
-            print('Bead Name: {}'.format(workspace.package_name))
+            print('Bead Name: {}'.format(workspace.bead_name))
             if uuid_needed:
                 print('Bead UUID: {}'.format(workspace.bead_uuid))
             print()

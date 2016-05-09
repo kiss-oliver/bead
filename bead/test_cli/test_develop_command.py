@@ -60,7 +60,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
         self.assert_develop_version(
             robot, 'pkg_with_history@{}-1'.format(fixtures.TS2), fixtures.TS2)
 
-    def test_hacked_package_is_detected(self, robot, hacked_pkg):
+    def test_hacked_bead_is_detected(self, robot, hacked_pkg):
         self.assertRaises(SystemExit, robot.cli, 'develop', hacked_pkg)
         self.assertThat(robot.stderr, Contains('ERROR'))
 

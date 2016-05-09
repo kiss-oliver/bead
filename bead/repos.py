@@ -147,12 +147,12 @@ class Repository(object):
 
         # FUTURE IMPLEMENTATIONS: check for bead_uuid & content hash
         # they are good candidates for indexing
-        package_name_globs = [
+        bead_name_globs = [
             value
             for tag, value in conditions
             if tag == pkg_spec.BEAD_NAME_GLOB]
-        if package_name_globs:
-            glob = package_name_globs[0] + '*'
+        if bead_name_globs:
+            glob = bead_name_globs[0] + '*'
         else:
             glob = '*'
 
@@ -169,9 +169,9 @@ class Repository(object):
         # -> Bead
         zipfilename = (
             self.directory / (
-                '{package_name}_{timestamp}.zip'
+                '{bead_name}_{timestamp}.zip'
                 .format(
-                    package_name=workspace.package_name,
+                    bead_name=workspace.bead_name,
                     timestamp=timestamp)))
         workspace.pack(zipfilename, timestamp=timestamp)
         return Archive(zipfilename)

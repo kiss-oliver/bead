@@ -43,7 +43,7 @@ class Test_no_repo(TestCase):
 Repo = namedtuple('Repo', 'name directory')
 
 
-def package_count(robot, repo, pkg_uuid):
+def bead_count(robot, repo, pkg_uuid):
     with robot.environment:
         query = [(pkg_spec.BEAD_UUID, pkg_uuid)]
         return sum(1 for _ in repos.get(repo.name).find_packages(query))
@@ -71,16 +71,16 @@ class Test_more_than_one_repos(TestCase):
         self.assertRaises(SystemExit, robot.cli, 'save', 'pkg')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
-    def test_save_stores_package_in_specified_repo(self, robot, repo1, repo2):
+    def test_save_stores_bead_in_specified_repo(self, robot, repo1, repo2):
         robot.cli('new', 'pkg')
         robot.cli('save', repo1.name, '--workspace=pkg')
         with robot.environment:
             pkg_uuid = Workspace('pkg').bead_uuid
-        self.assertEquals(1, package_count(robot, repo1, pkg_uuid))
-        self.assertEquals(0, package_count(robot, repo2, pkg_uuid))
+        self.assertEquals(1, bead_count(robot, repo1, pkg_uuid))
+        self.assertEquals(0, bead_count(robot, repo2, pkg_uuid))
         robot.cli('save', repo2.name, '-w', 'pkg')
-        self.assertEquals(1, package_count(robot, repo1, pkg_uuid))
-        self.assertEquals(1, package_count(robot, repo2, pkg_uuid))
+        self.assertEquals(1, bead_count(robot, repo1, pkg_uuid))
+        self.assertEquals(1, bead_count(robot, repo2, pkg_uuid))
 
     def test_invalid_repo_specified(self, robot, repo1, repo2):
         robot.cli('new', 'pkg')

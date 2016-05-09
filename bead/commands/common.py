@@ -74,7 +74,7 @@ def _parse_start_of_name(name):
     return name + '*'
 
 
-def package_spec_kwargs(parser):
+def bead_spec_kwargs(parser):
     group = parser.argparser.add_argument_group(
         'package query',
         'Restrict the bead version with these options')
@@ -82,8 +82,8 @@ def package_spec_kwargs(parser):
     # TODO: implement more options
     # -r, --repo, --repository
 
-    # package_filters
-    BEAD_QUERY = 'package_query'
+    # bead_filters
+    BEAD_QUERY = 'bead_query'
     arg('-o', '--older', '--older-than', dest=BEAD_QUERY,
         metavar='TIMEDEF', type=tag(pkg_spec.OLDER_THAN, _parse_time))
     arg('-n', '--newer', '--newer-than', dest=BEAD_QUERY,
@@ -148,14 +148,14 @@ class RepoQueryReference(BeadReference):
         return Workspace(self.workspace_name)
 
 
-def get_package_ref(package_name, package_query):
-    if os.path.sep in package_name and os.path.isfile(package_name):
-        return ArchiveReference(package_name)
+def get_bead_ref(bead_name, bead_query):
+    if os.path.sep in bead_name and os.path.isfile(bead_name):
+        return ArchiveReference(bead_name)
 
-    query = list(package_query or [])
+    query = list(bead_query or [])
 
-    if package_name:
-        query = [(pkg_spec.BEAD_NAME_GLOB, package_name)] + query
+    if bead_name:
+        query = [(pkg_spec.BEAD_NAME_GLOB, bead_name)] + query
 
     # TODO: calculate and add index parameter (--next, --prev)
-    return RepoQueryReference(package_name, query, repos.env.get_repos())
+    return RepoQueryReference(bead_name, query, repos.env.get_repos())

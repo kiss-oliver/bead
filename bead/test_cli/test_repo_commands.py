@@ -27,9 +27,9 @@ class Test_shared_repo(TestCase):
         tmp = self.new_temp_dir()
         ws = Workspace(tmp / 'ws')
         ws.create('pkg-uuid')
-        package_archive = tmp / 'package.zip'
-        ws.pack(package_archive, timestamp)
-        return package_archive
+        bead_archive = tmp / 'package.zip'
+        ws.pack(bead_archive, timestamp)
+        return bead_archive
 
     def alice(self, repo):
         robot = self.useFixture(Robot())

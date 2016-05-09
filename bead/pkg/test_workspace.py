@@ -68,17 +68,17 @@ class Test_create(TestCase):
 class Test_pack(TestCase):
 
     def test_creates_valid_archive(self):
-        self.given_a_package_directory()
+        self.given_a_bead_directory()
         self.when_archived()
         self.then_archive_is_valid_package()
 
     def test_archives_all_content(self):
-        self.given_a_package_directory()
+        self.given_a_bead_directory()
         self.when_archived()
-        self.then_archive_contains_files_from_package_directory()
+        self.then_archive_contains_files_from_bead_directory()
 
     def test_not_saved_content(self):
-        self.given_a_package_directory()
+        self.given_a_bead_directory()
         self.when_archived()
         self.then_archive_does_not_contain_workspace_meta_and_temp_files()
 
@@ -96,7 +96,7 @@ class Test_pack(TestCase):
     def workspace(self):
         return m.Workspace(self.__workspace_dir)
 
-    def given_a_package_directory(self):
+    def given_a_bead_directory(self):
         self.__workspace_dir = self.new_temp_dir()
         self.workspace.create(A_BEAD_UUID)
         l = layouts.Workspace
@@ -116,7 +116,7 @@ class Test_pack(TestCase):
         self.__zipfile = self.__zipdir / 'pkg.zip'
         self.workspace.pack(self.__zipfile, timestamp())
 
-    def then_archive_contains_files_from_package_directory(self):
+    def then_archive_contains_files_from_bead_directory(self):
         z = zipfile.ZipFile(self.__zipfile)
         l = layouts.Archive
 
@@ -174,25 +174,25 @@ def make_package(path, filespecs):
 
 class Test_load(TestCase):
 
-    def test_makes_package_files_available_under_input(self):
-        self.given_a_package_directory()
+    def test_makes_bead_files_available_under_input(self):
+        self.given_a_bead_directory()
         self.when_loading_a_package()
-        self.then_data_files_in_package_are_available_in_workspace()
+        self.then_data_files_in_bead_are_available_in_workspace()
 
     def test_loaded_inputs_are_read_only(self):
-        self.given_a_package_directory()
+        self.given_a_bead_directory()
         self.when_loading_a_package()
         self.then_extracted_files_under_input_are_readonly()
 
     def test_load_adds_input_to_bead_meta(self):
-        self.given_a_package_directory()
+        self.given_a_bead_directory()
         self.when_loading_a_package()
         self.then_input_info_is_added_to_bead_meta()
 
     def test_loading_more_than_one_package(self):
-        self.given_a_package_directory()
+        self.given_a_bead_directory()
         self.when_loading_a_package()
-        self.then_another_package_can_be_loaded()
+        self.then_another_bead_can_be_loaded()
 
     # implementation
 
@@ -202,7 +202,7 @@ class Test_load(TestCase):
     def workspace(self):
         return m.Workspace(self.__workspace_dir)
 
-    def given_a_package_directory(self):
+    def given_a_bead_directory(self):
         self.__workspace_dir = self.new_temp_dir()
         self.workspace.create(A_BEAD_UUID)
 
@@ -220,7 +220,7 @@ class Test_load(TestCase):
     def when_loading_a_package(self):
         self._load_a_package('pkg1')
 
-    def then_data_files_in_package_are_available_in_workspace(self):
+    def then_data_files_in_bead_are_available_in_workspace(self):
         with open(self.__workspace_dir / 'input/pkg1/output1', 'rb') as f:
             self.assertEquals(b'data for pkg1', f.read())
 
@@ -234,7 +234,7 @@ class Test_load(TestCase):
         self.assertTrue(self.workspace.has_input('pkg1'))
         self.assertTrue(self.workspace.is_loaded('pkg1'))
 
-    def then_another_package_can_be_loaded(self):
+    def then_another_bead_can_be_loaded(self):
         self._load_a_package('pkg2')
 
 
@@ -287,17 +287,17 @@ class Test_is_valid(TestCase):
 
     # tests
 
-    def test_newly_created_package_is_valid(self, archive_with_two_files_path):
+    def test_newly_created_bead_is_valid(self, archive_with_two_files_path):
         self.assertTrue(Archive(archive_with_two_files_path).is_valid)
 
-    def test_adding_a_data_file_to_an_archive_makes_package_invalid(
+    def test_adding_a_data_file_to_an_archive_makes_bead_invalid(
             self, archive_path):
         with zipfile.ZipFile(archive_path, 'a') as z:
             z.writestr(layouts.Archive.DATA / 'extra_file', b'something')
 
         self.assertFalse(Archive(archive_path).is_valid)
 
-    def test_adding_a_code_file_to_an_archive_makes_package_invalid(
+    def test_adding_a_code_file_to_an_archive_makes_bead_invalid(
             self, archive_path):
         with zipfile.ZipFile(archive_path, 'a') as z:
             z.writestr(layouts.Archive.CODE / 'extra_file', b'something')
@@ -311,7 +311,7 @@ class Test_is_valid(TestCase):
 
         self.assertTrue(Archive(rezipped_archive_path).is_valid)
 
-    def test_deleting_a_checksummed_file_makes_the_package_invalid(
+    def test_deleting_a_checksummed_file_makes_the_bead_invalid(
             self, unzipped_archive_path):
         os.remove(unzipped_archive_path / layouts.Archive.CODE / 'code1')
         modified_archive_path = self.new_temp_dir() / 'modified_archive.zip'
@@ -319,7 +319,7 @@ class Test_is_valid(TestCase):
 
         self.assertFalse(Archive(modified_archive_path).is_valid)
 
-    def test_changing_a_file_makes_the_package_invalid(
+    def test_changing_a_file_makes_the_bead_invalid(
             self, unzipped_archive_path):
         write_file(
             unzipped_archive_path / layouts.Archive.CODE / 'code1', b'HACKED')

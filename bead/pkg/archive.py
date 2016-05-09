@@ -21,7 +21,7 @@ securehash = tech.securehash
 persistence = tech.persistence
 
 
-def package_name_from_file_path(path):
+def bead_name_from_file_path(path):
     '''
     Parse package name from a file path.
 
@@ -33,10 +33,10 @@ def package_name_from_file_path(path):
     return name
 
 
-assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3.zip')
-assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923.zip')
-assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923T010203012345+0200.zip')
-assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923T010203012345-0200.zip')
+assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3.zip')
+assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3_20150923.zip')
+assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3_20150923T010203012345+0200.zip')
+assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3_20150923T010203012345-0200.zip')
 
 
 class Archive(Bead):
@@ -44,7 +44,7 @@ class Archive(Bead):
     def __init__(self, filename, repository_name=''):
         self.archive_filename = filename
         self.repo = repository_name
-        self.name = package_name_from_file_path(filename)
+        self.name = bead_name_from_file_path(filename)
         self.zipfile = None
         self._meta = self._load_meta()
 
@@ -80,7 +80,7 @@ class Archive(Bead):
 
     def _checks(self):
         yield self._has_well_formed_meta()
-        yield self._package_creation_time_is_in_the_past()
+        yield self._bead_creation_time_is_in_the_past()
         yield self._extra_file() is None
         yield self._file_failing_checksum() is None
 
@@ -93,7 +93,7 @@ class Archive(Bead):
             meta.FREEZE_NAME)
         return all(key in m for key in keys)
 
-    def _package_creation_time_is_in_the_past(self):
+    def _bead_creation_time_is_in_the_past(self):
         read_time = timestamp.time_from_timestamp
         now = read_time(timestamp.timestamp())
         pkgtime = read_time(self.meta[meta.FREEZE_TIME])

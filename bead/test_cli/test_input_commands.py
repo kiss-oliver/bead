@@ -13,10 +13,10 @@ from . import fixtures
 
 class Test_input_commands(TestCase, fixtures.RobotAndBeads):
 
-    def assert_loaded(self, robot, input_name, package_name):
+    def assert_loaded(self, robot, input_name, bead_name):
         self.assertThat(
             robot.cwd / 'input' / input_name / 'README',
-            FileContains(package_name))
+            FileContains(bead_name))
 
     # tests
 
@@ -70,7 +70,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stderr, Contains('WARNING'))
         self.assertThat(robot.stderr, Contains('No inputs defined to load.'))
 
-    def test_load_with_missing_package_gives_warning(
+    def test_load_with_missing_bead_gives_warning(
             self, robot, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
@@ -97,7 +97,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cd(pkg_with_inputs)
         robot.cli('input', 'load')
 
-    def test_add_with_unrecognized_package_name_exits_with_error(
+    def test_add_with_unrecognized_bead_name_exits_with_error(
             self, robot, pkg_a):
         robot.cli('develop', pkg_a)
         robot.cd(pkg_a)
@@ -108,7 +108,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
             self.assertThat(robot.stderr, Contains('ERROR'))
             self.assertThat(robot.stderr, Contains('non-existing-package'))
 
-    def test_add_with_hacked_package_is_refused(
+    def test_add_with_hacked_bead_is_refused(
             self, robot, hacked_pkg, pkg_a):
         robot.cli('develop', pkg_a)
         robot.cd(pkg_a)
@@ -116,7 +116,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         self.assertFalse(Workspace(robot.cwd).has_input('hack'))
         self.assertThat(robot.stderr, Contains('WARNING'))
 
-    def test_update_with_hacked_package_is_refused(
+    def test_update_with_hacked_bead_is_refused(
             self, robot, hacked_pkg, pkg_a):
         robot.cli('develop', pkg_a)
         robot.cd(pkg_a)

@@ -12,7 +12,7 @@ from ..commands.common import (
     CurrentDirWorkspace,
     die, warning
 )
-from ..commands.common import package_spec_kwargs, get_package_ref, RepoQueryReference
+from ..commands.common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
 from ..pkg import spec as pkg_spec
 from .. import repos
 from ..tech.timestamp import time_from_timestamp
@@ -40,7 +40,7 @@ def MANDATORY_INPUT_NICK(parser):
         metavar=arg_metavar.INPUT_NICK, help=arg_help.INPUT_NICK)
 
 
-# package_ref
+# bead_ref
 NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
 USE_INPUT_NICK = DefaultArgSentinel('use {}'.format(arg_metavar.INPUT_NICK))
 # default workspace
@@ -54,28 +54,28 @@ class CmdAdd(Command):
 
     def declare(self, arg):
         arg(MANDATORY_INPUT_NICK)
-        arg('package_name', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
+        arg('bead_name', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
             default=USE_INPUT_NICK,
             help=arg_help.BEAD_LOAD)
-        arg(package_spec_kwargs)
+        arg(bead_spec_kwargs)
         arg(OPTIONAL_WORKSPACE)
 
     def run(self, args):
         input_nick = args.input_nick
-        package_name = args.package_name
+        bead_name = args.bead_name
         workspace = args.workspace
 
-        if package_name is USE_INPUT_NICK:
-            package_name = input_nick
+        if bead_name is USE_INPUT_NICK:
+            bead_name = input_nick
 
-        package_ref = get_package_ref(package_name, args.package_query)
+        bead_ref = get_bead_ref(bead_name, args.bead_query)
         try:
-            package = package_ref.package
+            package = bead_ref.package
         except LookupError:
-            die('Not a known package name: {}'.format(package_name))
+            die('Not a known package name: {}'.format(bead_name))
 
         _check_load_with_feedback(
-            workspace, args.input_nick, package, package_name)
+            workspace, args.input_nick, package, bead_name)
 
 
 class CmdDelete(Command):
@@ -100,17 +100,17 @@ class CmdUpdate(Command):
     '''
 
     def declare(self, arg):
-        arg(package_spec_kwargs)
+        arg(bead_spec_kwargs)
         arg(OPTIONAL_INPUT_NICK)
         arg(
-            'package_ref', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
+            'bead_ref', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
             default=NEWEST_VERSION,
             help=arg_help.BEAD_LOAD)
         arg(OPTIONAL_WORKSPACE)
 
     def run(self, args):
         input_nick = args.input_nick
-        package_ref = args.package_ref
+        bead_ref = args.bead_ref
         workspace = args.workspace
         if input_nick is ALL_INPUTS:
             for input in workspace.inputs:
@@ -124,24 +124,24 @@ class CmdUpdate(Command):
             print('All inputs are up to date.')
         else:
             # FIXME: update: fix to allow to select previous/next/closest to a timestamp package
-            if package_ref is not NEWEST_VERSION:
-                package_ref = get_package_ref(package_ref, args.package_query)
+            if bead_ref is not NEWEST_VERSION:
+                bead_ref = get_bead_ref(bead_ref, args.bead_query)
             try:
-                _update(workspace, workspace.get_input(input_nick), package_ref)
+                _update(workspace, workspace.get_input(input_nick), bead_ref)
             except LookupError:
                 die('Can not find matching package')
 
 
-def _update(workspace, input, package_ref=NEWEST_VERSION):
-    if package_ref is NEWEST_VERSION:
+def _update(workspace, input, bead_ref=NEWEST_VERSION):
+    if bead_ref is NEWEST_VERSION:
         # FIXME: input._update
         query = [
             (pkg_spec.BEAD_UUID, input.package),
             (pkg_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
-        package_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())
+        bead_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())
 
-    replacement = package_ref.package
+    replacement = bead_ref.package
     _check_load_with_feedback(workspace, input.name, replacement)
 
 
@@ -184,13 +184,13 @@ def _load(workspace, input):
 
 
 def _check_load_with_feedback(
-        workspace, input_name, package, package_name=None):
+        workspace, input_name, package, bead_name=None):
     if package.is_valid:
         if workspace.is_loaded(input_name):
             workspace.unload(input_name)
         workspace.load(input_name, package)
-        if package_name:
-            print('{} loaded on {}.'.format(package_name, input_name))
+        if bead_name:
+            print('{} loaded on {}.'.format(bead_name, input_name))
         else:
             print('Loaded {}.'.format(input_name))
     else:

@@ -42,19 +42,19 @@ class RobotAndBeads(object):
     def packages(self):
         return {}
 
-    def _new_package(self, robot, packages, package_name, inputs=None):
-        robot.cli('new', package_name)
-        robot.cd(package_name)
-        robot.write_file('README', package_name)
-        robot.write_file('output/README', package_name)
+    def _new_package(self, robot, packages, bead_name, inputs=None):
+        robot.cli('new', bead_name)
+        robot.cd(bead_name)
+        robot.write_file('README', bead_name)
+        robot.write_file('output/README', bead_name)
         self._add_inputs(robot, inputs)
         repo = self.repo(robot)
         with robot.environment:
             TRACELOG('store', robot.cwd, TS1, 'to', repo.location)
-            packages[package_name] = repo.store(Workspace('.'), TS1)
+            packages[bead_name] = repo.store(Workspace('.'), TS1)
         robot.cd('..')
-        robot.cli('nuke', package_name)
-        return package_name
+        robot.cli('nuke', bead_name)
+        return bead_name
 
     def _add_inputs(self, robot, inputs):
         inputs = inputs or {}
@@ -84,10 +84,10 @@ class RobotAndBeads(object):
                 z.writestr(layouts.Archive.DATA / 'README', 'HACKED')
         return hacked_pkg_path
 
-    def _pkg_with_history(self, robot, repo, package_name, bead_uuid):
+    def _pkg_with_history(self, robot, repo, bead_name, bead_uuid):
         def make_package(timestamp):
             with TempDir() as tempdir_obj:
-                workspace_dir = os.path.join(tempdir_obj.path, package_name)
+                workspace_dir = os.path.join(tempdir_obj.path, bead_name)
                 ws = Workspace(workspace_dir)
                 ws.create(bead_uuid)
                 sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
@@ -98,7 +98,7 @@ class RobotAndBeads(object):
         with robot.environment:
             make_package(TS1)
             make_package(TS2)
-        return package_name
+        return bead_name
 
     def pkg_with_history(self, robot, repo):
         return self._pkg_with_history(
