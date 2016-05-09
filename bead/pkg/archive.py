@@ -10,7 +10,7 @@ import os
 import re
 import zipfile
 
-from .package import Bead
+from .bead import Bead
 from .. import tech
 from . import layouts
 from . import meta
