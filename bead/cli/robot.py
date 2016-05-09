@@ -11,7 +11,7 @@ from tracelog import TRACELOG
 from .. import tech
 
 from ..test import TempDir, CaptureStdout, CaptureStderr
-from .. import cli
+from . import initialize_env, run
 
 
 @contextlib.contextmanager
@@ -32,7 +32,7 @@ def environment(robot):
     with fixtures.EnvironmentVariable('HOME', robot.home):
         with chdir(robot.cwd):
             try:
-                cli.initialize_env(robot.config_dir)
+                initialize_env(robot.config_dir)
                 yield
             except BaseException as e:
                 robot.retval = e
@@ -99,7 +99,7 @@ class Robot(fixtures.Fixture):
         with self.environment:
             with CaptureStdout() as stdout, CaptureStderr() as stderr:
                 try:
-                    self.retval = cli.run(args)
+                    self.retval = run(args)
                 except BaseException as e:
                     TRACELOG(EXCEPTION=e)
                     raise

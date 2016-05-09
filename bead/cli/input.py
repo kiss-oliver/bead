@@ -5,14 +5,14 @@ from __future__ import print_function
 
 from .cmdparse import Command
 
-from ..commands import arg_metavar
-from ..commands import arg_help
-from ..commands.common import (
+from . import arg_metavar
+from . import arg_help
+from .common import (
     OPTIONAL_WORKSPACE, DefaultArgSentinel,
     CurrentDirWorkspace,
     die, warning
 )
-from ..commands.common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
+from .common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
 from ..pkg import spec as bead_spec
 from .. import repos
 from ..tech.timestamp import time_from_timestamp

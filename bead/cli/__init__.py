@@ -3,16 +3,21 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import appdirs
 import sys
 
-from .commands.cmdparse import Parser, Command
-from . import commands
-from . import PACKAGE, VERSION
+import appdirs
+from .cmdparse import Parser, Command
+
+from . import workspace
+from . import input
+from . import repo
+
+PACKAGE = __name__
+VERSION = '0.0.1'
 
 
 def initialize_env(config_dir):
-    from . import repos
+    from .. import repos
     repos.initialize(config_dir)
 
 
@@ -30,61 +35,62 @@ def make_argument_parser():
     (parser
         .commands(
             'new',
-            commands.workspace.CmdNew,
+            workspace.CmdNew,
             'Create and initialize new workspace directory with a new bead.',
 
             'develop',
-            commands.workspace.CmdDevelop,
+            workspace.CmdDevelop,
             'Create workspace from specified bead.',
 
             'save',
-            commands.workspace.CmdSave,
+            workspace.CmdSave,
             'Save workspace in a repository.',
 
             'status',
-            commands.workspace.CmdStatus,
+            workspace.CmdStatus,
             'Show workspace information.',
 
             'nuke',
-            commands.workspace.CmdNuke,
+            workspace.CmdNuke,
             'Delete workspace.',
 
             'version',
             CmdVersion,
             'Show program version.'))
+
     (parser
         .group('input', 'Manage data loaded from other beads')
         .commands(
             # named('unload')(unload_input),
             'add',
-            commands.input.CmdAdd,
+            input.CmdAdd,
             'Define dependency and load its data.',
 
             'delete',
-            commands.input.CmdDelete,
+            input.CmdDelete,
             'Forget all about an input.',
 
             'update',
-            commands.input.CmdUpdate,
+            input.CmdUpdate,
             'Update input[s] to newest version or defined bead.',
 
             'load',
-            commands.input.CmdLoad,
+            input.CmdLoad,
             'Load data from already defined dependency.',))
 
     (parser
         .group('repo', 'Manage bead repositories')
         .commands(
             'add',
-            commands.repo.CmdAdd,
+            repo.CmdAdd,
             'Define a repository.',
 
             'list',
-            commands.repo.CmdList,
+            repo.CmdList,
             'Show known repositories.',
 
             'forget',
-            commands.repo.CmdForget,
+            repo.CmdForget,
             'Forget a known repository.'))
 
     return parser
