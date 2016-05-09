@@ -9,8 +9,6 @@ from fnmatch import fnmatch
 # QUERY_ORDER:
 NEWEST_FIRST = 'newest_first'
 OLDEST_FIRST = 'oldest_first'
-# XXX - is there any practical use for this?
-# UNSORTED     = 'unsorted'
 
 # QUERY_WHERE:
 OLDER_THAN     = 'OLDER_THAN'

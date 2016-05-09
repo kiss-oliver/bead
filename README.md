@@ -97,7 +97,6 @@ Updated by script, text in this section and afterwards will be overwritten
 - [# FIXME: Repository.find_beads dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/renames/bead/repos.py#L161)
 - [# FIXME: Repository.find_names dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/renames/bead/repos.py#L190)
 - [# FIXME: move get_bead to Environment.get_bead](https://github.com/e3krisztian/bead/blob/renames/bead/repos.py#L258)
-- [# XXX - is there any practical use for this?](https://github.com/e3krisztian/bead/blob/renames/bead/spec.py#L12)
-- [# TODO: support shortened content hashes](https://github.com/e3krisztian/bead/blob/renames/bead/spec.py#L21)
+- [# TODO: support shortened content hashes](https://github.com/e3krisztian/bead/blob/renames/bead/spec.py#L19)
 - [# TODO: add tests for timestamps, parse_iso8601, parse_timedelta](https://github.com/e3krisztian/bead/blob/renames/bead/tech/timestamp.py#L232)
 - [# FIXME: add zip comment with pointers to this software](https://github.com/e3krisztian/bead/blob/renames/bead/workspace.py#L189)
