@@ -26,7 +26,7 @@ class Test_shared_repo(TestCase):
     def bead(self, timestamp):
         tmp = self.new_temp_dir()
         ws = Workspace(tmp / 'ws')
-        ws.create('pkg-uuid')
+        ws.create('bead-uuid')
         bead_archive = tmp / 'bead.zip'
         ws.pack(bead_archive, timestamp)
         return bead_archive
@@ -43,33 +43,33 @@ class Test_shared_repo(TestCase):
 
     # tests
     def test_update(self, alice, bob, bead):
-        bob.cli('new', 'bobpkg')
-        bob.cd('bobpkg')
-        bob.cli('input', 'add', 'alicepkg1', bead)
-        bob.cli('input', 'add', 'alicepkg2', bead)
+        bob.cli('new', 'bobbead')
+        bob.cd('bobbead')
+        bob.cli('input', 'add', 'alicebead1', bead)
+        bob.cli('input', 'add', 'alicebead2', bead)
 
-        alice.cli('develop', bead, 'alicepkg')
-        alice.cd('alicepkg')
+        alice.cli('develop', bead, 'alicebead')
+        alice.cd('alicebead')
         alice.write_file('output/datafile', '''Alice's new data''')
         alice.cli('save')
 
         # update only one input
-        bob.cli('input', 'update', 'alicepkg1')
+        bob.cli('input', 'update', 'alicebead1')
 
         self.assertThat(
-            bob.cwd / 'input/alicepkg1/datafile',
+            bob.cwd / 'input/alicebead1/datafile',
             FileContains('''Alice's new data'''))
 
         # second input directory not changed
         self.assertThat(
-            bob.cwd / 'input/alicepkg2/datafile',
+            bob.cwd / 'input/alicebead2/datafile',
             Not(FileExists()))
 
         # update all inputs
         bob.cli('input', 'update')
 
         self.assertThat(
-            bob.cwd / 'input/alicepkg2/datafile',
+            bob.cwd / 'input/alicebead2/datafile',
             FileContains('''Alice's new data'''))
 
 

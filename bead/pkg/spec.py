@@ -27,28 +27,28 @@ CONTENT_HASH   = 'CONTENT_HASH'
 
 def _make_checkers():
     def is_newer_than(timestamp):
-        def filter(pkg):
-            return pkg.timestamp > timestamp
+        def filter(bead):
+            return bead.timestamp > timestamp
         return filter
 
     def is_older_than(timestamp):
-        def filter(pkg):
-            return pkg.timestamp < timestamp
+        def filter(bead):
+            return bead.timestamp < timestamp
         return filter
 
     def has_name_glob(nameglob):
-        def filter(pkg):
-            return fnmatch(pkg.name, nameglob)
+        def filter(bead):
+            return fnmatch(bead.name, nameglob)
         return filter
 
     def has_uuid(bead_uuid):
-        def filter(pkg):
-            return pkg.bead_uuid == bead_uuid
+        def filter(bead):
+            return bead.bead_uuid == bead_uuid
         return filter
 
     def has_content_prefix(hash_prefix):
-        def filter(pkg):
-            return pkg.content_hash.startswith(hash_prefix)
+        def filter(bead):
+            return bead.content_hash.startswith(hash_prefix)
         return filter
 
     return {
@@ -68,9 +68,9 @@ def compile_conditions(conditions):
     '''
     checkers = [_CHECKERS[check](param) for check, param in conditions]
 
-    def match(pkg):
+    def match(bead):
         for check in checkers:
-            if not check(pkg):
+            if not check(bead):
                 return False
         return True
     return match

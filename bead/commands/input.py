@@ -13,7 +13,7 @@ from ..commands.common import (
     die, warning
 )
 from ..commands.common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
-from ..pkg import spec as pkg_spec
+from ..pkg import spec as bead_spec
 from .. import repos
 from ..tech.timestamp import time_from_timestamp
 
@@ -136,8 +136,8 @@ def _update(workspace, input, bead_ref=NEWEST_VERSION):
     if bead_ref is NEWEST_VERSION:
         # FIXME: input._update
         query = [
-            (pkg_spec.BEAD_UUID, input.bead_uuid),
-            (pkg_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
+            (bead_spec.BEAD_UUID, input.bead_uuid),
+            (bead_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
         bead_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())
 

@@ -9,7 +9,7 @@ from testtools.matchers import Contains
 from . import fixtures
 from collections import namedtuple
 from .. import repos
-from ..pkg import spec as pkg_spec
+from ..pkg import spec as bead_spec
 from ..pkg.workspace import Workspace
 
 
@@ -20,8 +20,8 @@ class Test(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stderr, Contains('ERROR'))
 
     def test_on_success_there_is_feedback(self, robot, repo):
-        robot.cli('new', 'pkg')
-        robot.cd('pkg')
+        robot.cli('new', 'bead')
+        robot.cd('bead')
         robot.cli('save')
         self.assertNotEquals(
             robot.stdout, '', 'Expected some feedback, but got none :(')
@@ -35,17 +35,17 @@ class Test_no_repo(TestCase):
 
     # tests
     def test_missing_repo_causes_error(self, robot):
-        robot.cli('new', 'pkg')
-        self.assertRaises(SystemExit, robot.cli, 'save', 'pkg')
+        robot.cli('new', 'bead')
+        self.assertRaises(SystemExit, robot.cli, 'save', 'bead')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
 
 Repo = namedtuple('Repo', 'name directory')
 
 
-def bead_count(robot, repo, pkg_uuid):
+def bead_count(robot, repo, bead_uuid):
     with robot.environment:
-        query = [(pkg_spec.BEAD_UUID, pkg_uuid)]
+        query = [(bead_spec.BEAD_UUID, bead_uuid)]
         return sum(1 for _ in repos.get(repo.name).find_beads(query))
 
 
@@ -67,24 +67,24 @@ class Test_more_than_one_repos(TestCase):
 
     # tests
     def test_save_dies_without_explicit_repo(self, robot, repo1, repo2):
-        robot.cli('new', 'pkg')
-        self.assertRaises(SystemExit, robot.cli, 'save', 'pkg')
+        robot.cli('new', 'bead')
+        self.assertRaises(SystemExit, robot.cli, 'save', 'bead')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
     def test_save_stores_bead_in_specified_repo(self, robot, repo1, repo2):
-        robot.cli('new', 'pkg')
-        robot.cli('save', repo1.name, '--workspace=pkg')
+        robot.cli('new', 'bead')
+        robot.cli('save', repo1.name, '--workspace=bead')
         with robot.environment:
-            pkg_uuid = Workspace('pkg').bead_uuid
-        self.assertEquals(1, bead_count(robot, repo1, pkg_uuid))
-        self.assertEquals(0, bead_count(robot, repo2, pkg_uuid))
-        robot.cli('save', repo2.name, '-w', 'pkg')
-        self.assertEquals(1, bead_count(robot, repo1, pkg_uuid))
-        self.assertEquals(1, bead_count(robot, repo2, pkg_uuid))
+            bead_uuid = Workspace('bead').bead_uuid
+        self.assertEquals(1, bead_count(robot, repo1, bead_uuid))
+        self.assertEquals(0, bead_count(robot, repo2, bead_uuid))
+        robot.cli('save', repo2.name, '-w', 'bead')
+        self.assertEquals(1, bead_count(robot, repo1, bead_uuid))
+        self.assertEquals(1, bead_count(robot, repo2, bead_uuid))
 
     def test_invalid_repo_specified(self, robot, repo1, repo2):
-        robot.cli('new', 'pkg')
+        robot.cli('new', 'bead')
         self.assertRaises(
             SystemExit,
-            robot.cli, 'save', 'unknown-repo', '--workspace', 'pkg')
+            robot.cli, 'save', 'unknown-repo', '--workspace', 'bead')
         self.assertThat(robot.stderr, Contains('ERROR'))

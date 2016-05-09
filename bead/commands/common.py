@@ -7,7 +7,7 @@ import os
 import sys
 
 from ..pkg.workspace import Workspace, CurrentDirWorkspace
-from ..pkg import spec as pkg_spec
+from ..pkg import spec as bead_spec
 from ..pkg.archive import Archive
 from .. import repos
 from . import arg_help
@@ -85,12 +85,12 @@ def bead_spec_kwargs(parser):
     # bead_filters
     BEAD_QUERY = 'bead_query'
     arg('-o', '--older', '--older-than', dest=BEAD_QUERY,
-        metavar='TIMEDEF', type=tag(pkg_spec.OLDER_THAN, _parse_time))
+        metavar='TIMEDEF', type=tag(bead_spec.OLDER_THAN, _parse_time))
     arg('-n', '--newer', '--newer-than', dest=BEAD_QUERY,
-        metavar='TIMEDEF', type=tag(pkg_spec.NEWER_THAN, _parse_time))
+        metavar='TIMEDEF', type=tag(bead_spec.NEWER_THAN, _parse_time))
     arg('--start-of-name', dest=BEAD_QUERY,
         metavar='START-OF-BEAD-NAME',
-        type=tag(pkg_spec.BEAD_NAME_GLOB, _parse_start_of_name))
+        type=tag(bead_spec.BEAD_NAME_GLOB, _parse_start_of_name))
 
     # match reducers
     # -N, --next
@@ -125,10 +125,10 @@ class RepoQueryReference(BeadReference):
         self.workspace_name = workspace_name
         self.query = query
         if index < 0:
-            self.order = pkg_spec.NEWEST_FIRST
+            self.order = bead_spec.NEWEST_FIRST
             self.limit = -index
         else:
-            self.order = pkg_spec.OLDEST_FIRST
+            self.order = bead_spec.OLDEST_FIRST
             self.limit = index + 1
         self.repositories = list(repositories)
 
@@ -155,7 +155,7 @@ def get_bead_ref(bead_name, bead_query):
     query = list(bead_query or [])
 
     if bead_name:
-        query = [(pkg_spec.BEAD_NAME_GLOB, bead_name)] + query
+        query = [(bead_spec.BEAD_NAME_GLOB, bead_name)] + query
 
     # TODO: calculate and add index parameter (--next, --prev)
     return RepoQueryReference(bead_name, query, repos.env.get_repos())

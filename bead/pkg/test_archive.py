@@ -55,8 +55,8 @@ class Test_Archive(TestCase):
 
     def when_file1_is_extracted(self):
         self.__extractedfile = self.new_temp_dir() / 'extracted_file'
-        pkg = m.Archive(self.__bead)
-        pkg.extract_file('path/to/file1', self.__extractedfile)
+        bead = m.Archive(self.__bead)
+        bead.extract_file('path/to/file1', self.__extractedfile)
 
     def then_file1_has_the_expected_content(self):
         with open(self.__extractedfile, 'rb') as f:
@@ -64,8 +64,8 @@ class Test_Archive(TestCase):
 
     def when_a_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'
-        pkg = m.Archive(self.__bead)
-        pkg.extract_dir('path/to', self.__extracteddir)
+        bead = m.Archive(self.__bead)
+        bead.extract_dir('path/to', self.__extracteddir)
         self.__extractedfile = os.path.join(self.__extracteddir, 'file1')
 
     def then_directory_has_the_expected_files(self):
@@ -75,16 +75,16 @@ class Test_Archive(TestCase):
         )
 
     def when_content_hash_is_checked(self):
-        pkg = m.Archive(self.__bead)
-        self.__content_hash = pkg.content_hash
+        bead = m.Archive(self.__bead)
+        self.__content_hash = bead.content_hash
 
     def then_content_hash_is_a_string(self):
         self.assertIsInstance(self.__content_hash, ''.__class__)
 
     def when_a_nonexistent_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'
-        pkg = m.Archive(self.__bead)
-        pkg.extract_dir('path/to/nonexistent', self.__extracteddir)
+        bead = m.Archive(self.__bead)
+        bead.extract_dir('path/to/nonexistent', self.__extracteddir)
 
     def then_an_empty_directory_is_created(self):
         self.assertTrue(os.path.isdir(self.__extracteddir))

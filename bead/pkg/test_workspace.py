@@ -27,7 +27,7 @@ class Test_create(TestCase):
     def test_valid(self):
         self.given_an_empty_directory()
         self.when_initialized()
-        self.then_directory_is_a_valid_pkg_dir()
+        self.then_directory_is_a_valid_bead_dir()
 
     def test_has_no_inputs(self):
         self.given_an_empty_directory()
@@ -53,12 +53,12 @@ class Test_create(TestCase):
     def when_initialized(self):
         self.workspace.create(A_BEAD_UUID)
 
-    def then_directory_is_a_valid_pkg_dir(self):
+    def then_directory_is_a_valid_bead_dir(self):
         self.assertTrue(self.workspace.is_valid)
 
     def then_workspace_has_no_inputs(self):
-        self.assertFalse(self.workspace.has_input('pkg1'))
-        self.assertFalse(self.workspace.is_loaded('pkg1'))
+        self.assertFalse(self.workspace.has_input('bead1'))
+        self.assertFalse(self.workspace.is_loaded('bead1'))
         self.assertFalse(self.workspace.inputs)
 
     def then_workspace_has_the_specified_uuid(self):
@@ -113,7 +113,7 @@ class Test_pack(TestCase):
 
     def when_archived(self):
         self.__zipdir = self.new_temp_dir()
-        self.__zipfile = self.__zipdir / 'pkg.zip'
+        self.__zipfile = self.__zipdir / 'bead.zip'
         self.workspace.pack(self.__zipfile, timestamp())
 
     def then_archive_contains_files_from_bead_directory(self):
@@ -129,8 +129,8 @@ class Test_pack(TestCase):
         self.assertIn(l.CHECKSUMS, files)
 
     def then_archive_is_valid_bead(self):
-        pkg = Archive(self.__zipfile)
-        self.assertTrue(pkg.is_valid)
+        bead = Archive(self.__zipfile)
+        self.assertTrue(bead.is_valid)
 
     def then_archive_does_not_contain_workspace_meta_and_temp_files(self):
         def does_not_contain(workspace_path):
@@ -149,8 +149,8 @@ class Test_pack_stability(TestCase):
 
         # note: it is important to create the same bead in
         # two different directories
-        def make_pkg():
-            output = self.new_temp_dir() / 'pkg.zip'
+        def make_bead():
+            output = self.new_temp_dir() / 'bead.zip'
             ws = m.Workspace(self.new_temp_dir() / 'a bead')
             ws.create(A_BEAD_UUID)
             write_file(ws.directory / 'source1', 'code to produce output')
@@ -158,9 +158,9 @@ class Test_pack_stability(TestCase):
             ws.pack(output, TS)
             return Archive(output)
 
-        pkg1 = make_pkg()
-        pkg2 = make_pkg()
-        self.assertEquals(pkg1.content_hash, pkg2.content_hash)
+        bead1 = make_bead()
+        bead2 = make_bead()
+        self.assertEquals(bead1.content_hash, bead2.content_hash)
 
 
 def make_bead(path, filespecs):
@@ -207,35 +207,35 @@ class Test_load(TestCase):
         self.workspace.create(A_BEAD_UUID)
 
     def _load_a_bead(self, input_nick):
-        path_of_pkg_to_load = self.new_temp_dir() / 'pkg.zip'
+        path_of_bead_to_load = self.new_temp_dir() / 'bead.zip'
         make_bead(
-            path_of_pkg_to_load,
+            path_of_bead_to_load,
             {
                 'output/output1':
                 'data for {}'.format(input_nick).encode('utf-8')
             }
         )
-        self.workspace.load(input_nick, Archive(path_of_pkg_to_load))
+        self.workspace.load(input_nick, Archive(path_of_bead_to_load))
 
     def when_loading_a_bead(self):
-        self._load_a_bead('pkg1')
+        self._load_a_bead('bead1')
 
     def then_data_files_in_bead_are_available_in_workspace(self):
-        with open(self.__workspace_dir / 'input/pkg1/output1', 'rb') as f:
-            self.assertEquals(b'data for pkg1', f.read())
+        with open(self.__workspace_dir / 'input/bead1/output1', 'rb') as f:
+            self.assertEquals(b'data for bead1', f.read())
 
     def then_extracted_files_under_input_are_readonly(self):
-        root = self.__workspace_dir / 'input/pkg1'
+        root = self.__workspace_dir / 'input/bead1'
         self.assertTrue(os.path.exists(root))
         self.assertRaises(IOError, open, root / 'output1', 'ab')
         self.assertRaises(IOError, open, root / 'new-file', 'wb')
 
     def then_input_info_is_added_to_bead_meta(self):
-        self.assertTrue(self.workspace.has_input('pkg1'))
-        self.assertTrue(self.workspace.is_loaded('pkg1'))
+        self.assertTrue(self.workspace.has_input('bead1'))
+        self.assertTrue(self.workspace.is_loaded('bead1'))
 
     def then_another_bead_can_be_loaded(self):
-        self._load_a_bead('pkg2')
+        self._load_a_bead('bead2')
 
 
 def unzip(archive_path, directory):

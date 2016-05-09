@@ -33,10 +33,10 @@ def bead_name_from_file_path(path):
     return name
 
 
-assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3.zip')
-assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3_20150923.zip')
-assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3_20150923T010203012345+0200.zip')
-assert 'pkg-2015v3' == bead_name_from_file_path('pkg-2015v3_20150923T010203012345-0200.zip')
+assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3.zip')
+assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923.zip')
+assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012345+0200.zip')
+assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012345-0200.zip')
 
 
 class Archive(Bead):
@@ -96,8 +96,8 @@ class Archive(Bead):
     def _bead_creation_time_is_in_the_past(self):
         read_time = timestamp.time_from_timestamp
         now = read_time(timestamp.timestamp())
-        pkgtime = read_time(self.meta[meta.FREEZE_TIME])
-        return pkgtime < now
+        beadtime = read_time(self.meta[meta.FREEZE_TIME])
+        return beadtime < now
 
     @__zipfile_user
     def _extra_file(self):

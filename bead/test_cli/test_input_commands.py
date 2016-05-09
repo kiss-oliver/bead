@@ -21,23 +21,23 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
     # tests
 
     @skip('bead version')
-    def test_basic_usage(self, robot, pkg_with_history):
-        # nextpkg with input1 as datapkg1
-        robot.cli('new', 'nextpkg')
-        robot.cd('nextpkg')
-        robot.cli('input', 'add', 'input1', 'pkg_with_history@' + fixtures.TS1)
+    def test_basic_usage(self, robot, bead_with_history):
+        # nextbead with input1 as databead1
+        robot.cli('new', 'nextbead')
+        robot.cd('nextbead')
+        robot.cli('input', 'add', 'input1', 'bead_with_history@' + fixtures.TS1)
         robot.cli('save')
         robot.cd('..')
-        robot.cli('nuke', 'nextpkg')
+        robot.cli('nuke', 'nextbead')
 
-        robot.cli('develop', 'nextpkg')
-        robot.cd('nextpkg')
+        robot.cli('develop', 'nextbead')
+        robot.cd('nextbead')
         assert not os.path.exists(robot.cwd / 'input/input1')
 
         robot.cli('input', 'load')
         assert os.path.exists(robot.cwd / 'input/input1')
 
-        robot.cli('input', 'add', 'input2', 'pkg_with_history')
+        robot.cli('input', 'add', 'input2', 'bead_with_history')
         assert os.path.exists(robot.cwd / 'input/input2')
 
         robot.cli('input', 'delete', 'input1')
@@ -49,31 +49,31 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cli('status')
 
     def test_update_unloaded_input_with_explicit_bead(
-            self, robot, pkg_with_inputs, pkg_a, pkg_b):
-        robot.cli('develop', pkg_with_inputs)
-        robot.cd(pkg_with_inputs)
+            self, robot, bead_with_inputs, bead_a, bead_b):
+        robot.cli('develop', bead_with_inputs)
+        robot.cd(bead_with_inputs)
 
         assert not Workspace(robot.cwd).is_loaded('input_b')
 
-        robot.cli('input', 'update', 'input_b', pkg_a)
-        self.assert_loaded(robot, 'input_b', pkg_a)
+        robot.cli('input', 'update', 'input_b', bead_a)
+        self.assert_loaded(robot, 'input_b', bead_a)
 
         robot.cli('status')
-        self.assertThat(robot.stdout, Not(Contains(pkg_b)))
+        self.assertThat(robot.stdout, Not(Contains(bead_b)))
 
     def test_load_on_workspace_without_input_gives_feedback(
-            self, robot, pkg_a):
-        robot.cli('develop', pkg_a)
-        robot.cd(pkg_a)
+            self, robot, bead_a):
+        robot.cli('develop', bead_a)
+        robot.cd(bead_a)
         robot.cli('input', 'load')
 
         self.assertThat(robot.stderr, Contains('WARNING'))
         self.assertThat(robot.stderr, Contains('No inputs defined to load.'))
 
     def test_load_with_missing_bead_gives_warning(
-            self, robot, pkg_with_inputs, pkg_a):
-        robot.cli('develop', pkg_with_inputs)
-        robot.cd(pkg_with_inputs)
+            self, robot, bead_with_inputs, bead_a):
+        robot.cli('develop', bead_with_inputs)
+        robot.cd(bead_with_inputs)
         robot.reset()
         robot.cli('input', 'load')
         self.assertThat(robot.stderr, Contains('WARNING'))
@@ -81,26 +81,26 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stderr, Contains('input_b'))
 
     def test_load_only_one_input(
-            self, robot, pkg_with_inputs, pkg_a):
-        robot.cli('develop', pkg_with_inputs)
-        robot.cd(pkg_with_inputs)
+            self, robot, bead_with_inputs, bead_a):
+        robot.cli('develop', bead_with_inputs)
+        robot.cd(bead_with_inputs)
         robot.cli('input', 'load', 'input_a')
-        self.assert_loaded(robot, 'input_a', pkg_a)
+        self.assert_loaded(robot, 'input_a', bead_a)
         with robot.environment:
             self.assertFalse(Workspace('.').is_loaded('input_b'))
 
-    def test_partially_deleted_repo(self, robot, pkg_with_inputs):
+    def test_partially_deleted_repo(self, robot, bead_with_inputs):
         deleted_repo = self.new_temp_dir()
         robot.cli('repo', 'add', 'missing', deleted_repo)
         os.rmdir(deleted_repo)
-        robot.cli('develop', pkg_with_inputs)
-        robot.cd(pkg_with_inputs)
+        robot.cli('develop', bead_with_inputs)
+        robot.cd(bead_with_inputs)
         robot.cli('input', 'load')
 
     def test_add_with_unrecognized_bead_name_exits_with_error(
-            self, robot, pkg_a):
-        robot.cli('develop', pkg_a)
-        robot.cd(pkg_a)
+            self, robot, bead_a):
+        robot.cli('develop', bead_a)
+        robot.cd(bead_a)
         try:
             robot.cli('input', 'add', 'x', 'non-existing-bead')
             self.fail('Expected an error exit!')
@@ -109,20 +109,20 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
             self.assertThat(robot.stderr, Contains('non-existing-bead'))
 
     def test_add_with_hacked_bead_is_refused(
-            self, robot, hacked_pkg, pkg_a):
-        robot.cli('develop', pkg_a)
-        robot.cd(pkg_a)
-        robot.cli('input', 'add', 'hack', hacked_pkg)
+            self, robot, hacked_bead, bead_a):
+        robot.cli('develop', bead_a)
+        robot.cd(bead_a)
+        robot.cli('input', 'add', 'hack', hacked_bead)
         self.assertFalse(Workspace(robot.cwd).has_input('hack'))
         self.assertThat(robot.stderr, Contains('WARNING'))
 
     def test_update_with_hacked_bead_is_refused(
-            self, robot, hacked_pkg, pkg_a):
-        robot.cli('develop', pkg_a)
-        robot.cd(pkg_a)
-        robot.cli('input', 'add', 'intelligence', pkg_a)
-        robot.cli('input', 'update', 'intelligence', hacked_pkg)
+            self, robot, hacked_bead, bead_a):
+        robot.cli('develop', bead_a)
+        robot.cd(bead_a)
+        robot.cli('input', 'add', 'intelligence', bead_a)
+        robot.cli('input', 'update', 'intelligence', hacked_bead)
         self.assertThat(
             robot.cwd / 'input/intelligence/README',
-            FileContains(pkg_a))
+            FileContains(bead_a))
         self.assertThat(robot.stderr, Contains('WARNING'))

@@ -61,30 +61,30 @@ class RobotAndBeads(object):
         for name in inputs:
             robot.cli('input', 'add', name, inputs[name])
 
-    def pkg_a(self, robot, beads):
-        return self._new_bead(robot, beads, 'pkg_a')
+    def bead_a(self, robot, beads):
+        return self._new_bead(robot, beads, 'bead_a')
 
-    def pkg_b(self, robot, beads):
-        return self._new_bead(robot, beads, 'pkg_b')
+    def bead_b(self, robot, beads):
+        return self._new_bead(robot, beads, 'bead_b')
 
-    def hacked_pkg(self, robot, beads):
-        hacked_pkg_path = self.new_temp_dir() / 'hacked_pkg.zip'
-        workspace_dir = self.new_temp_dir() / 'hacked_pkg'
+    def hacked_bead(self, robot, beads):
+        hacked_bead_path = self.new_temp_dir() / 'hacked_bead.zip'
+        workspace_dir = self.new_temp_dir() / 'hacked_bead'
         ws = Workspace(workspace_dir)
         ws.create('hacked-uuid')
         tech.fs.write_file(ws.directory / 'code', 'code')
         tech.fs.write_file(ws.directory / 'output/README', 'README')
-        ws.pack(hacked_pkg_path, TS1)
-        with zipfile.ZipFile(hacked_pkg_path, 'a') as z:
+        ws.pack(hacked_bead_path, TS1)
+        with zipfile.ZipFile(hacked_bead_path, 'a') as z:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
                 # this would cause a warning from zipfile for duplicate
                 # name in zip file (which is perfectly valid, though hacky)
                 z.writestr(layouts.Archive.CODE / 'code', 'HACKED')
                 z.writestr(layouts.Archive.DATA / 'README', 'HACKED')
-        return hacked_pkg_path
+        return hacked_bead_path
 
-    def _pkg_with_history(self, robot, repo, bead_name, bead_uuid):
+    def _bead_with_history(self, robot, repo, bead_name, bead_uuid):
         def make_bead(timestamp):
             with TempDir() as tempdir_obj:
                 workspace_dir = os.path.join(tempdir_obj.path, bead_name)
@@ -100,10 +100,10 @@ class RobotAndBeads(object):
             make_bead(TS2)
         return bead_name
 
-    def pkg_with_history(self, robot, repo):
-        return self._pkg_with_history(
-            robot, repo, 'pkg_with_history', 'UUID:pkg_with_history')
+    def bead_with_history(self, robot, repo):
+        return self._bead_with_history(
+            robot, repo, 'bead_with_history', 'UUID:bead_with_history')
 
-    def pkg_with_inputs(self, robot, beads, pkg_a, pkg_b):
-        inputs = dict(input_a=pkg_a, input_b=pkg_b)
-        return self._new_bead(robot, beads, 'pkg_with_inputs', inputs)
+    def bead_with_inputs(self, robot, beads, bead_a, bead_b):
+        inputs = dict(input_a=bead_a, input_b=bead_b)
+        return self._new_bead(robot, beads, 'bead_with_inputs', inputs)

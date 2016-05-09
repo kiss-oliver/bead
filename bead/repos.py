@@ -15,7 +15,7 @@ from glob import iglob
 import os
 
 from .pkg.archive import Archive
-from .pkg import spec as pkg_spec
+from .pkg import spec as bead_spec
 from .tech import persistence
 from .tech.timestamp import time_from_timestamp
 from .import tech
@@ -93,23 +93,23 @@ class _LessIsLess(_Wrapper):
         return self.wrapped.timestamp < other.wrapped.timestamp
 
 
-def order_and_limit_beads(beads, order=pkg_spec.NEWEST_FIRST, limit=None):
+def order_and_limit_beads(beads, order=bead_spec.NEWEST_FIRST, limit=None):
     '''
     Order beads by timestamps and keep only the closest ones.
     '''
     # wrap beads so that they can be compared by timestamps
     compare_wrap = {
-        pkg_spec.NEWEST_FIRST: _MoreIsLess,
-        pkg_spec.OLDEST_FIRST: _LessIsLess,
+        bead_spec.NEWEST_FIRST: _MoreIsLess,
+        bead_spec.OLDEST_FIRST: _LessIsLess,
     }[order]
-    comparable_beads = (compare_wrap(pkg) for pkg in beads)
+    comparable_beads = (compare_wrap(bead) for bead in beads)
 
     if limit:
         # assume we have lots of beads, so do it with memory limited
         # XXX: heapq might be faster a bit?
         wrapped_results = []
-        for pkg in comparable_beads:
-            bisect.insort_right(wrapped_results, pkg)
+        for bead in comparable_beads:
+            bisect.insort_right(wrapped_results, bead)
             if len(wrapped_results) > limit:
                 del wrapped_results[limit]
     else:
@@ -135,7 +135,7 @@ class Repository(object):
         '''
         return Path(self.location)
 
-    def find_beads(self, conditions, order=pkg_spec.NEWEST_FIRST, limit=None):
+    def find_beads(self, conditions, order=bead_spec.NEWEST_FIRST, limit=None):
         '''
         Retrieve matching beads.
 
@@ -143,14 +143,14 @@ class Repository(object):
         potentially on another machine, so it might be faster to restrict
         the results here and not send the whole list over the network.
         '''
-        match = pkg_spec.compile_conditions(conditions)
+        match = bead_spec.compile_conditions(conditions)
 
         # FUTURE IMPLEMENTATIONS: check for bead_uuid & content hash
         # they are good candidates for indexing
         bead_name_globs = [
             value
             for tag, value in conditions
-            if tag == pkg_spec.BEAD_NAME_GLOB]
+            if tag == bead_spec.BEAD_NAME_GLOB]
         if bead_name_globs:
             glob = bead_name_globs[0] + '*'
         else:
@@ -160,7 +160,7 @@ class Repository(object):
         paths = iglob(self.directory / glob)
         # FIXME: Repository.find_beads dies on non bead in the directory
         beads = (Archive(path, self.name) for path in paths)
-        candidates = (pkg for pkg in beads if match(pkg))
+        candidates = (bead for bead in beads if match(bead))
 
         # FUTURE IMPLEMENTATIONS: can there be more than one valid match?
         return order_and_limit_beads(candidates, order, limit)
@@ -189,31 +189,31 @@ class Repository(object):
         paths = (self.directory / fname for fname in os.listdir(self.directory))
         # FIXME: Repository.find_names dies on non bead in the directory
         beads = (Archive(path, self.name) for path in paths)
-        candidates = (pkg for pkg in beads if pkg.bead_uuid == bead_uuid)
+        candidates = (bead for bead in beads if bead.bead_uuid == bead_uuid)
 
         exact_match          = None
         best_guess           = None
         best_guess_timestamp = None
         best_guess_timedelta = None
         names                = set()
-        for pkg in candidates:
-            if pkg.content_hash == content_hash:
-                exact_match = pkg.name
+        for bead in candidates:
+            if bead.content_hash == content_hash:
+                exact_match = bead.name
             #
-            pkg_timestamp = time_from_timestamp(pkg.timestamp_str)
-            pkg_timedelta = pkg_timestamp - timestamp
-            if pkg_timedelta < timedelta():
-                pkg_timedelta = -pkg_timedelta
+            bead_timestamp = time_from_timestamp(bead.timestamp_str)
+            bead_timedelta = bead_timestamp - timestamp
+            if bead_timedelta < timedelta():
+                bead_timedelta = -bead_timedelta
             if (
                 (best_guess_timedelta is None) or
-                (pkg_timedelta < best_guess_timedelta) or
-                (pkg_timedelta == best_guess_timedelta and pkg_timestamp > best_guess_timestamp)
+                (bead_timedelta < best_guess_timedelta) or
+                (bead_timedelta == best_guess_timedelta and bead_timestamp > best_guess_timestamp)
             ):
-                best_guess = pkg.name
-                best_guess_timestamp = pkg_timestamp
-                best_guess_timedelta = pkg_timedelta
+                best_guess = bead.name
+                best_guess_timestamp = bead_timestamp
+                best_guess_timedelta = bead_timedelta
             #
-            names.add(pkg.name)
+            names.add(bead.name)
 
         return exact_match, best_guess, best_guess_timestamp, names
 
@@ -257,7 +257,7 @@ def forget(name):
 
 # FIXME: move get_bead to Environment.get_bead
 def get_bead(bead_uuid, content_hash):
-    query = ((pkg_spec.BEAD_UUID, bead_uuid), (pkg_spec.CONTENT_HASH, content_hash))
+    query = ((bead_spec.BEAD_UUID, bead_uuid), (bead_spec.CONTENT_HASH, content_hash))
     for repo in env.get_repos():
         for bead in repo.find_beads(query):
             return bead
