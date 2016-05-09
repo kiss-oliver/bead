@@ -9,7 +9,7 @@ from __future__ import print_function
 
 
 import bisect
-from datetime import timedelta
+from datetime import datetime, timedelta
 import functools
 from glob import iglob
 import os
@@ -176,20 +176,20 @@ class Repository(object):
         workspace.pack(zipfilename, timestamp=timestamp)
         return Archive(zipfilename)
 
-    def find_names(self, package_uuid, version_hash, timestamp):
+    def find_names(self, bead_uuid, content_hash, timestamp):
         '''
         -> (exact_match, best_guess, best_guess_timestamp, names)
         where
-            exact_match          = name (package_uuid & version_hash matched)
-            best_guess           = name (package_uuid matched, timestamp is closest to input's)
+            exact_match          = name (bead_uuid & content_hash matched)
+            best_guess           = name (bead_uuid matched, timestamp is closest to input's)
             best_guess_timestamp = timestamp ()
-            names                = sequence of names (package_uuid matched)
+            names                = sequence of names (bead_uuid matched)
         '''
-        assert isinstance
+        assert isinstance(timestamp, datetime)
         paths = (self.directory / fname for fname in os.listdir(self.directory))
         # FIXME: Repository.find_names dies on non package in the directory
         packages = (Archive(path, self.name) for path in paths)
-        candidates = (pkg for pkg in packages if pkg.uuid == package_uuid)
+        candidates = (pkg for pkg in packages if pkg.uuid == bead_uuid)
 
         exact_match          = None
         best_guess           = None
@@ -197,7 +197,7 @@ class Repository(object):
         best_guess_timedelta = None
         names                = set()
         for pkg in candidates:
-            if pkg.version == version_hash:
+            if pkg.version == content_hash:
                 exact_match = pkg.name
             #
             pkg_timestamp = time_from_timestamp(pkg.timestamp_str)
@@ -256,9 +256,9 @@ def forget(name):
 
 
 # FIXME: move get_package to Environment.get_package
-def get_package(uuid, version):
-    query = ((pkg_spec.PACKAGE_UUID, uuid), (pkg_spec.CONTENT_HASH, version))
+def get_package(bead_uuid, content_hash):
+    query = ((pkg_spec.PACKAGE_UUID, bead_uuid), (pkg_spec.CONTENT_HASH, content_hash))
     for repo in env.get_repos():
         for package in repo.find_packages(query):
             return package
-    raise LookupError('Package {} {} not found'.format(uuid, version))
+    raise LookupError('Package {} {} not found'.format(bead_uuid, content_hash))
