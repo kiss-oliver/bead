@@ -144,7 +144,7 @@ class Test_pack(TestCase):
 
 class Test_pack_stability(TestCase):
 
-    def test_directory_name_data_and_timestamp_determines_versions(self):
+    def test_directory_name_data_and_timestamp_determines_content_hashs(self):
         TS = '20150910T093724802366+0200'
 
         # note: it is important to create the same package in
@@ -160,7 +160,7 @@ class Test_pack_stability(TestCase):
 
         pkg1 = make_pkg()
         pkg2 = make_pkg()
-        self.assertEquals(pkg1.version, pkg2.version)
+        self.assertEquals(pkg1.content_hash, pkg2.content_hash)
 
 
 def make_package(path, filespecs):

@@ -197,7 +197,7 @@ class Repository(object):
         best_guess_timedelta = None
         names                = set()
         for pkg in candidates:
-            if pkg.version == content_hash:
+            if pkg.content_hash == content_hash:
                 exact_match = pkg.name
             #
             pkg_timestamp = time_from_timestamp(pkg.timestamp_str)

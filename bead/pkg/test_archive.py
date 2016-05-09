@@ -30,17 +30,17 @@ class Test_Archive(TestCase):
         self.when_a_nonexistent_directory_is_extracted()
         self.then_an_empty_directory_is_created()
 
-    def test_version(self):
+    def test_content_hash(self):
         self.given_a_package()
-        self.when_version_is_checked()
-        self.then_version_is_a_string()
+        self.when_content_hash_is_checked()
+        self.then_content_hash_is_a_string()
 
     # implementation
 
     __package = None
     __extractedfile = None
     __extracteddir = None
-    __version = None
+    __content_hash = None
 
     def given_a_package(self):
         self.__package = self.new_temp_dir() / 'package.zip'
@@ -74,12 +74,12 @@ class Test_Archive(TestCase):
             set(os.listdir(self.__extracteddir))
         )
 
-    def when_version_is_checked(self):
+    def when_content_hash_is_checked(self):
         pkg = m.Archive(self.__package)
-        self.__version = pkg.version
+        self.__content_hash = pkg.content_hash
 
-    def then_version_is_a_string(self):
-        self.assertIsInstance(self.__version, ''.__class__)
+    def then_content_hash_is_a_string(self):
+        self.assertIsInstance(self.__content_hash, ''.__class__)
 
     def when_a_nonexistent_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'

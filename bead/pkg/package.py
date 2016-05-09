@@ -9,9 +9,9 @@ class Package(object):
 
     __metaclass__ = ABCMeta
 
+    # FIXME: uuid -> bead_uuid
     uuid = str
-    # FIXME: version -> content_hash
-    version = str
+    content_hash = str
     timestamp_str = str
     repo = str
     name = str

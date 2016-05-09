@@ -133,7 +133,7 @@ class Archive(Package):
 
     @property
     @__zipfile_user
-    def version(self):
+    def content_hash(self):
         zipinfo = self.zipfile.getinfo(layouts.Archive.CHECKSUMS)
         with self.zipfile.open(zipinfo) as f:
             return securehash.file(f, zipinfo.file_size)

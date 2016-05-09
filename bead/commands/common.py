@@ -77,7 +77,7 @@ def _parse_start_of_name(name):
 def package_spec_kwargs(parser):
     group = parser.argparser.add_argument_group(
         'package query',
-        'Restrict the package version with these options')
+        'Restrict the bead version with these options')
     arg = group.add_argument
     # TODO: implement more options
     # -r, --repo, --repository

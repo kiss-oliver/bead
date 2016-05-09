@@ -26,7 +26,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs.uuid)))
         self.assertThat(robot.stdout, Not(Contains(pkg_a.uuid)))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
-        self.assertThat(robot.stdout, Not(Contains(pkg_a.version)))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a.content_hash)))
 
     def test_verbose(self, robot, packages, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
@@ -41,7 +41,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
-        self.assertThat(robot.stdout, Contains(pkg_a.version))
+        self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 
     def test_inputs_not_in_known_repos(
             self, robot, packages, pkg_with_inputs, pkg_a):
@@ -58,7 +58,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Contains(pkg_a.uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
-        self.assertThat(robot.stdout, Contains(pkg_a.version))
+        self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 
     def test_verbose_inputs_not_in_known_repos(
             self, robot, packages, pkg_with_inputs, pkg_a):
@@ -75,7 +75,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
         self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
-        self.assertThat(robot.stdout, Contains(pkg_a.version))
+        self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 
     def test_invalid_workspace(self, robot):
         robot.cli('status')

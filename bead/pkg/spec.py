@@ -48,7 +48,7 @@ def _make_checkers():
 
     def has_content_prefix(hash_prefix):
         def filter(pkg):
-            return pkg.version.startswith(hash_prefix)
+            return pkg.content_hash.startswith(hash_prefix)
         return filter
 
     return {
