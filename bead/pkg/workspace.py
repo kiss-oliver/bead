@@ -267,7 +267,7 @@ class _ZipCreator(object):
             meta.FREEZE_TIME: timestamp,
             meta.INPUTS: {
                 input.name: {
-                    meta.INPUT_BEAD_UUID: input.package,
+                    meta.INPUT_BEAD_UUID: input.bead_uuid,
                     meta.INPUT_CONTENT_HASH: input.content_hash,
                     meta.INPUT_FREEZE_TIME: input.timestamp,
                 }

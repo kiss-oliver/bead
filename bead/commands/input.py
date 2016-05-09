@@ -136,7 +136,7 @@ def _update(workspace, input, bead_ref=NEWEST_VERSION):
     if bead_ref is NEWEST_VERSION:
         # FIXME: input._update
         query = [
-            (pkg_spec.BEAD_UUID, input.package),
+            (pkg_spec.BEAD_UUID, input.bead_uuid),
             (pkg_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
         bead_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())
@@ -172,7 +172,7 @@ def _load(workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
-            package = repos.get_bead(input.package, input.content_hash)
+            package = repos.get_bead(input.bead_uuid, input.content_hash)
         except LookupError:
             warning(
                 'Could not find archive for {} - not loaded!'

@@ -41,8 +41,8 @@ INPUT_BEAD_UUID    = 'bead_uuid'
 INPUT_CONTENT_HASH = 'content_hash'
 INPUT_FREEZE_TIME  = 'freeze_time'
 
-# FIXME: rename `package` to `bead_uuid`
-InputSpec = namedtuple('InputSpec', 'name package content_hash timestamp')
+
+InputSpec = namedtuple('InputSpec', 'name bead_uuid content_hash timestamp')
 
 
 def parse_inputs(meta):
