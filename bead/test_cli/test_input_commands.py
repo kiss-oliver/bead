@@ -20,7 +20,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
 
     # tests
 
-    @skip('package version')
+    @skip('bead version')
     def test_basic_usage(self, robot, pkg_with_history):
         # nextpkg with input1 as datapkg1
         robot.cli('new', 'nextpkg')
@@ -48,7 +48,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
 
         robot.cli('status')
 
-    def test_update_unloaded_input_with_explicit_package(
+    def test_update_unloaded_input_with_explicit_bead(
             self, robot, pkg_with_inputs, pkg_a, pkg_b):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
@@ -102,11 +102,11 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cli('develop', pkg_a)
         robot.cd(pkg_a)
         try:
-            robot.cli('input', 'add', 'x', 'non-existing-package')
+            robot.cli('input', 'add', 'x', 'non-existing-bead')
             self.fail('Expected an error exit!')
         except SystemExit:
             self.assertThat(robot.stderr, Contains('ERROR'))
-            self.assertThat(robot.stderr, Contains('non-existing-package'))
+            self.assertThat(robot.stderr, Contains('non-existing-bead'))
 
     def test_add_with_hacked_bead_is_refused(
             self, robot, hacked_pkg, pkg_a):

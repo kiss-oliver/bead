@@ -23,7 +23,7 @@ persistence = tech.persistence
 
 def bead_name_from_file_path(path):
     '''
-    Parse package name from a file path.
+    Parse bead name from a file path.
 
     Might return a simpler name than intended
     '''
@@ -73,7 +73,7 @@ class Archive(Bead):
         - the BEAD_META file is valid
             - has bead_uuid
             - has timestamp
-            - has unofficial package name
+            - has unofficial bead name
             - has inputs (even if empty)
         '''
         return all(self._checks())

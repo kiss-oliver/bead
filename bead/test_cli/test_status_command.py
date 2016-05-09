@@ -13,7 +13,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
 
     # tests
 
-    def test(self, robot, packages, pkg_with_inputs, pkg_a):
+    def test(self, robot, beads, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
         robot.cli('status')
@@ -21,14 +21,14 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Contains(pkg_a))
 
-        pkg_a = packages[pkg_a]
-        pkg_with_inputs = packages[pkg_with_inputs]
+        pkg_a = beads[pkg_a]
+        pkg_with_inputs = beads[pkg_with_inputs]
         self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs.bead_uuid)))
         self.assertThat(robot.stdout, Not(Contains(pkg_a.bead_uuid)))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Not(Contains(pkg_a.content_hash)))
 
-    def test_verbose(self, robot, packages, pkg_with_inputs, pkg_a):
+    def test_verbose(self, robot, beads, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
         robot.cli('status', '-v')
@@ -36,15 +36,15 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Contains(pkg_a))
 
-        pkg_a = packages[pkg_a]
-        pkg_with_inputs = packages[pkg_with_inputs]
+        pkg_a = beads[pkg_a]
+        pkg_with_inputs = beads[pkg_with_inputs]
         self.assertThat(robot.stdout, Contains(pkg_with_inputs.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 
     def test_inputs_not_in_known_repos(
-            self, robot, packages, pkg_with_inputs, pkg_a):
+            self, robot, beads, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
 
@@ -54,14 +54,14 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Not(Contains(pkg_a)))
 
-        pkg_a = packages[pkg_a]
+        pkg_a = beads[pkg_a]
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Contains(pkg_a.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 
     def test_verbose_inputs_not_in_known_repos(
-            self, robot, packages, pkg_with_inputs, pkg_a):
+            self, robot, beads, pkg_with_inputs, pkg_a):
         robot.cli('develop', pkg_with_inputs)
         robot.cd(pkg_with_inputs)
         robot.reset()
@@ -70,8 +70,8 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
         self.assertThat(robot.stdout, Not(Contains(pkg_a)))
 
-        pkg_a = packages[pkg_a]
-        pkg_with_inputs = packages[pkg_with_inputs]
+        pkg_a = beads[pkg_a]
+        pkg_with_inputs = beads[pkg_with_inputs]
         self.assertThat(robot.stdout, Contains(pkg_with_inputs.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))

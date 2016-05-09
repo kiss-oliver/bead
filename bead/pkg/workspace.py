@@ -1,5 +1,5 @@
 '''
-Filesystem layout of packages
+Filesystem layout of beads
 '''
 from __future__ import absolute_import
 from __future__ import division
@@ -137,18 +137,18 @@ class AbstractWorkspace(object):
         del m[meta.INPUTS][input_nick]
         self.meta = m
 
-    def load(self, input_nick, package):
+    def load(self, input_nick, bead):
         '''
-        Make output data files in package available under input directory
+        Make output data files in bead available under input directory
         '''
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
             self.add_input(
                 input_nick,
-                package.bead_uuid, package.content_hash, package.timestamp_str)
+                bead.bead_uuid, bead.content_hash, bead.timestamp_str)
             destination_dir = input_dir / input_nick
-            package.unpack_data_to(destination_dir)
+            bead.unpack_data_to(destination_dir)
             for f in fs.all_subpaths(destination_dir):
                 fs.make_readonly(f)
         finally:

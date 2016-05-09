@@ -19,8 +19,8 @@ with the following minimum structure:
         ...
     },
     bead_uuid: ...,
-    timestamp: ...,     # only archives - naive ordering
-    default name: ...,  # only archives, package name for bootstrapping
+    freeze_time: ...,  # only archives - naive ordering
+    freeze_name: ...,  # only archives, bead name for bootstrapping
 }
 '''
 

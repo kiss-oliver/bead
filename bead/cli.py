@@ -31,11 +31,11 @@ def make_argument_parser():
         .commands(
             'new',
             commands.workspace.CmdNew,
-            'Create and initialize new workspace directory with a new package.',
+            'Create and initialize new workspace directory with a new bead.',
 
             'develop',
             commands.workspace.CmdDevelop,
-            'Create workspace from specified package.',
+            'Create workspace from specified bead.',
 
             'save',
             commands.workspace.CmdSave,
@@ -53,7 +53,7 @@ def make_argument_parser():
             CmdVersion,
             'Show program version.'))
     (parser
-        .group('input', 'Manage data loaded from other packages')
+        .group('input', 'Manage data loaded from other beads')
         .commands(
             # named('unload')(unload_input),
             'add',
@@ -66,14 +66,14 @@ def make_argument_parser():
 
             'update',
             commands.input.CmdUpdate,
-            'Update input[s] to newest version or defined package.',
+            'Update input[s] to newest version or defined bead.',
 
             'load',
             commands.input.CmdLoad,
             'Load data from already defined dependency.',))
 
     (parser
-        .group('repo', 'Manage package repositories')
+        .group('repo', 'Manage bead repositories')
         .commands(
             'add',
             commands.repo.CmdAdd,

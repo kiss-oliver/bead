@@ -1,5 +1,5 @@
 '''
-We are responsible to store (and retrieve) packages.
+We are responsible to store (and retrieve) beads.
 '''
 
 from __future__ import absolute_import
@@ -93,27 +93,27 @@ class _LessIsLess(_Wrapper):
         return self.wrapped.timestamp < other.wrapped.timestamp
 
 
-def order_and_limit_packages(packages, order=pkg_spec.NEWEST_FIRST, limit=None):
+def order_and_limit_beads(beads, order=pkg_spec.NEWEST_FIRST, limit=None):
     '''
-    Order packages by timestamps and keep only the closest ones.
+    Order beads by timestamps and keep only the closest ones.
     '''
-    # wrap packages so that they can be compared by timestamps
+    # wrap beads so that they can be compared by timestamps
     compare_wrap = {
         pkg_spec.NEWEST_FIRST: _MoreIsLess,
         pkg_spec.OLDEST_FIRST: _LessIsLess,
     }[order]
-    comparable_packages = (compare_wrap(pkg) for pkg in packages)
+    comparable_beads = (compare_wrap(pkg) for pkg in beads)
 
     if limit:
-        # assume we have lots of packages, so do it with memory limited
+        # assume we have lots of beads, so do it with memory limited
         # XXX: heapq might be faster a bit?
         wrapped_results = []
-        for pkg in comparable_packages:
+        for pkg in comparable_beads:
             bisect.insort_right(wrapped_results, pkg)
             if len(wrapped_results) > limit:
                 del wrapped_results[limit]
     else:
-        wrapped_results = sorted(comparable_packages)
+        wrapped_results = sorted(comparable_beads)
 
     # unwrap wrapped_results
     return [wrapper.wrapped for wrapper in wrapped_results]
@@ -135,9 +135,9 @@ class Repository(object):
         '''
         return Path(self.location)
 
-    def find_packages(self, conditions, order=pkg_spec.NEWEST_FIRST, limit=None):
+    def find_beads(self, conditions, order=pkg_spec.NEWEST_FIRST, limit=None):
         '''
-        Retrieve matching packages.
+        Retrieve matching beads.
 
         (future possibility), it might run in another process,
         potentially on another machine, so it might be faster to restrict
@@ -158,12 +158,12 @@ class Repository(object):
 
         # XXX: directory itself might be a pattern - is it OK?
         paths = iglob(self.directory / glob)
-        # FIXME: Repository.find_packages dies on non package in the directory
-        packages = (Archive(path, self.name) for path in paths)
-        candidates = (pkg for pkg in packages if match(pkg))
+        # FIXME: Repository.find_beads dies on non bead in the directory
+        beads = (Archive(path, self.name) for path in paths)
+        candidates = (pkg for pkg in beads if match(pkg))
 
         # FUTURE IMPLEMENTATIONS: can there be more than one valid match?
-        return order_and_limit_packages(candidates, order, limit)
+        return order_and_limit_beads(candidates, order, limit)
 
     def store(self, workspace, timestamp):
         # -> Bead
@@ -187,9 +187,9 @@ class Repository(object):
         '''
         assert isinstance(timestamp, datetime)
         paths = (self.directory / fname for fname in os.listdir(self.directory))
-        # FIXME: Repository.find_names dies on non package in the directory
-        packages = (Archive(path, self.name) for path in paths)
-        candidates = (pkg for pkg in packages if pkg.bead_uuid == bead_uuid)
+        # FIXME: Repository.find_names dies on non bead in the directory
+        beads = (Archive(path, self.name) for path in paths)
+        candidates = (pkg for pkg in beads if pkg.bead_uuid == bead_uuid)
 
         exact_match          = None
         best_guess           = None
@@ -259,6 +259,6 @@ def forget(name):
 def get_bead(bead_uuid, content_hash):
     query = ((pkg_spec.BEAD_UUID, bead_uuid), (pkg_spec.CONTENT_HASH, content_hash))
     for repo in env.get_repos():
-        for package in repo.find_packages(query):
-            return package
+        for bead in repo.find_beads(query):
+            return bead
     raise LookupError('Bead {} {} not found'.format(bead_uuid, content_hash))

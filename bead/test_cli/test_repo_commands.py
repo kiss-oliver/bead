@@ -23,11 +23,11 @@ class Test_shared_repo(TestCase):
     def timestamp(self):
         return timestamp()
 
-    def package(self, timestamp):
+    def bead(self, timestamp):
         tmp = self.new_temp_dir()
         ws = Workspace(tmp / 'ws')
         ws.create('pkg-uuid')
-        bead_archive = tmp / 'package.zip'
+        bead_archive = tmp / 'bead.zip'
         ws.pack(bead_archive, timestamp)
         return bead_archive
 
@@ -42,13 +42,13 @@ class Test_shared_repo(TestCase):
         return robot
 
     # tests
-    def test_update(self, alice, bob, package):
+    def test_update(self, alice, bob, bead):
         bob.cli('new', 'bobpkg')
         bob.cd('bobpkg')
-        bob.cli('input', 'add', 'alicepkg1', package)
-        bob.cli('input', 'add', 'alicepkg2', package)
+        bob.cli('input', 'add', 'alicepkg1', bead)
+        bob.cli('input', 'add', 'alicepkg2', bead)
 
-        alice.cli('develop', package, 'alicepkg')
+        alice.cli('develop', bead, 'alicepkg')
         alice.cd('alicepkg')
         alice.write_file('output/datafile', '''Alice's new data''')
         alice.cli('save')

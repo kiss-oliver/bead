@@ -76,7 +76,7 @@ def _parse_start_of_name(name):
 
 def bead_spec_kwargs(parser):
     group = parser.argparser.add_argument_group(
-        'package query',
+        'bead query',
         'Restrict the bead version with these options')
     arg = group.add_argument
     # TODO: implement more options
@@ -100,7 +100,7 @@ def bead_spec_kwargs(parser):
 
 
 class BeadReference:
-    package = Archive
+    bead = Archive
     default_workspace = Workspace
 
 
@@ -109,14 +109,14 @@ class ArchiveReference(BeadReference):
         self.archive_path = archive_path
 
     @property
-    def package(self):
+    def bead(self):
         if os.path.isfile(self.archive_path):
             return Archive(self.archive_path)
         raise LookupError('Not a file', self.archive_path)
 
     @property
     def default_workspace(self):
-        return Workspace(self.package.name)
+        return Workspace(self.bead.name)
 
 
 class RepoQueryReference(BeadReference):
@@ -133,12 +133,12 @@ class RepoQueryReference(BeadReference):
         self.repositories = list(repositories)
 
     @property
-    def package(self):
+    def bead(self):
         matches = []
         for repo in self.repositories:
-            matches.extend(repo.find_packages(self.query, self.order, self.limit))
-            # XXX order_and_limit_packages is called twice - first in find_packages
-            matches = repos.order_and_limit_packages(matches, self.order, self.limit)
+            matches.extend(repo.find_beads(self.query, self.order, self.limit))
+            # XXX order_and_limit_beads is called twice - first in find_beads
+            matches = repos.order_and_limit_beads(matches, self.order, self.limit)
         if len(matches) == self.limit:
             return matches[-1]
         raise LookupError

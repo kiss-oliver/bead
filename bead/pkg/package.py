@@ -4,7 +4,7 @@ from ..tech.timestamp import time_from_timestamp
 
 class Bead(object):
     '''
-    I am providing high-level access to a content of a data package.
+    I am providing high-level access to content of a bead.
     '''
 
     __metaclass__ = ABCMeta

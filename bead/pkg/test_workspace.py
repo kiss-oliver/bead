@@ -70,7 +70,7 @@ class Test_pack(TestCase):
     def test_creates_valid_archive(self):
         self.given_a_bead_directory()
         self.when_archived()
-        self.then_archive_is_valid_package()
+        self.then_archive_is_valid_bead()
 
     def test_archives_all_content(self):
         self.given_a_bead_directory()
@@ -128,7 +128,7 @@ class Test_pack(TestCase):
         self.assertIn(l.BEAD_META, files)
         self.assertIn(l.CHECKSUMS, files)
 
-    def then_archive_is_valid_package(self):
+    def then_archive_is_valid_bead(self):
         pkg = Archive(self.__zipfile)
         self.assertTrue(pkg.is_valid)
 
@@ -147,11 +147,11 @@ class Test_pack_stability(TestCase):
     def test_directory_name_data_and_timestamp_determines_content_hashs(self):
         TS = '20150910T093724802366+0200'
 
-        # note: it is important to create the same package in
+        # note: it is important to create the same bead in
         # two different directories
         def make_pkg():
             output = self.new_temp_dir() / 'pkg.zip'
-            ws = m.Workspace(self.new_temp_dir() / 'a package')
+            ws = m.Workspace(self.new_temp_dir() / 'a bead')
             ws.create(A_BEAD_UUID)
             write_file(ws.directory / 'source1', 'code to produce output')
             write_file(ws.directory / 'output/output1', TS)
@@ -163,7 +163,7 @@ class Test_pack_stability(TestCase):
         self.assertEquals(pkg1.content_hash, pkg2.content_hash)
 
 
-def make_package(path, filespecs):
+def make_bead(path, filespecs):
     with temp_dir() as root:
         workspace = m.Workspace(root)
         workspace.create(A_BEAD_UUID)
@@ -176,22 +176,22 @@ class Test_load(TestCase):
 
     def test_makes_bead_files_available_under_input(self):
         self.given_a_bead_directory()
-        self.when_loading_a_package()
+        self.when_loading_a_bead()
         self.then_data_files_in_bead_are_available_in_workspace()
 
     def test_loaded_inputs_are_read_only(self):
         self.given_a_bead_directory()
-        self.when_loading_a_package()
+        self.when_loading_a_bead()
         self.then_extracted_files_under_input_are_readonly()
 
     def test_load_adds_input_to_bead_meta(self):
         self.given_a_bead_directory()
-        self.when_loading_a_package()
+        self.when_loading_a_bead()
         self.then_input_info_is_added_to_bead_meta()
 
-    def test_loading_more_than_one_package(self):
+    def test_loading_more_than_one_bead(self):
         self.given_a_bead_directory()
-        self.when_loading_a_package()
+        self.when_loading_a_bead()
         self.then_another_bead_can_be_loaded()
 
     # implementation
@@ -206,9 +206,9 @@ class Test_load(TestCase):
         self.__workspace_dir = self.new_temp_dir()
         self.workspace.create(A_BEAD_UUID)
 
-    def _load_a_package(self, input_nick):
+    def _load_a_bead(self, input_nick):
         path_of_pkg_to_load = self.new_temp_dir() / 'pkg.zip'
-        make_package(
+        make_bead(
             path_of_pkg_to_load,
             {
                 'output/output1':
@@ -217,8 +217,8 @@ class Test_load(TestCase):
         )
         self.workspace.load(input_nick, Archive(path_of_pkg_to_load))
 
-    def when_loading_a_package(self):
-        self._load_a_package('pkg1')
+    def when_loading_a_bead(self):
+        self._load_a_bead('pkg1')
 
     def then_data_files_in_bead_are_available_in_workspace(self):
         with open(self.__workspace_dir / 'input/pkg1/output1', 'rb') as f:
@@ -235,7 +235,7 @@ class Test_load(TestCase):
         self.assertTrue(self.workspace.is_loaded('pkg1'))
 
     def then_another_bead_can_be_loaded(self):
-        self._load_a_package('pkg2')
+        self._load_a_bead('pkg2')
 
 
 def unzip(archive_path, directory):
@@ -268,7 +268,7 @@ class Test_is_valid(TestCase):
         return '20150930T093724802366+0200'
 
     def archive_path(self, workspace, timestamp):
-        archive_path = self.new_temp_dir() / 'package.zip'
+        archive_path = self.new_temp_dir() / 'bead.zip'
         workspace.pack(archive_path, timestamp)
         return archive_path
 

@@ -1,5 +1,5 @@
 '''
-layout of packages
+layout of beads
 '''
 
 from __future__ import absolute_import

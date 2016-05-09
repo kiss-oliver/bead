@@ -20,7 +20,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
         self.assertTrue(Workspace(robot.cwd / pkg_a).is_valid)
         self.assertThat(robot.cwd / pkg_a / 'README', FileContains(pkg_a))
 
-    def test_missing_package(self, robot, pkg_a):
+    def test_missing_bead(self, robot, pkg_a):
         robot.cli('repo', 'forget', 'repo')
         try:
             robot.cli('develop', pkg_a)
@@ -28,7 +28,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
             self.assertThat(robot.stderr, Contains('Bead'))
             self.assertThat(robot.stderr, Contains('not found'))
         else:
-            self.fail('develop should have exited on missing package')
+            self.fail('develop should have exited on missing bead')
 
     def assert_develop_version(self, robot, pkg_spec, timestamp):
         assert pkg_spec.startswith('pkg_with_history')
@@ -40,21 +40,21 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
     def test_without_version(self, robot, pkg_with_history):
         self.assert_develop_version(robot, 'pkg_with_history', fixtures.TS2)
 
-    @skip('package version')
+    @skip('bead version')
     def test_without_offset(self, robot, pkg_with_history):
         self.assert_develop_version(robot, 'pkg_with_history@', fixtures.TS2)
 
-    @skip('package version')
+    @skip('bead version')
     def test_with_offset(self, robot, pkg_with_history):
         self.assert_develop_version(robot, 'pkg_with_history@-1', fixtures.TS1)
 
-    @skip('package version')
+    @skip('bead version')
     def test_with_version_without_offset(self, robot, pkg_with_history):
         self.assert_develop_version(
             robot, 'pkg_with_history@' + fixtures.TS1,
             fixtures.TS1)
 
-    @skip('package version')
+    @skip('bead version')
     def test_available_matches_to_version_are_less_than_offset(
             self, robot, pkg_with_history):
         self.assert_develop_version(

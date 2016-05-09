@@ -39,10 +39,10 @@ class RobotAndBeads(object):
         with robot.environment:
             return repos.get('repo')
 
-    def packages(self):
+    def beads(self):
         return {}
 
-    def _new_package(self, robot, packages, bead_name, inputs=None):
+    def _new_bead(self, robot, beads, bead_name, inputs=None):
         robot.cli('new', bead_name)
         robot.cd(bead_name)
         robot.write_file('README', bead_name)
@@ -51,7 +51,7 @@ class RobotAndBeads(object):
         repo = self.repo(robot)
         with robot.environment:
             TRACELOG('store', robot.cwd, TS1, 'to', repo.location)
-            packages[bead_name] = repo.store(Workspace('.'), TS1)
+            beads[bead_name] = repo.store(Workspace('.'), TS1)
         robot.cd('..')
         robot.cli('nuke', bead_name)
         return bead_name
@@ -61,13 +61,13 @@ class RobotAndBeads(object):
         for name in inputs:
             robot.cli('input', 'add', name, inputs[name])
 
-    def pkg_a(self, robot, packages):
-        return self._new_package(robot, packages, 'pkg_a')
+    def pkg_a(self, robot, beads):
+        return self._new_bead(robot, beads, 'pkg_a')
 
-    def pkg_b(self, robot, packages):
-        return self._new_package(robot, packages, 'pkg_b')
+    def pkg_b(self, robot, beads):
+        return self._new_bead(robot, beads, 'pkg_b')
 
-    def hacked_pkg(self, robot, packages):
+    def hacked_pkg(self, robot, beads):
         hacked_pkg_path = self.new_temp_dir() / 'hacked_pkg.zip'
         workspace_dir = self.new_temp_dir() / 'hacked_pkg'
         ws = Workspace(workspace_dir)
@@ -85,7 +85,7 @@ class RobotAndBeads(object):
         return hacked_pkg_path
 
     def _pkg_with_history(self, robot, repo, bead_name, bead_uuid):
-        def make_package(timestamp):
+        def make_bead(timestamp):
             with TempDir() as tempdir_obj:
                 workspace_dir = os.path.join(tempdir_obj.path, bead_name)
                 ws = Workspace(workspace_dir)
@@ -96,14 +96,14 @@ class RobotAndBeads(object):
                 tech.fs.rmtree(workspace_dir)
 
         with robot.environment:
-            make_package(TS1)
-            make_package(TS2)
+            make_bead(TS1)
+            make_bead(TS2)
         return bead_name
 
     def pkg_with_history(self, robot, repo):
         return self._pkg_with_history(
             robot, repo, 'pkg_with_history', 'UUID:pkg_with_history')
 
-    def pkg_with_inputs(self, robot, packages, pkg_a, pkg_b):
+    def pkg_with_inputs(self, robot, beads, pkg_a, pkg_b):
         inputs = dict(input_a=pkg_a, input_b=pkg_b)
-        return self._new_package(robot, packages, 'pkg_with_inputs', inputs)
+        return self._new_bead(robot, beads, 'pkg_with_inputs', inputs)

@@ -41,7 +41,7 @@ def MANDATORY_INPUT_NICK(parser):
 
 
 # bead_ref
-NEWEST_VERSION = DefaultArgSentinel('same package, newest version')
+NEWEST_VERSION = DefaultArgSentinel('same bead, newest version')
 USE_INPUT_NICK = DefaultArgSentinel('use {}'.format(arg_metavar.INPUT_NICK))
 # default workspace
 CURRENT_DIRECTORY = CurrentDirWorkspace()
@@ -49,7 +49,7 @@ CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 class CmdAdd(Command):
     '''
-    Make data from another package available in the input directory.
+    Make data from another bead available in the input directory.
     '''
 
     def declare(self, arg):
@@ -70,12 +70,12 @@ class CmdAdd(Command):
 
         bead_ref = get_bead_ref(bead_name, args.bead_query)
         try:
-            package = bead_ref.package
+            bead = bead_ref.bead
         except LookupError:
-            die('Not a known package name: {}'.format(bead_name))
+            die('Not a known bead name: {}'.format(bead_name))
 
         _check_load_with_feedback(
-            workspace, args.input_nick, package, bead_name)
+            workspace, args.input_nick, bead, bead_name)
 
 
 class CmdDelete(Command):
@@ -96,7 +96,7 @@ class CmdDelete(Command):
 
 class CmdUpdate(Command):
     '''
-    Update input[s] to newest version or defined package.
+    Update input[s] to newest version or defined bead.
     '''
 
     def declare(self, arg):
@@ -120,16 +120,16 @@ class CmdUpdate(Command):
                     if workspace.is_loaded(input.name):
                         print('{} is already newest ({})'.format(input.name, input.timestamp))
                     else:
-                        warning('Can not find package for {}'.format(input.name))
+                        warning('Can not find bead for {}'.format(input.name))
             print('All inputs are up to date.')
         else:
-            # FIXME: update: fix to allow to select previous/next/closest to a timestamp package
+            # FIXME: update: fix to allow to select previous/next/closest to a timestamp bead
             if bead_ref is not NEWEST_VERSION:
                 bead_ref = get_bead_ref(bead_ref, args.bead_query)
             try:
                 _update(workspace, workspace.get_input(input_nick), bead_ref)
             except LookupError:
-                die('Can not find matching package')
+                die('Can not find matching bead')
 
 
 def _update(workspace, input, bead_ref=NEWEST_VERSION):
@@ -141,7 +141,7 @@ def _update(workspace, input, bead_ref=NEWEST_VERSION):
         workspace_name = ''  # no workspace!
         bead_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())
 
-    replacement = bead_ref.package
+    replacement = bead_ref.bead
     _check_load_with_feedback(workspace, input.name, replacement)
 
 
@@ -172,23 +172,23 @@ def _load(workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
-            package = repos.get_bead(input.bead_uuid, input.content_hash)
+            bead = repos.get_bead(input.bead_uuid, input.content_hash)
         except LookupError:
             warning(
                 'Could not find archive for {} - not loaded!'
                 .format(input.name))
         else:
-            _check_load_with_feedback(workspace, input.name, package)
+            _check_load_with_feedback(workspace, input.name, bead)
     else:
         print('Skipping {} (already loaded)'.format(input.name))
 
 
 def _check_load_with_feedback(
-        workspace, input_name, package, bead_name=None):
-    if package.is_valid:
+        workspace, input_name, bead, bead_name=None):
+    if bead.is_valid:
         if workspace.is_loaded(input_name):
             workspace.unload(input_name)
-        workspace.load(input_name, package)
+        workspace.load(input_name, bead)
         if bead_name:
             print('{} loaded on {}.'.format(bead_name, input_name))
         else:

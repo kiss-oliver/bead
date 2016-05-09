@@ -15,36 +15,36 @@ from . import layouts
 class Test_Archive(TestCase):
 
     def test_extract_file(self):
-        self.given_a_package()
+        self.given_a_bead()
         self.when_file1_is_extracted()
         self.then_file1_has_the_expected_content()
 
     def test_extract_dir(self):
-        self.given_a_package()
+        self.given_a_bead()
         self.when_a_directory_is_extracted()
         self.then_directory_has_the_expected_files()
         self.then_file1_has_the_expected_content()
 
     def test_extract_nonexistant_dir(self):
-        self.given_a_package()
+        self.given_a_bead()
         self.when_a_nonexistent_directory_is_extracted()
         self.then_an_empty_directory_is_created()
 
     def test_content_hash(self):
-        self.given_a_package()
+        self.given_a_bead()
         self.when_content_hash_is_checked()
         self.then_content_hash_is_a_string()
 
     # implementation
 
-    __package = None
+    __bead = None
     __extractedfile = None
     __extracteddir = None
     __content_hash = None
 
-    def given_a_package(self):
-        self.__package = self.new_temp_dir() / 'package.zip'
-        z = zipfile.ZipFile(self.__package, 'w')
+    def given_a_bead(self):
+        self.__bead = self.new_temp_dir() / 'bead.zip'
+        z = zipfile.ZipFile(self.__bead, 'w')
         z.writestr(layouts.Archive.BEAD_META, b'{}')
         z.writestr('somefile1', b'''somefile1's known content''')
         z.writestr('path/file1', b'''?? file1's known content''')
@@ -55,7 +55,7 @@ class Test_Archive(TestCase):
 
     def when_file1_is_extracted(self):
         self.__extractedfile = self.new_temp_dir() / 'extracted_file'
-        pkg = m.Archive(self.__package)
+        pkg = m.Archive(self.__bead)
         pkg.extract_file('path/to/file1', self.__extractedfile)
 
     def then_file1_has_the_expected_content(self):
@@ -64,7 +64,7 @@ class Test_Archive(TestCase):
 
     def when_a_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'
-        pkg = m.Archive(self.__package)
+        pkg = m.Archive(self.__bead)
         pkg.extract_dir('path/to', self.__extracteddir)
         self.__extractedfile = os.path.join(self.__extracteddir, 'file1')
 
@@ -75,7 +75,7 @@ class Test_Archive(TestCase):
         )
 
     def when_content_hash_is_checked(self):
-        pkg = m.Archive(self.__package)
+        pkg = m.Archive(self.__bead)
         self.__content_hash = pkg.content_hash
 
     def then_content_hash_is_a_string(self):
@@ -83,7 +83,7 @@ class Test_Archive(TestCase):
 
     def when_a_nonexistent_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'
-        pkg = m.Archive(self.__package)
+        pkg = m.Archive(self.__bead)
         pkg.extract_dir('path/to/nonexistent', self.__extracteddir)
 
     def then_an_empty_directory_is_created(self):

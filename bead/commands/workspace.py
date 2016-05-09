@@ -37,12 +37,12 @@ def assert_may_be_valid_name(name):
 
 class CmdNew(Command):
     '''
-    Create and initialize new workspace directory with a new package.
+    Create and initialize new workspace directory with a new bead.
     '''
 
     def declare(self, arg):
         arg('workspace', type=Workspace, metavar=arg_metavar.WORKSPACE,
-            help='package and directory to create')
+            help='bead and directory to create')
 
     def run(self, args):
         workspace = args.workspace
@@ -78,7 +78,7 @@ class CmdSave(Command):
 
     def declare(self, arg):
         arg('repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
-            metavar='REPOSITORY', help='Name of repository to store package')
+            metavar='REPOSITORY', help='Name of repository to store bead')
         arg(OPTIONAL_WORKSPACE)
 
     def run(self, args):
@@ -99,22 +99,22 @@ class CmdSave(Command):
             if repo is None:
                 die('Unknown repository: {}'.format(repo_name))
         repo.store(workspace, timestamp())
-        print('Successfully stored package.')
+        print('Successfully stored bead.')
 
 
-DERIVE_FROM_BEAD_NAME = DefaultArgSentinel('derive one from package name')
+DERIVE_FROM_BEAD_NAME = DefaultArgSentinel('derive one from bead name')
 
 
 class CmdDevelop(Command):
     '''
-    Unpack a package as a source tree.
+    Unpack a bead as a source tree.
 
     Bead directory layout is created, but only the source files are
     extracted by default.
     '''
 
     def declare(self, arg):
-        arg('bead_name', metavar='package-name')
+        arg('bead_name', metavar='bead-name')
         arg(bead_spec_kwargs)
         # TODO: delete arg_metavar.BEAD_REF
         arg(workspace_defaulting_to(DERIVE_FROM_BEAD_NAME))
@@ -126,22 +126,22 @@ class CmdDevelop(Command):
         extract_output = args.extract_output
         bead_ref = get_bead_ref(args.bead_name, args.bead_query)
         try:
-            package = bead_ref.package
+            bead = bead_ref.bead
         except LookupError:
             die('Bead not found!')
-        if not package.is_valid:
+        if not bead.is_valid:
             die('Bead is found but damaged')
         if args.workspace is DERIVE_FROM_BEAD_NAME:
             workspace = bead_ref.default_workspace
         else:
             workspace = args.workspace
 
-        package.unpack_to(workspace)
+        bead.unpack_to(workspace)
         assert workspace.is_valid
 
         if extract_output:
             output_directory = workspace.directory / layouts.Workspace.OUTPUT
-            package.unpack_data_to(output_directory)
+            bead.unpack_data_to(output_directory)
 
         print('Extracted source into {}'.format(workspace.directory))
         # XXX: try to load smaller inputs?
@@ -202,7 +202,7 @@ def print_inputs(workspace, verbose):
 
 class CmdStatus(Command):
     '''
-    Show workspace status - name of package, inputs and their unpack status.
+    Show workspace status - name of bead, inputs and their unpack status.
     '''
 
     def declare(self, arg):
