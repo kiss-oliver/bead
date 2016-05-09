@@ -189,7 +189,7 @@ class Repository(object):
         paths = (self.directory / fname for fname in os.listdir(self.directory))
         # FIXME: Repository.find_names dies on non package in the directory
         packages = (Archive(path, self.name) for path in paths)
-        candidates = (pkg for pkg in packages if pkg.uuid == bead_uuid)
+        candidates = (pkg for pkg in packages if pkg.bead_uuid == bead_uuid)
 
         exact_match          = None
         best_guess           = None

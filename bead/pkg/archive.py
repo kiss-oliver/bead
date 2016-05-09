@@ -139,7 +139,7 @@ class Archive(Package):
             return securehash.file(f, zipinfo.file_size)
 
     @property
-    def uuid(self):
+    def bead_uuid(self):
         return self._meta[meta.BEAD_UUID]
 
     @property

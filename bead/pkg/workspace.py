@@ -51,7 +51,7 @@ class AbstractWorkspace(object):
             return persistence.dump(meta, f)
 
     @property
-    def uuid(self):
+    def bead_uuid(self):
         return self.meta[meta.BEAD_UUID]
 
     @property
@@ -63,7 +63,7 @@ class AbstractWorkspace(object):
             if name == input.name:
                 return input
 
-    def create(self, uuid):
+    def create(self, bead_uuid):
         '''
         Set up an empty project structure.
 
@@ -78,7 +78,7 @@ class AbstractWorkspace(object):
         self.create_directories()
 
         bead_meta = {
-            meta.BEAD_UUID: uuid,
+            meta.BEAD_UUID: bead_uuid,
             meta.INPUTS: {},
         }
         fs.write_file(
@@ -120,10 +120,10 @@ class AbstractWorkspace(object):
         return os.path.isdir(
             self.directory / layouts.Workspace.INPUT / input_nick)
 
-    def add_input(self, input_nick, uuid, content_hash, timestamp_str):
+    def add_input(self, input_nick, bead_uuid, content_hash, timestamp_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
-            meta.INPUT_BEAD_UUID: uuid,
+            meta.INPUT_BEAD_UUID: bead_uuid,
             meta.INPUT_CONTENT_HASH: content_hash,
             meta.INPUT_FREEZE_TIME: timestamp_str,
         }
@@ -144,7 +144,9 @@ class AbstractWorkspace(object):
         input_dir = self.directory / layouts.Workspace.INPUT
         fs.make_writable(input_dir)
         try:
-            self.add_input(input_nick, package.uuid, package.content_hash, package.timestamp_str)
+            self.add_input(
+                input_nick,
+                package.bead_uuid, package.content_hash, package.timestamp_str)
             destination_dir = input_dir / input_nick
             package.unpack_data_to(destination_dir)
             for f in fs.all_subpaths(destination_dir):
@@ -261,7 +263,7 @@ class _ZipCreator(object):
 
     def add_meta(self, workspace, timestamp):
         bead_meta = {
-            meta.BEAD_UUID: workspace.uuid,
+            meta.BEAD_UUID: workspace.bead_uuid,
             meta.FREEZE_TIME: timestamp,
             meta.INPUTS: {
                 input.name: {

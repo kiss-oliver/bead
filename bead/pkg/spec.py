@@ -41,9 +41,9 @@ def _make_checkers():
             return fnmatch(pkg.name, nameglob)
         return filter
 
-    def has_uuid(uuid):
+    def has_uuid(bead_uuid):
         def filter(pkg):
-            return pkg.uuid == uuid
+            return pkg.bead_uuid == bead_uuid
         return filter
 
     def has_content_prefix(hash_prefix):

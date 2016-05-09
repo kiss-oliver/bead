@@ -62,7 +62,7 @@ class Test_create(TestCase):
         self.assertFalse(self.workspace.inputs)
 
     def then_workspace_has_the_specified_uuid(self):
-        self.assertEquals(A_BEAD_UUID, self.workspace.uuid)
+        self.assertEquals(A_BEAD_UUID, self.workspace.bead_uuid)
 
 
 class Test_pack(TestCase):

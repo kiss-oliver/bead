@@ -84,12 +84,12 @@ class RobotAndPackages(object):
                 z.writestr(layouts.Archive.DATA / 'README', 'HACKED')
         return hacked_pkg_path
 
-    def _pkg_with_history(self, robot, repo, package_name, uuid):
+    def _pkg_with_history(self, robot, repo, package_name, bead_uuid):
         def make_package(timestamp):
             with TempDir() as tempdir_obj:
                 workspace_dir = os.path.join(tempdir_obj.path, package_name)
                 ws = Workspace(workspace_dir)
-                ws.create(uuid)
+                ws.create(bead_uuid)
                 sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
                 tech.fs.write_file(sentinel_file, timestamp)
                 repo.store(ws, timestamp)

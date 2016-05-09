@@ -49,8 +49,8 @@ class CmdNew(Command):
         assert_may_be_valid_name(workspace.package_name)
         # FIXME: die with message when directory already exists
 
-        uuid = tech.identifier.uuid()
-        workspace.create(uuid)
+        bead_uuid = tech.identifier.uuid()
+        workspace.create(bead_uuid)
         print('Created {}'.format(workspace.package_name))
 
 
@@ -218,7 +218,7 @@ class CmdStatus(Command):
         if workspace.is_valid:
             print('Package Name: {}'.format(workspace.package_name))
             if uuid_needed:
-                print('Package UUID: {}'.format(workspace.uuid))
+                print('Package UUID: {}'.format(workspace.bead_uuid))
             print()
             print_inputs(workspace, verbose)
         else:

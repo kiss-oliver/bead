@@ -23,8 +23,8 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
 
         pkg_a = packages[pkg_a]
         pkg_with_inputs = packages[pkg_with_inputs]
-        self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs.uuid)))
-        self.assertThat(robot.stdout, Not(Contains(pkg_a.uuid)))
+        self.assertThat(robot.stdout, Not(Contains(pkg_with_inputs.bead_uuid)))
+        self.assertThat(robot.stdout, Not(Contains(pkg_a.bead_uuid)))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Not(Contains(pkg_a.content_hash)))
 
@@ -38,8 +38,8 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
 
         pkg_a = packages[pkg_a]
         pkg_with_inputs = packages[pkg_with_inputs]
-        self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
-        self.assertThat(robot.stdout, Contains(pkg_a.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs.bead_uuid))
+        self.assertThat(robot.stdout, Contains(pkg_a.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 
@@ -56,7 +56,7 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
 
         pkg_a = packages[pkg_a]
         self.assertThat(robot.stdout, Contains(pkg_with_inputs))
-        self.assertThat(robot.stdout, Contains(pkg_a.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_a.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 
@@ -72,8 +72,8 @@ class Test_status(TestCase, fixtures.RobotAndPackages):
 
         pkg_a = packages[pkg_a]
         pkg_with_inputs = packages[pkg_with_inputs]
-        self.assertThat(robot.stdout, Contains(pkg_with_inputs.uuid))
-        self.assertThat(robot.stdout, Contains(pkg_a.uuid))
+        self.assertThat(robot.stdout, Contains(pkg_with_inputs.bead_uuid))
+        self.assertThat(robot.stdout, Contains(pkg_a.bead_uuid))
         self.assertThat(robot.stdout, Contains(pkg_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(pkg_a.content_hash))
 

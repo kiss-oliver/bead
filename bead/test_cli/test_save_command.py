@@ -75,7 +75,7 @@ class Test_more_than_one_repos(TestCase):
         robot.cli('new', 'pkg')
         robot.cli('save', repo1.name, '--workspace=pkg')
         with robot.environment:
-            pkg_uuid = Workspace('pkg').uuid
+            pkg_uuid = Workspace('pkg').bead_uuid
         self.assertEquals(1, package_count(robot, repo1, pkg_uuid))
         self.assertEquals(0, package_count(robot, repo2, pkg_uuid))
         robot.cli('save', repo2.name, '-w', 'pkg')
