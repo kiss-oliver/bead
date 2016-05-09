@@ -13,7 +13,7 @@ from ..pkg import spec as pkg_spec
 from ..pkg.workspace import Workspace
 
 
-class Test(TestCase, fixtures.RobotAndPackages):
+class Test(TestCase, fixtures.RobotAndBeads):
 
     def test_invalid_workspace_causes_error(self, robot):
         self.assertRaises(SystemExit, robot.cli, 'save')

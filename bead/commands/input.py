@@ -195,5 +195,5 @@ def _check_load_with_feedback(
             print('Loaded {}.'.format(input_name))
     else:
         warning(
-            'Package for {} is found but damaged - not loading.'
+            'Bead for {} is found but damaged - not loading.'
             .format(input_name))

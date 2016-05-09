@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from ..tech.timestamp import time_from_timestamp
 
 
-class Package(object):
+class Bead(object):
     '''
     I am providing high-level access to a content of a data package.
     '''

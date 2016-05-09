@@ -109,7 +109,7 @@ class CmdDevelop(Command):
     '''
     Unpack a package as a source tree.
 
-    Package directory layout is created, but only the source files are
+    Bead directory layout is created, but only the source files are
     extracted by default.
     '''
 
@@ -128,9 +128,9 @@ class CmdDevelop(Command):
         try:
             package = package_ref.package
         except LookupError:
-            die('Package not found!')
+            die('Bead not found!')
         if not package.is_valid:
-            die('Package is found but damaged')
+            die('Bead is found but damaged')
         if args.workspace is DERIVE_FROM_BEAD_NAME:
             workspace = package_ref.default_workspace
         else:
@@ -216,9 +216,9 @@ class CmdStatus(Command):
         # TODO: use a template and render it with passing in all data
         uuid_needed = verbose
         if workspace.is_valid:
-            print('Package Name: {}'.format(workspace.package_name))
+            print('Bead Name: {}'.format(workspace.package_name))
             if uuid_needed:
-                print('Package UUID: {}'.format(workspace.bead_uuid))
+                print('Bead UUID: {}'.format(workspace.bead_uuid))
             print()
             print_inputs(workspace, verbose)
         else:

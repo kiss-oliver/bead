@@ -11,7 +11,7 @@ from ..pkg import layouts
 from . import fixtures
 
 
-class Test_develop(TestCase, fixtures.RobotAndPackages):
+class Test_develop(TestCase, fixtures.RobotAndBeads):
 
     # tests
     def test_by_name(self, robot, pkg_a):
@@ -25,7 +25,7 @@ class Test_develop(TestCase, fixtures.RobotAndPackages):
         try:
             robot.cli('develop', pkg_a)
         except SystemExit:
-            self.assertThat(robot.stderr, Contains('Package'))
+            self.assertThat(robot.stderr, Contains('Bead'))
             self.assertThat(robot.stderr, Contains('not found'))
         else:
             self.fail('develop should have exited on missing package')

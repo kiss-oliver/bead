@@ -99,27 +99,27 @@ def package_spec_kwargs(parser):
     # --oldest
 
 
-class PackageReference:
+class BeadReference:
     package = Archive
     default_workspace = Workspace
 
 
-class ArchiveReference(PackageReference):
-    def __init__(self, package_path):
-        self.package_path = package_path
+class ArchiveReference(BeadReference):
+    def __init__(self, archive_path):
+        self.archive_path = archive_path
 
     @property
     def package(self):
-        if os.path.isfile(self.package_path):
-            return Archive(self.package_path)
-        raise LookupError('Not a file', self.package_path)
+        if os.path.isfile(self.archive_path):
+            return Archive(self.archive_path)
+        raise LookupError('Not a file', self.archive_path)
 
     @property
     def default_workspace(self):
         return Workspace(self.package.name)
 
 
-class RepoQueryReference(PackageReference):
+class RepoQueryReference(BeadReference):
     def __init__(self, workspace_name, query, repositories, index=-1):
         # index: like python list indices 0 = first, -1 = last
         self.workspace_name = workspace_name

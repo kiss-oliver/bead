@@ -166,7 +166,7 @@ class Repository(object):
         return order_and_limit_packages(candidates, order, limit)
 
     def store(self, workspace, timestamp):
-        # -> Package
+        # -> Bead
         zipfilename = (
             self.directory / (
                 '{package_name}_{timestamp}.zip'
@@ -261,4 +261,4 @@ def get_bead(bead_uuid, content_hash):
     for repo in env.get_repos():
         for package in repo.find_packages(query):
             return package
-    raise LookupError('Package {} {} not found'.format(bead_uuid, content_hash))
+    raise LookupError('Bead {} {} not found'.format(bead_uuid, content_hash))

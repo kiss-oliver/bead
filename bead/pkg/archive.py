@@ -10,7 +10,7 @@ import os
 import re
 import zipfile
 
-from .package import Package
+from .package import Bead
 from .. import tech
 from . import layouts
 from . import meta
@@ -39,7 +39,7 @@ assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923T01020301
 assert 'pkg-2015v3' == package_name_from_file_path('pkg-2015v3_20150923T010203012345-0200.zip')
 
 
-class Archive(Package):
+class Archive(Bead):
 
     def __init__(self, filename, repository_name=''):
         self.archive_filename = filename

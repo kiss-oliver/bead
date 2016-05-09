@@ -9,7 +9,7 @@ from testtools.matchers import Contains
 from . import fixtures
 
 
-class Test_nuke(TestCase, fixtures.RobotAndPackages):
+class Test_nuke(TestCase, fixtures.RobotAndBeads):
 
     # tests
 

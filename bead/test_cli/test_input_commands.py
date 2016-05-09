@@ -11,7 +11,7 @@ from ..pkg.workspace import Workspace
 from . import fixtures
 
 
-class Test_input_commands(TestCase, fixtures.RobotAndPackages):
+class Test_input_commands(TestCase, fixtures.RobotAndBeads):
 
     def assert_loaded(self, robot, input_name, package_name):
         self.assertThat(

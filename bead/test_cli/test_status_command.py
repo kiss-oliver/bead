@@ -9,7 +9,7 @@ from testtools.matchers import Not, Contains
 from . import fixtures
 
 
-class Test_status(TestCase, fixtures.RobotAndPackages):
+class Test_status(TestCase, fixtures.RobotAndBeads):
 
     # tests
 
