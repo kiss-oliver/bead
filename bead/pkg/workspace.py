@@ -32,13 +32,13 @@ class AbstractWorkspace(object):
                 os.path.isdir(dir / layouts.Workspace.INPUT),
                 os.path.isdir(dir / layouts.Workspace.OUTPUT),
                 os.path.isdir(dir / layouts.Workspace.TEMP),
-                os.path.isfile(dir / layouts.Workspace.PKGMETA),
+                os.path.isfile(dir / layouts.Workspace.BEAD_META),
             )
         )
 
     @property
     def meta_path(self):
-        return self.directory / layouts.Workspace.PKGMETA
+        return self.directory / layouts.Workspace.BEAD_META
 
     @property
     def meta(self):
@@ -77,13 +77,13 @@ class AbstractWorkspace(object):
 
         self.create_directories()
 
-        pkgmeta = {
+        bead_meta = {
             meta.BEAD_UUID: uuid,
             meta.INPUTS: {},
         }
         fs.write_file(
-            dir / layouts.Workspace.PKGMETA,
-            persistence.dumps(pkgmeta)
+            dir / layouts.Workspace.BEAD_META,
+            persistence.dumps(bead_meta)
         )
 
         assert self.is_valid
@@ -260,7 +260,7 @@ class _ZipCreator(object):
         )
 
     def add_meta(self, workspace, timestamp):
-        pkgmeta = {
+        bead_meta = {
             meta.BEAD_UUID: workspace.uuid,
             meta.FREEZE_TIME: timestamp,
             meta.INPUTS: {
@@ -275,8 +275,8 @@ class _ZipCreator(object):
         }
 
         self.add_string_content(
-            layouts.Archive.PKGMETA,
-            persistence.dumps(pkgmeta)
+            layouts.Archive.BEAD_META,
+            persistence.dumps(bead_meta)
         )
         self.add_string_content(
             layouts.Archive.CHECKSUMS,

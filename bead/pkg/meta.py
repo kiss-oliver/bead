@@ -1,7 +1,7 @@
 '''
-Keys for accessing fields in .pkgmeta structures
+Keys for accessing fields in .BEAD_META structures
 
-.pkgmeta files are persistent python dictionaries,
+.BEAD_META files are persistent python dictionaries,
 with the following minimum structure:
 
 {

@@ -70,7 +70,7 @@ class Archive(Package):
         - all files under code, data, meta are present in the checksums
           file and they match their checksums (extra files are allowed
           in the archive, but not as data or code files)
-        - the pkgmeta file is valid
+        - the BEAD_META file is valid
             - has bead_uuid
             - has timestamp
             - has unofficial package name
@@ -155,7 +155,7 @@ class Archive(Package):
     # -
     @__zipfile_user
     def _load_meta(self):
-        with self.zipfile.open(layouts.Archive.PKGMETA) as f:
+        with self.zipfile.open(layouts.Archive.BEAD_META) as f:
             return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
 
     @__zipfile_user

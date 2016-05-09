@@ -18,7 +18,7 @@ class Archive:
     CODE = Path('code')
     DATA = Path('data')
 
-    PKGMETA = META / 'package'
+    BEAD_META = META / 'bead'
     CHECKSUMS = META / 'checksums'
 
 
@@ -29,4 +29,4 @@ class Workspace:
     TEMP = Path('temp')
     META = Path('.bead-meta')
 
-    PKGMETA = META / 'package'
+    BEAD_META = META / 'bead'

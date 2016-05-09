@@ -125,7 +125,7 @@ class Test_pack(TestCase):
         self.assertEquals(self.__SOURCE2, z.read(l.CODE / 'subdir/source2'))
 
         files = z.namelist()
-        self.assertIn(l.PKGMETA, files)
+        self.assertIn(l.BEAD_META, files)
         self.assertIn(l.CHECKSUMS, files)
 
     def then_archive_is_valid_package(self):
@@ -138,7 +138,7 @@ class Test_pack(TestCase):
             archive_path = layouts.Archive.CODE / workspace_path
             self.assertRaises(KeyError, z.getinfo, archive_path)
 
-        does_not_contain(layouts.Workspace.PKGMETA)
+        does_not_contain(layouts.Workspace.BEAD_META)
         does_not_contain(layouts.Workspace.TEMP / 'README')
 
 
@@ -184,10 +184,10 @@ class Test_load(TestCase):
         self.when_loading_a_package()
         self.then_extracted_files_under_input_are_readonly()
 
-    def test_load_adds_input_to_pkgmeta(self):
+    def test_load_adds_input_to_bead_meta(self):
         self.given_a_package_directory()
         self.when_loading_a_package()
-        self.then_input_info_is_added_to_pkgmeta()
+        self.then_input_info_is_added_to_bead_meta()
 
     def test_loading_more_than_one_package(self):
         self.given_a_package_directory()
@@ -230,7 +230,7 @@ class Test_load(TestCase):
         self.assertRaises(IOError, open, root / 'output1', 'ab')
         self.assertRaises(IOError, open, root / 'new-file', 'wb')
 
-    def then_input_info_is_added_to_pkgmeta(self):
+    def then_input_info_is_added_to_bead_meta(self):
         self.assertTrue(self.workspace.has_input('pkg1'))
         self.assertTrue(self.workspace.is_loaded('pkg1'))
 

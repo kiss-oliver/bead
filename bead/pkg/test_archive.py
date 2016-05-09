@@ -45,7 +45,7 @@ class Test_Archive(TestCase):
     def given_a_package(self):
         self.__package = self.new_temp_dir() / 'package.zip'
         z = zipfile.ZipFile(self.__package, 'w')
-        z.writestr(layouts.Archive.PKGMETA, b'{}')
+        z.writestr(layouts.Archive.BEAD_META, b'{}')
         z.writestr('somefile1', b'''somefile1's known content''')
         z.writestr('path/file1', b'''?? file1's known content''')
         z.writestr('path/to/file1', b'''file1's known content''')
