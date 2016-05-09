@@ -10,8 +10,8 @@ import os
 import warnings
 import zipfile
 
-from ..pkg.workspace import Workspace
-from ..pkg import layouts
+from ..workspace import Workspace
+from .. import layouts
 from .. import tech
 from .robot import Robot
 from .. import repos

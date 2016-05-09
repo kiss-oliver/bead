@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from ..tech.timestamp import time_from_timestamp
+from .tech.timestamp import time_from_timestamp
 
 
 class Bead(object):

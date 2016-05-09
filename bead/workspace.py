@@ -11,7 +11,7 @@ import zipfile
 
 from . import layouts
 from . import meta
-from .. import tech
+from . import tech
 
 # technology modules
 persistence = tech.persistence

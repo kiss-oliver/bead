@@ -6,9 +6,9 @@ from __future__ import print_function
 import os
 import sys
 
-from ..pkg.workspace import Workspace, CurrentDirWorkspace
-from ..pkg import spec as bead_spec
-from ..pkg.archive import Archive
+from ..workspace import Workspace, CurrentDirWorkspace
+from .. import spec as bead_spec
+from ..archive import Archive
 from .. import repos
 from . import arg_help
 from . import arg_metavar

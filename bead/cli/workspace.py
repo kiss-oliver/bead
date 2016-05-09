@@ -6,8 +6,8 @@ from __future__ import print_function
 import os
 
 from .. import tech
-from ..pkg.workspace import Workspace, CurrentDirWorkspace
-from ..pkg import layouts
+from ..workspace import Workspace, CurrentDirWorkspace
+from .. import layouts
 
 from .cmdparse import Command
 from .common import die, warning

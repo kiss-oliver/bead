@@ -3,15 +3,15 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase
+from .test import TestCase
 from . import workspace as m
 
 import os
 import zipfile
 
-from .. import tech
 from .archive import Archive
 from . import layouts
+from . import tech
 
 write_file = tech.fs.write_file
 ensure_directory = tech.fs.ensure_directory

@@ -6,8 +6,8 @@ from __future__ import print_function
 from ..test import TestCase, skip
 from testtools.matchers import FileContains, Contains, FileExists
 
-from ..pkg.workspace import Workspace
-from ..pkg import layouts
+from ..workspace import Workspace
+from .. import layouts
 from . import fixtures
 
 

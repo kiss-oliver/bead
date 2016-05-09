@@ -11,7 +11,7 @@ import re
 import zipfile
 
 from .bead import Bead
-from .. import tech
+from . import tech
 from . import layouts
 from . import meta
 

@@ -9,7 +9,7 @@ from testtools.matchers import FileContains, Not, Contains, FileExists
 from .robot import Robot
 
 from ..tech.timestamp import timestamp
-from ..pkg.workspace import Workspace
+from ..workspace import Workspace
 
 import os
 

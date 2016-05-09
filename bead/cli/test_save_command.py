@@ -9,8 +9,8 @@ from testtools.matchers import Contains
 from . import fixtures
 from collections import namedtuple
 from .. import repos
-from ..pkg import spec as bead_spec
-from ..pkg.workspace import Workspace
+from .. import spec as bead_spec
+from ..workspace import Workspace
 
 
 class Test(TestCase, fixtures.RobotAndBeads):

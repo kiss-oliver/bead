@@ -7,7 +7,7 @@ from ..test import TestCase, skip
 from testtools.matchers import FileContains, Not, Contains
 
 import os
-from ..pkg.workspace import Workspace
+from ..workspace import Workspace
 from . import fixtures
 
 

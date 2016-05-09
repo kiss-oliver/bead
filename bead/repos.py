@@ -14,8 +14,8 @@ import functools
 from glob import iglob
 import os
 
-from .pkg.archive import Archive
-from .pkg import spec as bead_spec
+from .archive import Archive
+from . import spec as bead_spec
 from .tech import persistence
 from .tech.timestamp import time_from_timestamp
 from .import tech

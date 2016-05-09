@@ -13,7 +13,7 @@ from .common import (
     die, warning
 )
 from .common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
-from ..pkg import spec as bead_spec
+from .. import spec as bead_spec
 from .. import repos
 from ..tech.timestamp import time_from_timestamp
 
