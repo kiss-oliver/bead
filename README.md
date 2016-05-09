@@ -83,7 +83,6 @@ Updated by script, text in this section and afterwards will be overwritten
 - [# XXX order_and_limit_beads is called twice - first in find_beads](https://github.com/e3krisztian/bead/blob/renames/bead/cli/common.py#L140)
 - [# TODO: calculate and add index parameter (--next, --prev)](https://github.com/e3krisztian/bead/blob/renames/bead/cli/common.py#L160)
 - [# FIXME: update: fix to allow to select previous/next/closest to a timestamp bead](https://github.com/e3krisztian/bead/blob/renames/bead/cli/input.py#L126)
-- [# FIXME: input._update](https://github.com/e3krisztian/bead/blob/renames/bead/cli/input.py#L137)
 - [# XXX use tabulate?](https://github.com/e3krisztian/bead/blob/renames/bead/cli/repo.py#L53)
 - [# FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/renames/bead/cli/workspace.py#L50)
 - [# TODO: delete arg_metavar.BEAD_REF](https://github.com/e3krisztian/bead/blob/renames/bead/cli/workspace.py#L119)

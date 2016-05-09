@@ -134,7 +134,6 @@ class CmdUpdate(Command):
 
 def _update(workspace, input, bead_ref=NEWEST_VERSION):
     if bead_ref is NEWEST_VERSION:
-        # FIXME: input._update
         query = [
             (bead_spec.BEAD_UUID, input.bead_uuid),
             (bead_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
