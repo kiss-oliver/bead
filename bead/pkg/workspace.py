@@ -123,9 +123,9 @@ class AbstractWorkspace(object):
     def add_input(self, input_nick, uuid, version, timestamp_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
-            meta.INPUT_PACKAGE: uuid,
-            meta.INPUT_VERSION: version,
-            meta.INPUT_TIME: timestamp_str,
+            meta.INPUT_BEAD_ID: uuid,
+            meta.INPUT_CONTENT_HASH: version,
+            meta.INPUT_FREEZE_TIME: timestamp_str,
         }
         self.meta = m
 
@@ -262,16 +262,16 @@ class _ZipCreator(object):
     def add_meta(self, workspace, timestamp):
         pkgmeta = {
             meta.PACKAGE: workspace.uuid,
-            meta.PACKAGE_TIMESTAMP: timestamp,
+            meta.FREEZE_TIME: timestamp,
             meta.INPUTS: {
                 input.name: {
-                    meta.INPUT_PACKAGE: input.package,
-                    meta.INPUT_VERSION: input.version,
-                    meta.INPUT_TIME: input.timestamp,
+                    meta.INPUT_BEAD_ID: input.package,
+                    meta.INPUT_CONTENT_HASH: input.version,
+                    meta.INPUT_FREEZE_TIME: input.timestamp,
                 }
                 for input in workspace.inputs
             },
-            meta.DEFAULT_NAME: workspace.package_name,
+            meta.FREEZE_NAME: workspace.package_name,
         }
 
         self.add_string_content(

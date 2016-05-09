@@ -8,13 +8,13 @@ with the following minimum structure:
     inputs: {
         'nick1' : {
             bead_uuid: ...,
-            version hash: ...,
-            version time: ...,
+            content_hash: ...,
+            freeze_time: ...,
         },
         'nick2' : {
             bead_uuid: ...,
-            version hash: ...,
-            version time: ...,
+            content_hash: ...,
+            freeze_time: ...,
         },
         ...
     },
@@ -33,16 +33,16 @@ from __future__ import print_function
 from collections import namedtuple
 
 
+# FIXME: meta.PACKAGE -> meta.BEAD_UUID
 PACKAGE = 'bead_uuid'
 
 INPUTS = 'inputs'
 
-# FIXME: new constant names: INPUT_BEAD_ID, INPUT_CONTENT_HASH, INPUT_FREEZE_TIME
-INPUT_PACKAGE = 'bead_uuid'
-# FIXME: rename `version` to `content-hash`
-INPUT_VERSION = 'version hash'
-INPUT_TIME = 'version time'
+INPUT_BEAD_ID = 'bead_uuid'
+INPUT_CONTENT_HASH = 'content_hash'
+INPUT_FREEZE_TIME = 'freeze_time'
 
+# FIXME: rename `version` to `content-hash`
 InputSpec = namedtuple('InputSpec', 'name package version timestamp')
 
 
@@ -53,10 +53,13 @@ def parse_inputs(meta):
     inputs = meta[INPUTS]
     for name in inputs:
         spec = inputs[name]
-        yield InputSpec(name, spec[INPUT_PACKAGE], spec[INPUT_VERSION], spec[INPUT_TIME])
+        yield InputSpec(
+            name,
+            spec[INPUT_BEAD_ID],
+            spec[INPUT_CONTENT_HASH],
+            spec[INPUT_FREEZE_TIME])
 
 
 # Archive meta:
-# FIXME: new constant names: FREEZE_TIME, FREEZE_NAME
-PACKAGE_TIMESTAMP = 'timestamp'
-DEFAULT_NAME = 'default name'
+FREEZE_TIME = 'timestamp'
+FREEZE_NAME = 'default name'

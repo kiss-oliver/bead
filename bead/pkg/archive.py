@@ -88,15 +88,15 @@ class Archive(Package):
         m = self.meta
         keys = (
             meta.PACKAGE,
-            meta.PACKAGE_TIMESTAMP,
+            meta.FREEZE_TIME,
             meta.INPUTS,
-            meta.DEFAULT_NAME)
+            meta.FREEZE_NAME)
         return all(key in m for key in keys)
 
     def _package_creation_time_is_in_the_past(self):
         read_time = timestamp.time_from_timestamp
         now = read_time(timestamp.timestamp())
-        pkgtime = read_time(self.meta[meta.PACKAGE_TIMESTAMP])
+        pkgtime = read_time(self.meta[meta.FREEZE_TIME])
         return pkgtime < now
 
     @__zipfile_user
@@ -144,7 +144,7 @@ class Archive(Package):
 
     @property
     def timestamp_str(self):
-        return self._meta[meta.PACKAGE_TIMESTAMP]
+        return self._meta[meta.FREEZE_TIME]
 
     @property
     def meta(self):
