@@ -6,7 +6,7 @@ from __future__ import print_function
 from bead.test import TestCase
 from testtools.matchers import Not, Contains
 
-from . import fixtures
+from . import test_fixtures as fixtures
 
 
 class Test_status(TestCase, fixtures.RobotAndBeads):

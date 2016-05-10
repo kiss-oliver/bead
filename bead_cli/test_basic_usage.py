@@ -6,7 +6,7 @@ from __future__ import print_function
 from bead.test import TestCase
 from testtools.content import text_content
 
-from .robot import Robot
+from .test_robot import Robot
 
 
 class Test_basic_command_line(TestCase):

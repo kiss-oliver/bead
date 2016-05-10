@@ -6,7 +6,7 @@ from __future__ import print_function
 from bead.test import TestCase
 from testtools.matchers import FileContains, Not, Contains, FileExists
 
-from .robot import Robot
+from .test_robot import Robot
 
 from bead.tech.timestamp import timestamp
 from bead.workspace import Workspace

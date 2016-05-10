@@ -6,7 +6,7 @@ from __future__ import print_function
 from bead.test import TestCase
 from testtools.matchers import Contains
 
-from . import fixtures
+from . import test_fixtures as fixtures
 from collections import namedtuple
 from bead import repos
 from bead import spec as bead_spec

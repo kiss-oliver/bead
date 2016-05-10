@@ -8,7 +8,7 @@ from testtools.matchers import FileContains, Contains, FileExists
 
 from bead.workspace import Workspace
 from bead import layouts
-from . import fixtures
+from . import test_fixtures as fixtures
 
 
 class Test_develop(TestCase, fixtures.RobotAndBeads):

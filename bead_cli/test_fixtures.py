@@ -13,7 +13,7 @@ import zipfile
 from bead.workspace import Workspace
 from bead import layouts
 from bead import tech
-from .robot import Robot
+from .test_robot import Robot
 from bead import repos
 
 

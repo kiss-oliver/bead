@@ -8,7 +8,7 @@ from testtools.matchers import FileContains, Not, Contains
 
 import os
 from bead.workspace import Workspace
-from . import fixtures
+from . import test_fixtures as fixtures
 
 
 class Test_input_commands(TestCase, fixtures.RobotAndBeads):

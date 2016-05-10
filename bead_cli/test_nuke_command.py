@@ -6,7 +6,7 @@ from __future__ import print_function
 from bead.test import TestCase
 from testtools.matchers import Contains
 
-from . import fixtures
+from . import test_fixtures as fixtures
 
 
 class Test_nuke(TestCase, fixtures.RobotAndBeads):
