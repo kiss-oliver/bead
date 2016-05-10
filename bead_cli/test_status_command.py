@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase
+from bead.test import TestCase
 from testtools.matchers import Not, Contains
 
 from . import fixtures

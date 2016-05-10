@@ -5,6 +5,10 @@ cd $(dirname "$0")
 . test-env/bin/activate
 
 pwd
-flake8 bead
+flake8 bead bead_cli
 set -x
-exec green "${@:-bead}"
+if [ $# = 0 ]; then
+  exec green bead bead_cli
+else
+  exec green "$@"
+fi

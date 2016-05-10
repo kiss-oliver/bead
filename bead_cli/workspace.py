@@ -5,9 +5,9 @@ from __future__ import print_function
 
 import os
 
-from .. import tech
-from ..workspace import Workspace, CurrentDirWorkspace
-from .. import layouts
+from bead import tech
+from bead.workspace import Workspace, CurrentDirWorkspace
+from bead import layouts
 
 from .cmdparse import Command
 from .common import die, warning
@@ -16,7 +16,7 @@ from .common import OPTIONAL_WORKSPACE
 from .common import bead_spec_kwargs, get_bead_ref
 from . import arg_metavar
 from . import arg_help
-from .. import repos
+from bead import repos
 
 
 timestamp = tech.timestamp.timestamp

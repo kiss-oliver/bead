@@ -6,13 +6,13 @@ from __future__ import print_function
 import os
 import sys
 
-from ..workspace import Workspace, CurrentDirWorkspace
-from .. import spec as bead_spec
-from ..archive import Archive
-from .. import repos
+from bead.workspace import Workspace, CurrentDirWorkspace
+from bead import spec as bead_spec
+from bead.archive import Archive
+from bead import repos
 from . import arg_help
 from . import arg_metavar
-from ..tech.timestamp import time_from_user
+from bead.tech.timestamp import time_from_user
 
 ERROR_EXIT = 1
 

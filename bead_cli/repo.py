@@ -5,7 +5,7 @@ from __future__ import print_function
 
 import os
 
-from ..import repos
+from bead import repos
 from .cmdparse import Command
 
 

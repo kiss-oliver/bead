@@ -3,18 +3,18 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TempDir
+from bead.test import TempDir
 from tracelog import TRACELOG
 
 import os
 import warnings
 import zipfile
 
-from ..workspace import Workspace
-from .. import layouts
-from .. import tech
+from bead.workspace import Workspace
+from bead import layouts
+from bead import tech
 from .robot import Robot
-from .. import repos
+from bead import repos
 
 
 # timestamps

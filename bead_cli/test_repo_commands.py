@@ -3,13 +3,13 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase
+from bead.test import TestCase
 from testtools.matchers import FileContains, Not, Contains, FileExists
 
 from .robot import Robot
 
-from ..tech.timestamp import timestamp
-from ..workspace import Workspace
+from bead.tech.timestamp import timestamp
+from bead.workspace import Workspace
 
 import os
 

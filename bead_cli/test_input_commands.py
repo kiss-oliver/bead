@@ -3,11 +3,11 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase, skip
+from bead.test import TestCase, skip
 from testtools.matchers import FileContains, Not, Contains
 
 import os
-from ..workspace import Workspace
+from bead.workspace import Workspace
 from . import fixtures
 
 

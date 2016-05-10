@@ -17,8 +17,8 @@ VERSION = '0.0.1'
 
 
 def initialize_env(config_dir):
-    from .. import repos
-    repos.initialize(config_dir)
+    import bead.repos
+    bead.repos.initialize(config_dir)
 
 
 class CmdVersion(Command):

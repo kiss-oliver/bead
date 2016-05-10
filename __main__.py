@@ -1,3 +1,3 @@
-import bead.cli
+import bead_cli
 
-bead.cli.main()
+bead_cli.main()

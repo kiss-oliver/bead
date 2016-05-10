@@ -13,9 +13,9 @@ from .common import (
     die, warning
 )
 from .common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
-from .. import spec as bead_spec
-from .. import repos
-from ..tech.timestamp import time_from_timestamp
+from bead import spec as bead_spec
+from bead import repos
+from bead.tech.timestamp import time_from_timestamp
 
 
 # input_nick

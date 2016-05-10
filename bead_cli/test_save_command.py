@@ -3,14 +3,14 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase
+from bead.test import TestCase
 from testtools.matchers import Contains
 
 from . import fixtures
 from collections import namedtuple
-from .. import repos
-from .. import spec as bead_spec
-from ..workspace import Workspace
+from bead import repos
+from bead import spec as bead_spec
+from bead.workspace import Workspace
 
 
 class Test(TestCase, fixtures.RobotAndBeads):

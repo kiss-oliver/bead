@@ -8,9 +8,9 @@ import os
 import fixtures
 from tracelog import TRACELOG
 
-from .. import tech
+from bead import tech
 
-from ..test import TempDir, CaptureStdout, CaptureStderr
+from bead.test import TempDir, CaptureStdout, CaptureStderr
 from . import initialize_env, run
 
 
