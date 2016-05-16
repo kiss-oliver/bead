@@ -21,9 +21,6 @@ from .import tech
 Path = tech.fs.Path
 
 
-# FIXME: replace repos.initialize with environment.make_environment()
-
-
 class _Wrapper(object):
     def __init__(self, wrapped):
         self.wrapped = wrapped
@@ -113,7 +110,6 @@ class Repository(object):
         beads = (Archive(path, self.name) for path in paths)
         candidates = (bead for bead in beads if match(bead))
 
-        # FUTURE IMPLEMENTATIONS: can there be more than one valid match?
         return order_and_limit_beads(candidates, order, limit)
 
     def store(self, workspace, timestamp):

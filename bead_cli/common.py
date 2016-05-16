@@ -58,7 +58,6 @@ class get_env:
             os.makedirs(config_dir)
         except OSError:
             assert os.path.isdir(config_dir)
-        # XXX: OPTIONAL_ENV - make directory?
         return Environment(config_dir / 'env.json')
 
     def __repr__(self):
