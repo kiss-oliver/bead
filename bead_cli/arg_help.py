@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
+ENV       = 'config file to define user defined repositories'
 WORKSPACE = 'workspace directory'
 BEAD_LOAD = '''
     bead to load data from

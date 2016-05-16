@@ -12,11 +12,10 @@ from bead import layouts
 from .cmdparse import Command
 from .common import die, warning
 from .common import DefaultArgSentinel
-from .common import OPTIONAL_WORKSPACE
+from .common import OPTIONAL_WORKSPACE, OPTIONAL_ENV
 from .common import bead_spec_kwargs, get_bead_ref
 from . import arg_metavar
 from . import arg_help
-from bead import repos
 
 
 timestamp = tech.timestamp.timestamp
@@ -80,13 +79,15 @@ class CmdSave(Command):
         arg('repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
             metavar='REPOSITORY', help='Name of repository to store bead')
         arg(OPTIONAL_WORKSPACE)
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         repo_name = args.repo_name
         workspace = args.workspace
+        env = args.get_env()
         assert_valid_workspace(workspace)
         if repo_name is USE_THE_ONLY_REPO:
-            repositories = list(repos.env.get_repos())
+            repositories = list(env.get_repos())
             if not repositories:
                 die('No repositories defined, please define one!')
             if len(repositories) > 1:
@@ -95,7 +96,7 @@ class CmdSave(Command):
                     '(more than one repositories exists)')
             repo = repositories[0]
         else:
-            repo = repos.get(repo_name)
+            repo = env.get_repo(repo_name)
             if repo is None:
                 die('Unknown repository: {}'.format(repo_name))
         repo.store(workspace, timestamp())
@@ -121,10 +122,12 @@ class CmdDevelop(Command):
         arg('-x', '--extract-output', dest='extract_output',
             default=False, action='store_true',
             help='Extract output data as well (normally it is not needed!).')
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         extract_output = args.extract_output
-        bead_ref = get_bead_ref(args.bead_name, args.bead_query)
+        env = args.get_env()
+        bead_ref = get_bead_ref(env, args.bead_name, args.bead_query)
         try:
             bead = bead_ref.bead
         except LookupError:
@@ -154,12 +157,12 @@ def assert_valid_workspace(workspace):
         die('{} is not a valid workspace'.format(workspace.directory))
 
 
-def print_inputs(workspace, verbose):
+def print_inputs(env, workspace, verbose):
     assert_valid_workspace(workspace)
     inputs = sorted(workspace.inputs)
 
     if inputs:
-        repositories = repos.env.get_repos()
+        repositories = env.get_repos()
 
         print('Inputs:')
         for input in inputs:
@@ -209,10 +212,12 @@ class CmdStatus(Command):
         arg(OPTIONAL_WORKSPACE)
         arg('-v', '--verbose', default=False, action='store_true',
             help='show more detailed information')
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         workspace = args.workspace
         verbose = args.verbose
+        env = args.get_env()
         # TODO: use a template and render it with passing in all data
         uuid_needed = verbose
         if workspace.is_valid:
@@ -220,7 +225,7 @@ class CmdStatus(Command):
             if uuid_needed:
                 print('Bead UUID: {}'.format(workspace.bead_uuid))
             print()
-            print_inputs(workspace, verbose)
+            print_inputs(env, workspace, verbose)
         else:
             warning('Invalid workspace ({})'.format(workspace.directory))
 

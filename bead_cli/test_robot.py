@@ -11,7 +11,8 @@ from tracelog import TRACELOG
 from bead import tech
 
 from bead.test import TempDir, CaptureStdout, CaptureStderr
-from . import initialize_env, run
+from .main import run
+from .environment import Environment
 
 
 @contextlib.contextmanager
@@ -32,8 +33,8 @@ def environment(robot):
     with fixtures.EnvironmentVariable('HOME', robot.home):
         with chdir(robot.cwd):
             try:
-                initialize_env(robot.config_dir)
-                yield
+                # FIXME: robot: environment file should be built by a function in environment
+                yield Environment(robot.config_dir / 'env.json')
             except BaseException as e:
                 robot.retval = e
                 raise
@@ -99,7 +100,7 @@ class Robot(fixtures.Fixture):
         with self.environment:
             with CaptureStdout() as stdout, CaptureStderr() as stderr:
                 try:
-                    self.retval = run(args)
+                    self.retval = run(self.config_dir, args)
                 except BaseException as e:
                     TRACELOG(EXCEPTION=e)
                     raise

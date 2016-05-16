@@ -8,7 +8,6 @@ from testtools.matchers import Contains
 
 from . import test_fixtures as fixtures
 from collections import namedtuple
-from bead import repos
 from bead import spec as bead_spec
 from bead.workspace import Workspace
 
@@ -44,9 +43,9 @@ Repo = namedtuple('Repo', 'name directory')
 
 
 def bead_count(robot, repo, bead_uuid):
-    with robot.environment:
+    with robot.environment as env:
         query = [(bead_spec.BEAD_UUID, bead_uuid)]
-        return sum(1 for _ in repos.get(repo.name).find_beads(query))
+        return sum(1 for _ in env.get_repo(repo.name).find_beads(query))
 
 
 class Test_more_than_one_repos(TestCase):

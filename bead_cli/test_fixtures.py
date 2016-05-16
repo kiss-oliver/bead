@@ -14,7 +14,6 @@ from bead.workspace import Workspace
 from bead import layouts
 from bead import tech
 from .test_robot import Robot
-from bead import repos
 
 
 # timestamps
@@ -36,8 +35,8 @@ class RobotAndBeads(object):
         return robot
 
     def repo(self, robot):
-        with robot.environment:
-            return repos.get('repo')
+        with robot.environment as env:
+            return env.get_repo('repo')
 
     def beads(self):
         return {}

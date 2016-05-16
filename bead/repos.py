@@ -16,61 +16,12 @@ import os
 
 from .archive import Archive
 from . import spec as bead_spec
-from .tech import persistence
 from .tech.timestamp import time_from_timestamp
 from .import tech
 Path = tech.fs.Path
 
 
-# FIXME: create environment module
-ENV_REPOS = 'repositories'
-REPO_NAME = 'name'
-REPO_LOCATION = 'directory'
-
-
-class Environment:
-
-    def __init__(self, filename):
-        self.filename = filename
-        self._content = {}
-
-    def load(self):
-        with open(self.filename, 'r') as f:
-            self._content = persistence.load(f)
-
-    def save(self):
-        with open(self.filename, 'w') as f:
-            persistence.dump(self._content, f)
-
-    def get_repos(self):
-        for repo_spec in self._content.get(ENV_REPOS, ()):
-            repo = Repository(
-                repo_spec.get(REPO_NAME),
-                repo_spec.get(REPO_LOCATION))
-            yield repo
-
-    def set_repos(self, repos):
-        self._content[ENV_REPOS] = [
-            {
-                REPO_NAME: repo.name,
-                REPO_LOCATION: repo.location
-            }
-            for repo in repos]
-
-
-env = None
-
-
-def initialize(config_dir):
-    try:
-        os.makedirs(config_dir)
-    except OSError:
-        assert os.path.isdir(config_dir)
-    global env
-    env_path = Path(config_dir) / 'env.json'
-    env = Environment(env_path)
-    if os.path.exists(env_path):
-        env.load()
+# FIXME: replace repos.initialize with environment.make_environment()
 
 
 class _Wrapper(object):
@@ -216,49 +167,3 @@ class Repository(object):
             names.add(bead.name)
 
         return exact_match, best_guess, best_guess_timestamp, names
-
-
-def get(name):
-    '''
-    Return repository having :name or None.
-    '''
-    for repo in env.get_repos():
-        if repo.name == name:
-            return repo
-
-
-def is_known(name):
-    return get(name) is not None
-
-
-def add(name, directory):
-    repos = list(env.get_repos())
-    # check unique repo
-    for repo in repos:
-        if repo.name == name:
-            raise ValueError(
-                'Repository with name {} already exists'.format(name))
-        if repo.location == directory:
-            raise ValueError(
-                'Repository with location {} already exists'
-                .format(repo.location))
-
-    env.set_repos(repos + [Repository(name, directory)])
-    env.save()
-
-
-def forget(name):
-    env.set_repos(
-        repo
-        for repo in env.get_repos()
-        if repo.name != name)
-    env.save()
-
-
-# FIXME: move get_bead to Environment.get_bead
-def get_bead(bead_uuid, content_hash):
-    query = ((bead_spec.BEAD_UUID, bead_uuid), (bead_spec.CONTENT_HASH, content_hash))
-    for repo in env.get_repos():
-        for bead in repo.find_beads(query):
-            return bead
-    raise LookupError('Bead {} {} not found'.format(bead_uuid, content_hash))

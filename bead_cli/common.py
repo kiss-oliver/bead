@@ -13,6 +13,7 @@ from bead import repos
 from . import arg_help
 from . import arg_metavar
 from bead.tech.timestamp import time_from_user
+from .environment import Environment
 
 ERROR_EXIT = 1
 
@@ -38,6 +39,42 @@ def OPTIONAL_WORKSPACE(parser):
         '--workspace', '-w', metavar=arg_metavar.WORKSPACE,
         type=Workspace, default=CurrentDirWorkspace(),
         help=arg_help.WORKSPACE)
+
+
+class get_env:
+    '''
+    Make an Environment when called.
+
+    It will also create a missing config directory and provides a meaningful
+    text when used as default for an argparse argument.
+    '''
+
+    def __init__(self, config_dir):
+        self.config_dir = config_dir
+
+    def __call__(self):
+        config_dir = self.config_dir
+        try:
+            os.makedirs(config_dir)
+        except OSError:
+            assert os.path.isdir(config_dir)
+        # XXX: OPTIONAL_ENV - make directory?
+        return Environment(config_dir / 'env.json')
+
+    def __repr__(self):
+        return 'Environment at {}'.format(self.config_dir)
+
+
+def OPTIONAL_ENV(parser):
+    '''
+    Define `env` as option, defaulting to environment config in user's home directory
+    '''
+    config_dir = parser.defaults['config_dir']
+    parser.arg(
+        '--environment', metavar=arg_metavar.ENV,
+        dest='get_env',
+        type=get_env, default=get_env(config_dir),
+        help=arg_help.ENV)
 
 
 class DefaultArgSentinel(object):
@@ -148,7 +185,7 @@ class RepoQueryReference(BeadReference):
         return Workspace(self.workspace_name)
 
 
-def get_bead_ref(bead_name, bead_query):
+def get_bead_ref(env, bead_name, bead_query):
     if os.path.sep in bead_name and os.path.isfile(bead_name):
         return ArchiveReference(bead_name)
 
@@ -158,4 +195,4 @@ def get_bead_ref(bead_name, bead_query):
         query = [(bead_spec.BEAD_NAME_GLOB, bead_name)] + query
 
     # TODO: calculate and add index parameter (--next, --prev)
-    return RepoQueryReference(bead_name, query, repos.env.get_repos())
+    return RepoQueryReference(bead_name, query, env.get_repos())

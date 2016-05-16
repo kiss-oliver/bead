@@ -5,8 +5,8 @@ from __future__ import print_function
 
 import os
 
-from bead import repos
 from .cmdparse import Command
+from .common import OPTIONAL_ENV
 
 
 class CmdAdd(Command):
@@ -17,18 +17,22 @@ class CmdAdd(Command):
     def declare(self, arg):
         arg('name')
         arg('directory')
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         '''
         Define a repository.
         '''
         name, directory = args.name, args.directory
+        env = args.get_env()
+
         if not os.path.isdir(directory):
             print('ERROR: "{}" is not an existing directory!'.format(directory))
             return
         location = os.path.abspath(directory)
         try:
-            repos.add(name, location)
+            env.add_repo(name, location)
+            env.save()
             print('Will remember repo {}'.format(name))
         except ValueError as e:
             print('ERROR:', *e.args)
@@ -40,8 +44,11 @@ class CmdList(Command):
     List repositories.
     '''
 
+    def declare(self, arg):
+        arg(OPTIONAL_ENV)
+
     def run(self, args):
-        repositories = repos.env.get_repos()
+        repositories = args.get_env().get_repos()
 
         def print_repo(repo):
             print('{0.name}: {0.location}'.format(repo))
@@ -65,11 +72,15 @@ class CmdForget(Command):
 
     def declare(self, arg):
         arg('name')
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         name = args.name
-        if repos.is_known(name):
-            repos.forget(name)
+        env = args.get_env()
+
+        if env.is_known_repo(name):
+            env.forget_repo(name)
+            env.save()
             print('Repository "{}" is forgotten'.format(name))
         else:
             print('WARNING: no repository defined with "{}"'.format(name))

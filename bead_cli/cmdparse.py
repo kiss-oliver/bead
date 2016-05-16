@@ -70,13 +70,15 @@ class Parser:
 
     argparser = argparse.ArgumentParser
 
-    def __init__(self, argparser):
+    def __init__(self, argparser, defaults):
         '''
         Wrap an `argparse.ArgumentParser`.
 
         See `new` on how to make a Parser.
         '''
         self.argparser = argparser
+        self.defaults = defaults
+
         # This is ugly :(
         # subparsers should be an `argparse` implementation detail, but is not
         self.__subparsers = None
@@ -86,7 +88,7 @@ class Parser:
         # to set default command to print help, but it works only on 3.x!
 
     @classmethod
-    def new(cls, *args, **kwargs):
+    def new(cls, defaults, *args, **kwargs):
         '''
         Create a new `Parser`.
 
@@ -95,7 +97,7 @@ class Parser:
 
         This eliminates the need for users to import argparse.
         '''
-        return cls(argparse.ArgumentParser(*args, **kwargs))
+        return cls(argparse.ArgumentParser(*args, **kwargs), defaults)
 
     @property
     def _subparsers(self):
@@ -131,7 +133,7 @@ class Parser:
         The argument help is fixed up to show the default value.
         '''
         assert args
-        if not kwargs and len(args) == 1 and callable(*args):
+        if not kwargs and len(args) == 1 and callable(args[0]):
             args[0](self)
         else:
             arg_kwargs = dict(kwargs)
@@ -153,7 +155,7 @@ class Parser:
         command = self._make_command(commandish)
         parser = self._subparsers.add_parser(
             name, help=title, description=command.description)
-        command.declare(self.__class__(parser).arg)
+        command.declare(self.__class__(parser, self.defaults).arg)
         parser.set_defaults(_cmdparse__run=command.run)
 
     def commands(self, *names_commands_and_title):
@@ -183,7 +185,7 @@ class Parser:
         '''
         parser = self._subparsers.add_parser(
             name, help=title + '...', description=help)
-        return self.__class__(parser)
+        return self.__class__(parser, self.defaults)
 
     def dispatch(self, argv):
         '''

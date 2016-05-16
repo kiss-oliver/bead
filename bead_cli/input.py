@@ -8,13 +8,13 @@ from .cmdparse import Command
 from . import arg_metavar
 from . import arg_help
 from .common import (
-    OPTIONAL_WORKSPACE, DefaultArgSentinel,
+    OPTIONAL_WORKSPACE, OPTIONAL_ENV,
+    DefaultArgSentinel,
     CurrentDirWorkspace,
     die, warning
 )
 from .common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
 from bead import spec as bead_spec
-from bead import repos
 from bead.tech.timestamp import time_from_timestamp
 
 
@@ -59,16 +59,18 @@ class CmdAdd(Command):
             help=arg_help.BEAD_LOAD)
         arg(bead_spec_kwargs)
         arg(OPTIONAL_WORKSPACE)
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         input_nick = args.input_nick
         bead_name = args.bead_name
         workspace = args.workspace
+        env = args.get_env()
 
         if bead_name is USE_INPUT_NICK:
             bead_name = input_nick
 
-        bead_ref = get_bead_ref(bead_name, args.bead_query)
+        bead_ref = get_bead_ref(env, bead_name, args.bead_query)
         try:
             bead = bead_ref.bead
         except LookupError:
@@ -107,15 +109,17 @@ class CmdUpdate(Command):
             default=NEWEST_VERSION,
             help=arg_help.BEAD_LOAD)
         arg(OPTIONAL_WORKSPACE)
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         input_nick = args.input_nick
         bead_ref = args.bead_ref
         workspace = args.workspace
+        env = args.get_env()
         if input_nick is ALL_INPUTS:
             for input in workspace.inputs:
                 try:
-                    _update(workspace, input)
+                    _update(env, workspace, input)
                 except LookupError:
                     if workspace.is_loaded(input.name):
                         print('{} is already newest ({})'.format(input.name, input.timestamp))
@@ -125,20 +129,21 @@ class CmdUpdate(Command):
         else:
             # FIXME: update: fix to allow to select previous/next/closest to a timestamp bead
             if bead_ref is not NEWEST_VERSION:
-                bead_ref = get_bead_ref(bead_ref, args.bead_query)
+                bead_name = bead_ref
+                bead_ref = get_bead_ref(env, bead_name, args.bead_query)
             try:
-                _update(workspace, workspace.get_input(input_nick), bead_ref)
+                _update(env, workspace, workspace.get_input(input_nick), bead_ref)
             except LookupError:
                 die('Can not find matching bead')
 
 
-def _update(workspace, input, bead_ref=NEWEST_VERSION):
+def _update(env, workspace, input, bead_ref=NEWEST_VERSION):
     if bead_ref is NEWEST_VERSION:
         query = [
             (bead_spec.BEAD_UUID, input.bead_uuid),
             (bead_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
-        bead_ref = RepoQueryReference(workspace_name, query, repos.env.get_repos())
+        bead_ref = RepoQueryReference(workspace_name, query, env.get_repos())
 
     replacement = bead_ref.bead
     _check_load_with_feedback(workspace, input.name, replacement)
@@ -152,26 +157,28 @@ class CmdLoad(Command):
     def declare(self, arg):
         arg(OPTIONAL_INPUT_NICK)
         arg(OPTIONAL_WORKSPACE)
+        arg(OPTIONAL_ENV)
 
     def run(self, args):
         input_nick = args.input_nick
         workspace = args.workspace
+        env = args.get_env()
         if input_nick is ALL_INPUTS:
             inputs = workspace.inputs
             if inputs:
                 for input in inputs:
-                    _load(workspace, input)
+                    _load(env, workspace, input)
             else:
                 warning('No inputs defined to load.')
         else:
-            _load(workspace, workspace.get_input(input_nick))
+            _load(env, workspace, workspace.get_input(input_nick))
 
 
-def _load(workspace, input):
+def _load(env, workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
-            bead = repos.get_bead(input.bead_uuid, input.content_hash)
+            bead = env.get_bead(input.bead_uuid, input.content_hash)
         except LookupError:
             warning(
                 'Could not find archive for {} - not loaded!'
