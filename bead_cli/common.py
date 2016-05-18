@@ -110,7 +110,7 @@ def _parse_start_of_name(name):
     return name + '*'
 
 
-def bead_spec_kwargs(parser):
+def arg_bead_query(parser):
     group = parser.argparser.add_argument_group(
         'bead query',
         'Restrict the bead version with these options')
@@ -133,6 +133,25 @@ def bead_spec_kwargs(parser):
     # -P, --prev, --previous
     # --newest, --latest (default)
     # --oldest
+
+BEAD_QUERY = arg_bead_query
+
+
+def arg_bead_ref_base(nargs, default):
+    '''
+    Declare bead_ref_base argument - either a name or a file or something special
+    '''
+    def declare(parser):
+        parser.arg(
+            'bead_ref_base', metavar=arg_metavar.BEAD_REF, help=arg_help.BEAD_REF,
+            nargs=nargs, type=str, default=default)
+    return declare
+
+
+def BEAD_REF_BASE_DEFAULTING_TO(name):
+    return arg_bead_ref_base(nargs='?', default=name)
+
+BEAD_REF_BASE = arg_bead_ref_base(nargs=None, default=None)
 
 
 class BeadReference:
@@ -184,14 +203,14 @@ class RepoQueryReference(BeadReference):
         return Workspace(self.workspace_name)
 
 
-def get_bead_ref(env, bead_name, bead_query):
-    if os.path.sep in bead_name and os.path.isfile(bead_name):
-        return ArchiveReference(bead_name)
+def get_bead_ref(env, bead_ref_base, bead_query):
+    if os.path.sep in bead_ref_base and os.path.isfile(bead_ref_base):
+        return ArchiveReference(bead_ref_base)
 
     query = list(bead_query or [])
 
-    if bead_name:
-        query = [(bead_spec.BEAD_NAME_GLOB, bead_name)] + query
+    if bead_ref_base:
+        query = [(bead_spec.BEAD_NAME_GLOB, bead_ref_base)] + query
 
     # TODO: calculate and add index parameter (--next, --prev)
-    return RepoQueryReference(bead_name, query, env.get_repos())
+    return RepoQueryReference(bead_ref_base, query, env.get_repos())

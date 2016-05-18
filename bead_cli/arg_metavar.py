@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
-ENV        = 'ENV-FILE'
+ENV        = 'DIRECTORY'
 WORKSPACE  = 'DIRECTORY'
-BEAD_REF   = 'BEAD'
-INPUT_NICK = 'NAME'
+BEAD_REF   = 'BEAD-NAME'
+INPUT_NICK = 'INPUT-NAME'
+REPOSITORY = 'REPOSITORY-NAME'

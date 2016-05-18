@@ -13,7 +13,7 @@ from .cmdparse import Command
 from .common import die, warning
 from .common import DefaultArgSentinel
 from .common import OPTIONAL_WORKSPACE, OPTIONAL_ENV
-from .common import bead_spec_kwargs, get_bead_ref
+from .common import BEAD_REF_BASE, BEAD_QUERY, get_bead_ref
 from . import arg_metavar
 from . import arg_help
 
@@ -77,7 +77,7 @@ class CmdSave(Command):
 
     def declare(self, arg):
         arg('repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
-            metavar='REPOSITORY', help='Name of repository to store bead')
+            metavar=arg_metavar.REPOSITORY, help=arg_help.REPOSITORY)
         arg(OPTIONAL_WORKSPACE)
         arg(OPTIONAL_ENV)
 
@@ -115,9 +115,8 @@ class CmdDevelop(Command):
     '''
 
     def declare(self, arg):
-        arg('bead_name', metavar='bead-name')
-        arg(bead_spec_kwargs)
-        # TODO: delete arg_metavar.BEAD_REF
+        arg(BEAD_REF_BASE)
+        arg(BEAD_QUERY)
         arg(workspace_defaulting_to(DERIVE_FROM_BEAD_NAME))
         arg('-x', '--extract-output', dest='extract_output',
             default=False, action='store_true',
@@ -127,7 +126,7 @@ class CmdDevelop(Command):
     def run(self, args):
         extract_output = args.extract_output
         env = args.get_env()
-        bead_ref = get_bead_ref(env, args.bead_name, args.bead_query)
+        bead_ref = get_bead_ref(env, args.bead_ref_base, args.bead_query)
         try:
             bead = bead_ref.bead
         except LookupError:

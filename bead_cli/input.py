@@ -13,7 +13,7 @@ from .common import (
     CurrentDirWorkspace,
     die, warning
 )
-from .common import bead_spec_kwargs, get_bead_ref, RepoQueryReference
+from .common import BEAD_REF_BASE_DEFAULTING_TO, BEAD_QUERY, get_bead_ref, RepoQueryReference
 from bead import spec as bead_spec
 from bead.tech.timestamp import time_from_timestamp
 
@@ -31,7 +31,7 @@ def OPTIONAL_INPUT_NICK(parser):
         metavar=arg_metavar.INPUT_NICK, help=arg_help.INPUT_NICK)
 
 
-def MANDATORY_INPUT_NICK(parser):
+def INPUT_NICK(parser):
     '''
     Declare `input_nick` as mandatory parameter
     '''
@@ -53,31 +53,29 @@ class CmdAdd(Command):
     '''
 
     def declare(self, arg):
-        arg(MANDATORY_INPUT_NICK)
-        arg('bead_name', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
-            default=USE_INPUT_NICK,
-            help=arg_help.BEAD_LOAD)
-        arg(bead_spec_kwargs)
+        arg(INPUT_NICK)
+        arg(BEAD_REF_BASE_DEFAULTING_TO(USE_INPUT_NICK))
+        arg(BEAD_QUERY)
         arg(OPTIONAL_WORKSPACE)
         arg(OPTIONAL_ENV)
 
     def run(self, args):
         input_nick = args.input_nick
-        bead_name = args.bead_name
+        bead_ref_base = args.bead_ref_base
         workspace = args.workspace
         env = args.get_env()
 
-        if bead_name is USE_INPUT_NICK:
-            bead_name = input_nick
+        if bead_ref_base is USE_INPUT_NICK:
+            bead_ref_base = input_nick
 
-        bead_ref = get_bead_ref(env, bead_name, args.bead_query)
+        bead_ref = get_bead_ref(env, bead_ref_base, args.bead_query)
         try:
             bead = bead_ref.bead
         except LookupError:
-            die('Not a known bead name: {}'.format(bead_name))
+            die('Not a known bead name: {}'.format(bead_ref_base))
 
         _check_load_with_feedback(
-            workspace, args.input_nick, bead, bead_name)
+            workspace, args.input_nick, bead, bead_ref_base)
 
 
 class CmdDelete(Command):
@@ -86,7 +84,7 @@ class CmdDelete(Command):
     '''
 
     def declare(self, arg):
-        arg(MANDATORY_INPUT_NICK)
+        arg(INPUT_NICK)
         arg(OPTIONAL_WORKSPACE)
 
     def run(self, args):
@@ -102,18 +100,15 @@ class CmdUpdate(Command):
     '''
 
     def declare(self, arg):
-        arg(bead_spec_kwargs)
         arg(OPTIONAL_INPUT_NICK)
-        arg(
-            'bead_ref', metavar=arg_metavar.BEAD_REF, nargs='?', type=str,
-            default=NEWEST_VERSION,
-            help=arg_help.BEAD_LOAD)
+        arg(BEAD_REF_BASE_DEFAULTING_TO(NEWEST_VERSION))
+        arg(BEAD_QUERY)
         arg(OPTIONAL_WORKSPACE)
         arg(OPTIONAL_ENV)
 
     def run(self, args):
         input_nick = args.input_nick
-        bead_ref = args.bead_ref
+        bead_ref_base = args.bead_ref_base
         workspace = args.workspace
         env = args.get_env()
         if input_nick is ALL_INPUTS:
@@ -128,9 +123,10 @@ class CmdUpdate(Command):
             print('All inputs are up to date.')
         else:
             # FIXME: update: fix to allow to select previous/next/closest to a timestamp bead
-            if bead_ref is not NEWEST_VERSION:
-                bead_name = bead_ref
-                bead_ref = get_bead_ref(env, bead_name, args.bead_query)
+            if bead_ref_base is NEWEST_VERSION:
+                bead_ref = NEWEST_VERSION
+            else:
+                bead_ref = get_bead_ref(env, bead_ref_base, args.bead_query)
             try:
                 _update(env, workspace, workspace.get_input(input_nick), bead_ref)
             except LookupError:
