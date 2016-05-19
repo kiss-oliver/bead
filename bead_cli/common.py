@@ -70,7 +70,7 @@ def OPTIONAL_ENV(parser):
     '''
     config_dir = parser.defaults['config_dir']
     parser.arg(
-        '--environment', metavar=arg_metavar.ENV,
+        '--env', '--environment', metavar=arg_metavar.ENV,
         dest='get_env',
         type=get_env, default=get_env(config_dir),
         help=arg_help.ENV)

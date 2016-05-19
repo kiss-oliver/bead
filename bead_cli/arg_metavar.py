@@ -6,6 +6,6 @@ from __future__ import print_function
 
 ENV        = 'DIRECTORY'
 WORKSPACE  = 'DIRECTORY'
-BEAD_REF   = 'BEAD-NAME'
+BEAD_REF   = 'BEAD-REF'
 INPUT_NICK = 'INPUT-NAME'
 REPOSITORY = 'REPOSITORY-NAME'

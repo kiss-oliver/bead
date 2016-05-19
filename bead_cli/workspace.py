@@ -111,7 +111,7 @@ class CmdDevelop(Command):
     Unpack a bead as a source tree.
 
     Bead directory layout is created, but only the source files are
-    extracted by default.
+    extracted.
     '''
 
     def declare(self, arg):
