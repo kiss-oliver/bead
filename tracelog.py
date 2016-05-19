@@ -76,7 +76,9 @@ def TRACELOG(*args, **kwargs):
 
     message = ' '.join(repr(arg) for arg in args)
     if kwargs:
-        message += '   ** ' + ' | '.join('{}: {!r}'.format(key, value) for key, value in sorted(kwargs.items()))
+        message += '   ** ' + ' | '.join(
+            '{}: {!r}'.format(key, value)
+            for key, value in sorted(kwargs.items()))
 
     try:
         stack = inspect.stack()

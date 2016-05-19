@@ -76,7 +76,7 @@ Thank you for your interest!
 
 ## TODOs
 
-Updated by script, text in this section and afterwards will be overwritten
+Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/renames/ci)), text in this section and afterwards will be overwritten
 
 - [FIXME: add zip comment with pointers to this software](https://github.com/e3krisztian/bead/blob/renames/bead/workspace.py#L189)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/renames/bead_cli/workspace.py#L49)

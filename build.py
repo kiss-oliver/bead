@@ -20,6 +20,7 @@ TOOL_PYZ = BUILD + '/bead.pyz'
 UNIX_TOOL = BUILD + '/bead'
 WIN_TOOL = BUILD + '/bead.cmd'
 
+
 def mkdir(dir):
     if not os.path.isdir(dir):
         os.makedirs(dir)
