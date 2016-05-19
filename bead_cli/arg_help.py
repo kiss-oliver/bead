@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
-ENV       = 'directory that defines e.g. the repositories'
+ENV       = 'directory that defines e.g. the boxes'
 WORKSPACE = 'workspace directory'
 BEAD_REF  = '''
     bead to load data from
@@ -13,4 +13,4 @@ BEAD_REF  = '''
 INPUT_NICK = (
     'name of input,'
     + ' its workspace relative location is "input/%(metavar)s"')
-REPOSITORY = 'Name of repository to store bead'
+BOX = 'Name of box to store bead'

@@ -41,9 +41,9 @@ assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012
 
 class Archive(Bead):
 
-    def __init__(self, filename, repository_name=''):
+    def __init__(self, filename, box_name=''):
         self.archive_filename = filename
-        self.repo = repository_name
+        self.box_name = box_name
         self.name = bead_name_from_file_path(filename)
         self.zipfile = None
         self._meta = self._load_meta()

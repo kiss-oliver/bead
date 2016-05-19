@@ -7,14 +7,14 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from bead.repos import Repository
+from bead.box import Box
 from bead.tech import persistence
 import bead.spec as bead_spec
 import os
 
-ENV_REPOS = 'repositories'
-REPO_NAME = 'name'
-REPO_LOCATION = 'directory'
+ENV_BOXES = 'boxes'
+BOX_NAME = 'name'
+BOX_LOCATION = 'directory'
 
 
 class Environment:
@@ -33,55 +33,55 @@ class Environment:
         with open(self.filename, 'w') as f:
             persistence.dump(self._content, f)
 
-    def get_repos(self):
-        for repo_spec in self._content.get(ENV_REPOS, ()):
-            repo = Repository(
-                repo_spec.get(REPO_NAME),
-                repo_spec.get(REPO_LOCATION))
-            yield repo
+    def get_boxes(self):
+        for box_spec in self._content.get(ENV_BOXES, ()):
+            box = Box(
+                box_spec.get(BOX_NAME),
+                box_spec.get(BOX_LOCATION))
+            yield box
 
-    def set_repos(self, repos):
-        self._content[ENV_REPOS] = [
+    def set_boxes(self, boxes):
+        self._content[ENV_BOXES] = [
             {
-                REPO_NAME: repo.name,
-                REPO_LOCATION: repo.location
+                BOX_NAME: box.name,
+                BOX_LOCATION: box.location
             }
-            for repo in repos]
+            for box in boxes]
 
-    def add_repo(self, name, directory):
-        repos = list(self.get_repos())
-        # check unique repo
-        for repo in repos:
-            if repo.name == name:
+    def add_box(self, name, directory):
+        boxes = list(self.get_boxes())
+        # check unique box
+        for box in boxes:
+            if box.name == name:
                 raise ValueError(
-                    'Repository with name {} already exists'.format(name))
-            if repo.location == directory:
+                    'Box with name {} already exists'.format(name))
+            if box.location == directory:
                 raise ValueError(
-                    'Repository with location {} already exists'
-                    .format(repo.location))
+                    'Box with location {} already exists'
+                    .format(box.location))
 
-        self.set_repos(repos + [Repository(name, directory)])
+        self.set_boxes(boxes + [Box(name, directory)])
 
-    def forget_repo(self, name):
-        self.set_repos(
-            repo
-            for repo in self.get_repos()
-            if repo.name != name)
+    def forget_box(self, name):
+        self.set_boxes(
+            box
+            for box in self.get_boxes()
+            if box.name != name)
 
-    def get_repo(self, name):
+    def get_box(self, name):
         '''
-        Return repository having :name or None.
+        Return box having :name or None.
         '''
-        for repo in self.get_repos():
-            if repo.name == name:
-                return repo
+        for box in self.get_boxes():
+            if box.name == name:
+                return box
 
-    def is_known_repo(self, name):
-        return self.get_repo(name) is not None
+    def is_known_box(self, name):
+        return self.get_box(name) is not None
 
     def get_bead(self, bead_uuid, content_hash):
         query = ((bead_spec.BEAD_UUID, bead_uuid), (bead_spec.CONTENT_HASH, content_hash))
-        for repo in self.get_repos():
-            for bead in repo.find_beads(query):
+        for box in self.get_boxes():
+            for bead in box.find_beads(query):
                 return bead
         raise LookupError('Bead {} {} not found'.format(bead_uuid, content_hash))

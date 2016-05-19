@@ -24,11 +24,11 @@ class Test_basic_command_line(TestCase):
     def ls(self, robot):
         return robot.ls
 
-    def repo_dir(self):
+    def box_dir(self):
         return self.new_temp_dir()
 
     # tests
-    def test(self, robot, cli, cd, ls, repo_dir):
+    def test(self, robot, cli, cd, ls, box_dir):
         self.addDetail('home', text_content(robot.home))
 
         cli('new', 'something')
@@ -38,7 +38,7 @@ class Test_basic_command_line(TestCase):
         cli('status')
         self.assertNotIn('Inputs', robot.stdout)
 
-        cli('repo', 'add', 'default', repo_dir)
+        cli('box', 'add', 'default', box_dir)
         cli('save')
 
         cd('..')

@@ -11,7 +11,7 @@ from .common import OPTIONAL_ENV
 
 class CmdAdd(Command):
     '''
-    Define a repository.
+    Define a box.
     '''
 
     def declare(self, arg):
@@ -21,7 +21,7 @@ class CmdAdd(Command):
 
     def run(self, args):
         '''
-        Define a repository.
+        Define a box.
         '''
         name, directory = args.name, args.directory
         env = args.get_env()
@@ -31,9 +31,9 @@ class CmdAdd(Command):
             return
         location = os.path.abspath(directory)
         try:
-            env.add_repo(name, location)
+            env.add_box(name, location)
             env.save()
-            print('Will remember repo {}'.format(name))
+            print('Will remember box {}'.format(name))
         except ValueError as e:
             print('ERROR:', *e.args)
             print('Check the parameters: both name and directory must be unique!')
@@ -41,33 +41,33 @@ class CmdAdd(Command):
 
 class CmdList(Command):
     '''
-    List repositories.
+    List boxes.
     '''
 
     def declare(self, arg):
         arg(OPTIONAL_ENV)
 
     def run(self, args):
-        repositories = args.get_env().get_repos()
+        boxes = args.get_env().get_boxes()
 
-        def print_repo(repo):
-            print('{0.name}: {0.location}'.format(repo))
+        def print_box(box):
+            print('{0.name}: {0.location}'.format(box))
         try:
-            repo = next(repositories)
+            box = next(boxes)
         except StopIteration:
-            print('There are no defined repositories')
+            print('There are no defined boxes')
         else:
             # XXX: list command: use tabulate?
-            print('Repositories:')
+            print('Boxes:')
             print('-------------')
-            print_repo(repo)
-            for repo in repositories:
-                print_repo(repo)
+            print_box(box)
+            for box in boxes:
+                print_box(box)
 
 
 class CmdForget(Command):
     '''
-    Remove the named repository from the repositories known by the tool.
+    Remove the named box from the boxes known by the tool.
     '''
 
     def declare(self, arg):
@@ -78,9 +78,9 @@ class CmdForget(Command):
         name = args.name
         env = args.get_env()
 
-        if env.is_known_repo(name):
-            env.forget_repo(name)
+        if env.is_known_box(name):
+            env.forget_box(name)
             env.save()
-            print('Repository "{}" is forgotten'.format(name))
+            print('Box "{}" is forgotten'.format(name))
         else:
-            print('WARNING: no repository defined with "{}"'.format(name))
+            print('WARNING: no box defined with "{}"'.format(name))

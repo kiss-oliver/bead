@@ -67,7 +67,7 @@ def order_and_limit_beads(beads, order=bead_spec.NEWEST_FIRST, limit=None):
     return [wrapper.wrapped for wrapper in wrapped_results]
 
 
-class Repository(object):
+class Box(object):
     # TODO: user maintained directory hierarchy
 
     def __init__(self, name=None, location=None):
@@ -79,7 +79,7 @@ class Repository(object):
         '''
         Location as a Path.
 
-        Valid only for local repositories.
+        Valid only for local boxes.
         '''
         return Path(self.location)
 
@@ -106,7 +106,7 @@ class Repository(object):
 
         # XXX: directory itself might be a pattern - is it OK?
         paths = iglob(self.directory / glob)
-        # FIXME: Repository.find_beads dies on non bead in the directory
+        # FIXME: Box.find_beads dies on non bead in the directory
         beads = (Archive(path, self.name) for path in paths)
         candidates = (bead for bead in beads if match(bead))
 
@@ -134,7 +134,7 @@ class Repository(object):
         '''
         assert isinstance(timestamp, datetime)
         paths = (self.directory / fname for fname in os.listdir(self.directory))
-        # FIXME: Repository.find_names dies on non bead in the directory
+        # FIXME: Box.find_names dies on non bead in the directory
         beads = (Archive(path, self.name) for path in paths)
         candidates = (bead for bead in beads if bead.bead_uuid == bead_uuid)
 

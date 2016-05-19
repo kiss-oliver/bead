@@ -13,7 +13,7 @@ from .common import (
     CurrentDirWorkspace,
     die, warning
 )
-from .common import BEAD_REF_BASE_defaulting_to, BEAD_QUERY, get_bead_ref, RepoQueryReference
+from .common import BEAD_REF_BASE_defaulting_to, BEAD_QUERY, get_bead_ref, BoxQueryReference
 from bead import spec as bead_spec
 from bead.tech.timestamp import time_from_timestamp
 
@@ -139,7 +139,7 @@ def _update(env, workspace, input, bead_ref=NEWEST_VERSION):
             (bead_spec.BEAD_UUID, input.bead_uuid),
             (bead_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
-        bead_ref = RepoQueryReference(workspace_name, query, env.get_repos())
+        bead_ref = BoxQueryReference(workspace_name, query, env.get_boxes())
 
     replacement = bead_ref.bead
     _check_load_with_feedback(workspace, input.name, replacement)

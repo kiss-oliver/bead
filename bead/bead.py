@@ -12,7 +12,7 @@ class Bead(object):
     bead_uuid = str
     content_hash = str
     timestamp_str = str
-    repo = str
+    box_name = str
     name = str
 
     @property

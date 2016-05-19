@@ -89,10 +89,10 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         with robot.environment:
             self.assertFalse(Workspace('.').is_loaded('input_b'))
 
-    def test_partially_deleted_repo(self, robot, bead_with_inputs):
-        deleted_repo = self.new_temp_dir()
-        robot.cli('repo', 'add', 'missing', deleted_repo)
-        os.rmdir(deleted_repo)
+    def test_partially_deleted_box(self, robot, bead_with_inputs):
+        deleted_box = self.new_temp_dir()
+        robot.cli('box', 'add', 'missing', deleted_box)
+        os.rmdir(deleted_box)
         robot.cli('develop', bead_with_inputs)
         robot.cd(bead_with_inputs)
         robot.cli('input', 'load')

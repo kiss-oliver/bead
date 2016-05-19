@@ -43,7 +43,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(bead_a.content_hash))
 
-    def test_inputs_not_in_known_repos(
+    def test_inputs_not_in_known_boxes(
             self, robot, beads, bead_with_inputs, bead_a):
         robot.cli('develop', bead_with_inputs)
         robot.cd(bead_with_inputs)
@@ -60,7 +60,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(bead_a.content_hash))
 
-    def test_verbose_inputs_not_in_known_repos(
+    def test_verbose_inputs_not_in_known_boxes(
             self, robot, beads, bead_with_inputs, bead_a):
         robot.cli('develop', bead_with_inputs)
         robot.cd(bead_with_inputs)

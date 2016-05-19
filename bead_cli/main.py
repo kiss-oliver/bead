@@ -10,7 +10,7 @@ from .cmdparse import Parser, Command
 
 from . import workspace
 from . import input
-from . import repo
+from . import box
 from . import PACKAGE, VERSION
 
 
@@ -37,7 +37,7 @@ def make_argument_parser(defaults):
 
             'save',
             workspace.CmdSave,
-            'Save workspace in a repository.',
+            'Save workspace in a box.',
 
             'status',
             workspace.CmdStatus,
@@ -72,19 +72,19 @@ def make_argument_parser(defaults):
             'Load data from already defined dependency.',))
 
     (parser
-        .group('repo', 'Manage bead repositories')
+        .group('box', 'Manage bead boxes')
         .commands(
             'add',
-            repo.CmdAdd,
-            'Define a repository.',
+            box.CmdAdd,
+            'Define a box.',
 
             'list',
-            repo.CmdList,
-            'Show known repositories.',
+            box.CmdList,
+            'Show known boxes.',
 
             'forget',
-            repo.CmdForget,
-            'Forget a known repository.'))
+            box.CmdForget,
+            'Forget a known box.'))
 
     return parser
 

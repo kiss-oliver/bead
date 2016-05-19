@@ -21,7 +21,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.cwd / bead_a / 'README', FileContains(bead_a))
 
     def test_missing_bead(self, robot, bead_a):
-        robot.cli('repo', 'forget', 'repo')
+        robot.cli('box', 'forget', 'box')
         try:
             robot.cli('develop', bead_a)
         except SystemExit:

@@ -9,7 +9,7 @@ import sys
 from bead.workspace import Workspace, CurrentDirWorkspace
 from bead import spec as bead_spec
 from bead.archive import Archive
-from bead import repos
+from bead import box as bead_box
 from . import arg_help
 from . import arg_metavar
 from bead.tech.timestamp import time_from_user
@@ -116,7 +116,7 @@ def arg_bead_query(parser):
         'Restrict the bead version with these options')
     arg = group.add_argument
     # TODO: implement more options
-    # -r, --repo, --repository
+    # -b, --box
 
     # bead_filters
     BEAD_QUERY = 'bead_query'
@@ -174,8 +174,8 @@ class ArchiveReference(BeadReference):
         return Workspace(self.bead.name)
 
 
-class RepoQueryReference(BeadReference):
-    def __init__(self, workspace_name, query, repositories, index=-1):
+class BoxQueryReference(BeadReference):
+    def __init__(self, workspace_name, query, boxes, index=-1):
         # index: like python list indices 0 = first, -1 = last
         self.workspace_name = workspace_name
         self.query = query
@@ -185,15 +185,15 @@ class RepoQueryReference(BeadReference):
         else:
             self.order = bead_spec.OLDEST_FIRST
             self.limit = index + 1
-        self.repositories = list(repositories)
+        self.boxes = list(boxes)
 
     @property
     def bead(self):
         matches = []
-        for repo in self.repositories:
-            matches.extend(repo.find_beads(self.query, self.order, self.limit))
+        for box in self.boxes:
+            matches.extend(box.find_beads(self.query, self.order, self.limit))
             # XXX: order_and_limit_beads is called twice - first in find_beads
-            matches = repos.order_and_limit_beads(matches, self.order, self.limit)
+            matches = bead_box.order_and_limit_beads(matches, self.order, self.limit)
         if len(matches) == self.limit:
             return matches[-1]
         raise LookupError
@@ -213,4 +213,4 @@ def get_bead_ref(env, bead_ref_base, bead_query):
         query = [(bead_spec.BEAD_NAME_GLOB, bead_ref_base)] + query
 
     # TODO: calculate and add index parameter (--next, --prev)
-    return RepoQueryReference(bead_ref_base, query, env.get_repos())
+    return BoxQueryReference(bead_ref_base, query, env.get_boxes())

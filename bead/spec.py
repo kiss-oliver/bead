@@ -19,7 +19,7 @@ CONTENT_HASH   = 'CONTENT_HASH'
 # TODO: support shortened content hashes
 
 
-# private and specific to Repository implementation, when Repository gains
+# private and specific to Box implementation, when Box gains
 # more power, it should change how it handles queries (e.g. using BEAD_UUID
 # or CONTENT_HASH directly through an index)
 

@@ -65,41 +65,41 @@ def WORKSPACE_defaulting_to(default_workspace):
     return opt_workspace
 
 
-USE_THE_ONLY_REPO = DefaultArgSentinel(
-    'if there is exactly one repository,' +
+USE_THE_ONLY_BOX = DefaultArgSentinel(
+    'if there is exactly one box,' +
     ' store there, otherwise it MUST be specified')
 
 
 class CmdSave(Command):
     '''
-    Save workspace in a repository.
+    Save workspace in a box.
     '''
 
     def declare(self, arg):
-        arg('repo_name', nargs='?', default=USE_THE_ONLY_REPO, type=str,
-            metavar=arg_metavar.REPOSITORY, help=arg_help.REPOSITORY)
+        arg('box_name', nargs='?', default=USE_THE_ONLY_BOX, type=str,
+            metavar=arg_metavar.BOX, help=arg_help.BOX)
         arg(OPTIONAL_WORKSPACE)
         arg(OPTIONAL_ENV)
 
     def run(self, args):
-        repo_name = args.repo_name
+        box_name = args.box_name
         workspace = args.workspace
         env = args.get_env()
         assert_valid_workspace(workspace)
-        if repo_name is USE_THE_ONLY_REPO:
-            repositories = list(env.get_repos())
-            if not repositories:
-                die('No repositories defined, please define one!')
-            if len(repositories) > 1:
+        if box_name is USE_THE_ONLY_BOX:
+            boxes = list(env.get_boxes())
+            if not boxes:
+                die('No boxes defined, please define one!')
+            if len(boxes) > 1:
                 die(
-                    'REPOSITORY parameter is not optional!\n' +
-                    '(more than one repositories exists)')
-            repo = repositories[0]
+                    'BOX parameter is not optional!\n' +
+                    '(more than one boxes exists)')
+            box = boxes[0]
         else:
-            repo = env.get_repo(repo_name)
-            if repo is None:
-                die('Unknown repository: {}'.format(repo_name))
-        repo.store(workspace, timestamp())
+            box = env.get_box(box_name)
+            if box is None:
+                die('Unknown box: {}'.format(box_name))
+        box.store(workspace, timestamp())
         print('Successfully stored bead.')
 
 
@@ -161,28 +161,28 @@ def print_inputs(env, workspace, verbose):
     inputs = sorted(workspace.inputs)
 
     if inputs:
-        repositories = env.get_repos()
+        boxes = env.get_boxes()
 
         print('Inputs:')
         for input in inputs:
             print('input/' + input.name)
             print('\tName[s]:')
             has_name = False
-            for repo in repositories:
+            for box in boxes:
                 timestamp = time_from_timestamp(input.timestamp)
                 (
                     exact_match, best_guess, best_guess_timestamp, names
-                ) = repo.find_names(input.bead_uuid, input.content_hash, timestamp)
+                ) = box.find_names(input.bead_uuid, input.content_hash, timestamp)
                 #
                 has_name = has_name or exact_match or best_guess or names
                 if exact_match:
-                    print('\t * -r {} {}'.format(repo.name, exact_match))
+                    print('\t * -r {} {}'.format(box.name, exact_match))
                     names.remove(exact_match)
                 elif best_guess:
-                    print('\t ? -r {} {}'.format(repo.name, best_guess))
+                    print('\t ? -r {} {}'.format(box.name, best_guess))
                     names.remove(best_guess)
                 for name in sorted(names):
-                    print('\t [-r {} {}]'.format(repo.name, name))
+                    print('\t [-r {} {}]'.format(box.name, name))
             if verbose or not has_name:
                 print('\tBead UUID:', input.bead_uuid)
                 print('\tContent hash:', input.content_hash)

@@ -126,7 +126,7 @@ class Robot(fixtures.Fixture):
 
     def reset(self):
         '''
-        Forget all repos by removing the user's config.
+        Forget all boxes by removing the user's config.
 
         All other files, workspaces remain available.
         '''

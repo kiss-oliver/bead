@@ -26,17 +26,17 @@ class RobotAndBeads(object):
     # fixtures
     def robot(self):
         '''
-        I am a robot user with a repo
+        I am a robot user with a box
         '''
         robot = self.useFixture(Robot())
-        repo_dir = robot.cwd / 'repo'
-        os.makedirs(repo_dir)
-        robot.cli('repo', 'add', 'repo', repo_dir)
+        box_dir = robot.cwd / 'box'
+        os.makedirs(box_dir)
+        robot.cli('box', 'add', 'box', box_dir)
         return robot
 
-    def repo(self, robot):
+    def box(self, robot):
         with robot.environment as env:
-            return env.get_repo('repo')
+            return env.get_box('box')
 
     def beads(self):
         return {}
@@ -47,10 +47,10 @@ class RobotAndBeads(object):
         robot.write_file('README', bead_name)
         robot.write_file('output/README', bead_name)
         self._add_inputs(robot, inputs)
-        repo = self.repo(robot)
+        box = self.box(robot)
         with robot.environment:
-            TRACELOG('store', robot.cwd, TS1, 'to', repo.location)
-            beads[bead_name] = repo.store(Workspace('.'), TS1)
+            TRACELOG('store', robot.cwd, TS1, 'to', box.location)
+            beads[bead_name] = box.store(Workspace('.'), TS1)
         robot.cd('..')
         robot.cli('nuke', bead_name)
         return bead_name
@@ -83,7 +83,7 @@ class RobotAndBeads(object):
                 z.writestr(layouts.Archive.DATA / 'README', 'HACKED')
         return hacked_bead_path
 
-    def _bead_with_history(self, robot, repo, bead_name, bead_uuid):
+    def _bead_with_history(self, robot, box, bead_name, bead_uuid):
         def make_bead(timestamp):
             with TempDir() as tempdir_obj:
                 workspace_dir = os.path.join(tempdir_obj.path, bead_name)
@@ -91,7 +91,7 @@ class RobotAndBeads(object):
                 ws.create(bead_uuid)
                 sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
                 tech.fs.write_file(sentinel_file, timestamp)
-                repo.store(ws, timestamp)
+                box.store(ws, timestamp)
                 tech.fs.rmtree(workspace_dir)
 
         with robot.environment:
@@ -99,9 +99,9 @@ class RobotAndBeads(object):
             make_bead(TS2)
         return bead_name
 
-    def bead_with_history(self, robot, repo):
+    def bead_with_history(self, robot, box):
         return self._bead_with_history(
-            robot, repo, 'bead_with_history', 'UUID:bead_with_history')
+            robot, box, 'bead_with_history', 'UUID:bead_with_history')
 
     def bead_with_inputs(self, robot, beads, bead_a, bead_b):
         inputs = dict(input_a=bead_a, input_b=bead_b)

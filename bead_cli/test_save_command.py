@@ -18,7 +18,7 @@ class Test(TestCase, fixtures.RobotAndBeads):
         self.assertRaises(SystemExit, robot.cli, 'save')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
-    def test_on_success_there_is_feedback(self, robot, repo):
+    def test_on_success_there_is_feedback(self, robot, box):
         robot.cli('new', 'bead')
         robot.cd('bead')
         robot.cli('save')
@@ -26,64 +26,64 @@ class Test(TestCase, fixtures.RobotAndBeads):
             robot.stdout, '', 'Expected some feedback, but got none :(')
 
 
-class Test_no_repo(TestCase):
+class Test_no_box(TestCase):
 
     # fixtures
     def robot(self):
         return self.useFixture(fixtures.Robot())
 
     # tests
-    def test_missing_repo_causes_error(self, robot):
+    def test_missing_box_causes_error(self, robot):
         robot.cli('new', 'bead')
         self.assertRaises(SystemExit, robot.cli, 'save', 'bead')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
 
-Repo = namedtuple('Repo', 'name directory')
+Box = namedtuple('Box', 'name directory')
 
 
-def bead_count(robot, repo, bead_uuid):
+def bead_count(robot, box, bead_uuid):
     with robot.environment as env:
         query = [(bead_spec.BEAD_UUID, bead_uuid)]
-        return sum(1 for _ in env.get_repo(repo.name).find_beads(query))
+        return sum(1 for _ in env.get_box(box.name).find_beads(query))
 
 
-class Test_more_than_one_repos(TestCase):
+class Test_more_than_one_boxes(TestCase):
     # fixtures
     def robot(self):
         return self.useFixture(fixtures.Robot())
 
-    def make_repo(self, robot, name):
+    def make_box(self, robot, name):
         directory = self.new_temp_dir()
-        robot.cli('repo', 'add', name, directory)
-        return Repo(name, directory)
+        robot.cli('box', 'add', name, directory)
+        return Box(name, directory)
 
-    def repo1(self, robot):
-        return self.make_repo(robot, 'repo1')
+    def box1(self, robot):
+        return self.make_box(robot, 'box1')
 
-    def repo2(self, robot):
-        return self.make_repo(robot, 'repo2')
+    def box2(self, robot):
+        return self.make_box(robot, 'box2')
 
     # tests
-    def test_save_dies_without_explicit_repo(self, robot, repo1, repo2):
+    def test_save_dies_without_explicit_box(self, robot, box1, box2):
         robot.cli('new', 'bead')
         self.assertRaises(SystemExit, robot.cli, 'save', 'bead')
         self.assertThat(robot.stderr, Contains('ERROR'))
 
-    def test_save_stores_bead_in_specified_repo(self, robot, repo1, repo2):
+    def test_save_stores_bead_in_specified_box(self, robot, box1, box2):
         robot.cli('new', 'bead')
-        robot.cli('save', repo1.name, '--workspace=bead')
+        robot.cli('save', box1.name, '--workspace=bead')
         with robot.environment:
             bead_uuid = Workspace('bead').bead_uuid
-        self.assertEquals(1, bead_count(robot, repo1, bead_uuid))
-        self.assertEquals(0, bead_count(robot, repo2, bead_uuid))
-        robot.cli('save', repo2.name, '-w', 'bead')
-        self.assertEquals(1, bead_count(robot, repo1, bead_uuid))
-        self.assertEquals(1, bead_count(robot, repo2, bead_uuid))
+        self.assertEquals(1, bead_count(robot, box1, bead_uuid))
+        self.assertEquals(0, bead_count(robot, box2, bead_uuid))
+        robot.cli('save', box2.name, '-w', 'bead')
+        self.assertEquals(1, bead_count(robot, box1, bead_uuid))
+        self.assertEquals(1, bead_count(robot, box2, bead_uuid))
 
-    def test_invalid_repo_specified(self, robot, repo1, repo2):
+    def test_invalid_box_specified(self, robot, box1, box2):
         robot.cli('new', 'bead')
         self.assertRaises(
             SystemExit,
-            robot.cli, 'save', 'unknown-repo', '--workspace', 'bead')
+            robot.cli, 'save', 'unknown-box', '--workspace', 'bead')
         self.assertThat(robot.stderr, Contains('ERROR'))
