@@ -7,33 +7,34 @@
 # bead
 
 
-**`bead`** is both a format for freezing and storing computations and a tool that helps 
+`bead` is both a format for freezing and storing computations and a tool that helps 
 capturing and managing computations in `bead` formats.
 
 
-## bead as a concept
+## Concept
 
 Given a computation of the form
 
     output = function(*inputs)
 
-a `bead` contains all three named parts:
+a `bead` captures all three named parts:
 
 - `output` is the result of the computation - data, it is contained verbatim
 - `function` is a code that computes `output` from the `inputs`
-- `inputs` are stored as references to other `bead`s - they are the `output` of other 
-calculations
+- `inputs` are stored as references to other `bead`s - they are the `output` part of
+  computations
 
 It also has some other metadata - e.g. a unique identifier that is supposed to be common 
 between different versions (either part is updated) of the same computation and a timestamp
 when it was frozen.
 
 
-## bead as a tool *is not production ready, yet!*
+## Status
 
-Although most of the important stuff is implemented, some important names will change in the
-metadata (to get names right), which will render every existing bead incompatible after the 
-change.
+### bead as a tool *is not production ready, yet!*
+
+Although most of the important stuff is implemented, the metadata format is still not fixed,
+which might render every existing bead incompatible after the change.
 
 Documentation for the tool is non-existent at this point - except for command line help.
 The doc directory currently contains design fragments - you will be mislead by them as they 
