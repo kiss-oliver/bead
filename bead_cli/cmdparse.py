@@ -83,7 +83,7 @@ class Parser:
         # subparsers should be an `argparse` implementation detail, but is not
         self.__subparsers = None
 
-        # XXX revisit when python 2.x no longer supported
+        # XXX: cli parsing: revisit when python 2.x no longer supported
         # it might be tempting to use argparser.set_defaults()
         # to set default command to print help, but it works only on 3.x!
 

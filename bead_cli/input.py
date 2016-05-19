@@ -13,7 +13,7 @@ from .common import (
     CurrentDirWorkspace,
     die, warning
 )
-from .common import BEAD_REF_BASE_DEFAULTING_TO, BEAD_QUERY, get_bead_ref, RepoQueryReference
+from .common import BEAD_REF_BASE_defaulting_to, BEAD_QUERY, get_bead_ref, RepoQueryReference
 from bead import spec as bead_spec
 from bead.tech.timestamp import time_from_timestamp
 
@@ -54,7 +54,7 @@ class CmdAdd(Command):
 
     def declare(self, arg):
         arg(INPUT_NICK)
-        arg(BEAD_REF_BASE_DEFAULTING_TO(USE_INPUT_NICK))
+        arg(BEAD_REF_BASE_defaulting_to(USE_INPUT_NICK))
         arg(BEAD_QUERY)
         arg(OPTIONAL_WORKSPACE)
         arg(OPTIONAL_ENV)
@@ -101,7 +101,7 @@ class CmdUpdate(Command):
 
     def declare(self, arg):
         arg(OPTIONAL_INPUT_NICK)
-        arg(BEAD_REF_BASE_DEFAULTING_TO(NEWEST_VERSION))
+        arg(BEAD_REF_BASE_defaulting_to(NEWEST_VERSION))
         arg(BEAD_QUERY)
         arg(OPTIONAL_WORKSPACE)
         arg(OPTIONAL_ENV)

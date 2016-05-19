@@ -25,7 +25,8 @@ git config --get remote.origin.url | {
     sed '0,/^## TODO/p;d' README.md
     printf '\nUpdated by script, text in this section and afterwards will be overwritten\n\n'
     git grep -n -e FIXME -e TODO -e XXX -- '*.py' |
-      sed 's=^\([^:]*\):\([0-9]*\):\s*\(.*\)=- [\3](https://github.com/'$USER/$PROJECT/blob/$BRANCH'/\1#L\2)='
+      sed 's=^\([^:]*\):\([0-9]*\):[#[:space:]]*\(.*\)=- [\3](https://github.com/'$USER/$PROJECT/blob/$BRANCH'/\1#L\2)=' |
+      sort
   } > "$TEMPREADME"
   mv "$TEMPREADME" README.md
 }

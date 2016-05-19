@@ -56,7 +56,7 @@ class CmdNew(Command):
 CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 
-def workspace_defaulting_to(default_workspace):
+def WORKSPACE_defaulting_to(default_workspace):
     def opt_workspace(parser):
         parser.arg(
             'workspace', nargs='?', type=Workspace,
@@ -117,7 +117,7 @@ class CmdDevelop(Command):
     def declare(self, arg):
         arg(BEAD_REF_BASE)
         arg(BEAD_QUERY)
-        arg(workspace_defaulting_to(DERIVE_FROM_BEAD_NAME))
+        arg(WORKSPACE_defaulting_to(DERIVE_FROM_BEAD_NAME))
         arg('-x', '--extract-output', dest='extract_output',
             default=False, action='store_true',
             help='Extract output data as well (normally it is not needed!).')
@@ -235,7 +235,7 @@ class CmdNuke(Command):
     '''
 
     def declare(self, arg):
-        arg(workspace_defaulting_to(CURRENT_DIRECTORY))
+        arg(WORKSPACE_defaulting_to(CURRENT_DIRECTORY))
 
     def run(self, args):
         workspace = args.workspace

@@ -148,7 +148,7 @@ def arg_bead_ref_base(nargs, default):
     return declare
 
 
-def BEAD_REF_BASE_DEFAULTING_TO(name):
+def BEAD_REF_BASE_defaulting_to(name):
     return arg_bead_ref_base(nargs='?', default=name)
 
 BEAD_REF_BASE = arg_bead_ref_base(nargs=None, default=None)
@@ -192,7 +192,7 @@ class RepoQueryReference(BeadReference):
         matches = []
         for repo in self.repositories:
             matches.extend(repo.find_beads(self.query, self.order, self.limit))
-            # XXX order_and_limit_beads is called twice - first in find_beads
+            # XXX: order_and_limit_beads is called twice - first in find_beads
             matches = repos.order_and_limit_beads(matches, self.order, self.limit)
         if len(matches) == self.limit:
             return matches[-1]

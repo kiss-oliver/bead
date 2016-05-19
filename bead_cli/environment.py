@@ -1,7 +1,5 @@
 '''
 User specific environment
-
-FIXME: s/environment/config/
 '''
 
 from __future__ import absolute_import

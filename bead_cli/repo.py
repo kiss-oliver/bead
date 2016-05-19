@@ -57,7 +57,7 @@ class CmdList(Command):
         except StopIteration:
             print('There are no defined repositories')
         else:
-            # XXX use tabulate?
+            # XXX: list command: use tabulate?
             print('Repositories:')
             print('-------------')
             print_repo(repo)
