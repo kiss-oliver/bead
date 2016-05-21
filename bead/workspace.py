@@ -19,6 +19,10 @@ securehash = tech.securehash
 fs = tech.fs
 
 
+# generated with `uuidgen -t`
+META_VERSION = 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
+
+
 class AbstractWorkspace(object):
 
     # directory of workspace - subclasses need to specify it
@@ -32,9 +36,7 @@ class AbstractWorkspace(object):
                 os.path.isdir(dir / layouts.Workspace.INPUT),
                 os.path.isdir(dir / layouts.Workspace.OUTPUT),
                 os.path.isdir(dir / layouts.Workspace.TEMP),
-                os.path.isfile(dir / layouts.Workspace.BEAD_META),
-            )
-        )
+                os.path.isfile(dir / layouts.Workspace.BEAD_META)))
 
     @property
     def meta_path(self):
@@ -79,12 +81,10 @@ class AbstractWorkspace(object):
 
         bead_meta = {
             meta.BEAD_UUID: bead_uuid,
-            meta.INPUTS: {},
-        }
+            meta.INPUTS: {}}
         fs.write_file(
             dir / layouts.Workspace.BEAD_META,
-            persistence.dumps(bead_meta)
-        )
+            persistence.dumps(bead_meta))
 
         assert self.is_valid
 
@@ -125,8 +125,7 @@ class AbstractWorkspace(object):
         m[meta.INPUTS][input_nick] = {
             meta.INPUT_BEAD_UUID: bead_uuid,
             meta.INPUT_CONTENT_HASH: content_hash,
-            meta.INPUT_FREEZE_TIME: timestamp_str,
-        }
+            meta.INPUT_FREEZE_TIME: timestamp_str}
         self.meta = m
 
     def delete_input(self, input_nick):
@@ -198,14 +197,12 @@ class _ZipCreator(object):
         self.zipfile.write(path, zip_path)
         self.add_hash(
             zip_path,
-            securehash.file(open(path, 'rb'), os.path.getsize(path))
-        )
+            securehash.file(open(path, 'rb'), os.path.getsize(path)))
 
     def add_path(self, path, zip_path):
         if os.path.islink(path):
             raise ValueError(
-                'workspace contains a link: {}'.format(path)
-            )
+                'workspace contains a link: {}'.format(path))
         elif os.path.isdir(path):
             self.add_directory(path, zip_path)
         elif os.path.isfile(path):
@@ -244,42 +241,35 @@ class _ZipCreator(object):
                 layouts.Workspace.INPUT,
                 layouts.Workspace.OUTPUT,
                 layouts.Workspace.META,
-                layouts.Workspace.TEMP
-            }
+                layouts.Workspace.TEMP}
 
         for f in sorted(os.listdir(source_directory)):
             if is_code(f):
                 self.add_path(
                     source_directory / f,
-                    layouts.Archive.CODE / f
-                )
+                    layouts.Archive.CODE / f)
 
     def add_data(self, workspace):
         self.add_directory(
             workspace.directory / layouts.Workspace.OUTPUT,
-            layouts.Archive.DATA
-        )
+            layouts.Archive.DATA)
 
     def add_meta(self, workspace, timestamp):
         bead_meta = {
+            meta.META_VERSION: META_VERSION,
             meta.BEAD_UUID: workspace.bead_uuid,
             meta.FREEZE_TIME: timestamp,
             meta.INPUTS: {
                 input.name: {
                     meta.INPUT_BEAD_UUID: input.bead_uuid,
                     meta.INPUT_CONTENT_HASH: input.content_hash,
-                    meta.INPUT_FREEZE_TIME: input.timestamp,
-                }
-                for input in workspace.inputs
-            },
-            meta.FREEZE_NAME: workspace.bead_name,
-        }
+                    meta.INPUT_FREEZE_TIME: input.timestamp}
+                for input in workspace.inputs},
+            meta.FREEZE_NAME: workspace.bead_name}
 
         self.add_string_content(
             layouts.Archive.BEAD_META,
-            persistence.dumps(bead_meta)
-        )
+            persistence.dumps(bead_meta))
         self.add_string_content(
             layouts.Archive.CHECKSUMS,
-            persistence.dumps(self.hashes)
-        )
+            persistence.dumps(self.hashes))

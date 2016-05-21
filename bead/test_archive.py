@@ -45,7 +45,9 @@ class Test_Archive(TestCase):
     def given_a_bead(self):
         self.__bead = self.new_temp_dir() / 'bead.zip'
         z = zipfile.ZipFile(self.__bead, 'w')
-        z.writestr(layouts.Archive.BEAD_META, b'{}')
+        z.writestr(
+            layouts.Archive.BEAD_META,
+            b'{"meta_version": "aaa947a6-1f7a-11e6-ba3a-0021cc73492e"}')
         z.writestr('somefile1', b'''somefile1's known content''')
         z.writestr('path/file1', b'''?? file1's known content''')
         z.writestr('path/to/file1', b'''file1's known content''')

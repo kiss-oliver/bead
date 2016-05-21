@@ -71,9 +71,10 @@ class Archive(Bead):
           file and they match their checksums (extra files are allowed
           in the archive, but not as data or code files)
         - the BEAD_META file is valid
+            - has meta version
             - has bead_uuid
-            - has timestamp
-            - has unofficial bead name
+            - has freeze time
+            - has freezed name
             - has inputs (even if empty)
         '''
         return all(self._checks())
@@ -87,17 +88,18 @@ class Archive(Bead):
     def _has_well_formed_meta(self):
         m = self.meta
         keys = (
+            meta.META_VERSION,
             meta.BEAD_UUID,
             meta.FREEZE_TIME,
-            meta.INPUTS,
-            meta.FREEZE_NAME)
+            meta.FREEZE_NAME,
+            meta.INPUTS)
         return all(key in m for key in keys)
 
     def _bead_creation_time_is_in_the_past(self):
         read_time = timestamp.time_from_timestamp
         now = read_time(timestamp.timestamp())
-        beadtime = read_time(self.meta[meta.FREEZE_TIME])
-        return beadtime < now
+        freeze_time = read_time(self.meta[meta.FREEZE_TIME])
+        return freeze_time < now
 
     @__zipfile_user
     def _extra_file(self):
@@ -134,6 +136,9 @@ class Archive(Bead):
     @property
     @__zipfile_user
     def content_hash(self):
+        # there is currently only one meta version
+        # and it must match the one defined in workspace the module
+        assert self._meta[meta.META_VERSION] == 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
         zipinfo = self.zipfile.getinfo(layouts.Archive.CHECKSUMS)
         with self.zipfile.open(zipinfo) as f:
             return securehash.file(f, zipinfo.file_size)

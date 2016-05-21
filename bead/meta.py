@@ -5,6 +5,7 @@ Keys for accessing fields in .BEAD_META structures
 with the following minimum structure:
 
 {
+    meta_version: ...,
     inputs: {
         'nick1' : {
             bead_uuid: ...,
@@ -32,6 +33,14 @@ from __future__ import print_function
 
 from collections import namedtuple
 
+
+# Metadata versions determine the content-hash used and potentially
+# other processing differences. Having it in the metadata potentially
+# enables interoperability and backwards compatibility of BEADs.
+# If the content-hash ever needs to be changed/upgraded we still
+# want existing BEADs to remain connected and alive.
+
+META_VERSION = 'meta_version'
 
 BEAD_UUID = 'bead_uuid'
 
