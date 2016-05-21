@@ -73,7 +73,7 @@ class RobotAndBeads(object):
         ws.create('hacked-uuid')
         tech.fs.write_file(ws.directory / 'code', 'code')
         tech.fs.write_file(ws.directory / 'output/README', 'README')
-        ws.pack(hacked_bead_path, TS1)
+        ws.pack(hacked_bead_path, TS1, comment='hacked bead')
         with zipfile.ZipFile(hacked_bead_path, 'a') as z:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')

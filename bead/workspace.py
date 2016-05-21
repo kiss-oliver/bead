@@ -101,12 +101,12 @@ class AbstractWorkspace(object):
     def bead_name(self):
         return os.path.basename(self.directory)
 
-    def pack(self, zipfilename, timestamp):
+    def pack(self, zipfilename, timestamp, comment):
         '''
         Create archive from workspace.
         '''
 
-        _ZipCreator().create(zipfilename, self, timestamp)
+        _ZipCreator().create(zipfilename, self, timestamp, comment)
 
     def has_input(self, input_nick):
         '''
@@ -186,8 +186,6 @@ class CurrentDirWorkspace(AbstractWorkspace):
 
 
 class _ZipCreator(object):
-    # FIXME: add zip comment with pointers to this software
-
     def __init__(self):
         self.hashes = {}
         self.zipfile = None
@@ -222,7 +220,7 @@ class _ZipCreator(object):
         self.zipfile.writestr(zip_path, bytes)
         self.add_hash(zip_path, securehash.bytes(bytes))
 
-    def create(self, zip_file_name, workspace, timestamp):
+    def create(self, zip_file_name, workspace, timestamp, comment):
         assert workspace.is_valid
         try:
             with zipfile.ZipFile(
@@ -231,6 +229,7 @@ class _ZipCreator(object):
                 compression=zipfile.ZIP_DEFLATED,
                 allowZip64=True,
             ) as self.zipfile:
+                self.zipfile.comment = comment.encode('utf-8')
                 self.add_data(workspace)
                 self.add_code(workspace)
                 self.add_meta(workspace, timestamp)

@@ -28,7 +28,7 @@ class Test_shared_box(TestCase):
         ws = Workspace(tmp / 'ws')
         ws.create('bead-uuid')
         bead_archive = tmp / 'bead.zip'
-        ws.pack(bead_archive, timestamp)
+        ws.pack(bead_archive, timestamp, comment='bead for a shared box')
         return bead_archive
 
     def alice(self, box):

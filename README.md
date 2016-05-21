@@ -1,27 +1,27 @@
 [![Build Status](https://travis-ci.org/e3krisztian/bead.svg?branch=master)](https://travis-ci.org/e3krisztian/bead)
 
-    b-e-+
+    B-E-+
      \ \ \
-      +-a-d
+      +-A-D
 
-# bead
+# BEAD
 
 
-`bead` is both a format for freezing and storing computations and a tool that helps 
-capturing and managing computations in `bead` formats.
+BEAD is a format for freezing and storing computations while `bead` is a tool that helps
+capturing and managing computations in BEAD formats.
 
 
 ## Concept
 
-Given a computation of the form
+Given a discrete computation of the form
 
     output = function(*inputs)
 
-a `bead` captures all three named parts:
+a BEAD captures all three named parts:
 
 - `output` is the result of the computation - data, it is contained verbatim
 - `function` is a code that computes `output` from the `inputs`
-- `inputs` are stored as references to other `bead`s - they are the `output` part of
+- `inputs` are stored as references to other BEADs - they are the `output` part of
   computations
 
 It also has some other metadata - e.g. a unique identifier that is supposed to be common 
@@ -34,7 +34,7 @@ when it was frozen.
 ### bead as a tool *is not production ready, yet!*
 
 Although most of the important stuff is implemented, the metadata format is still not fixed,
-which might render every existing bead incompatible after the change.
+which might render every existing BEAD incompatible after the change.
 
 Documentation for the tool is non-existent at this point - except for command line help.
 The doc directory currently contains design fragments - you will be mislead by them as they 
@@ -78,20 +78,19 @@ Thank you for your interest!
 
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), text in this section and afterwards will be overwritten
 
-- [FIXME: add zip comment with pointers to this software](https://github.com/e3krisztian/bead/blob/master/bead/workspace.py#L189)
-- [FIXME: Box.find_beads dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L109)
-- [FIXME: Box.find_names dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L137)
+- [FIXME: Box.find_beads dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L137)
+- [FIXME: Box.find_names dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L165)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L49)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/master/bead_cli/test_robot.py#L36)
 - [FIXME: update: fix to allow to select previous/next/closest to a timestamp bead](https://github.com/e3krisztian/bead/blob/master/bead_cli/input.py#L125)
 - [TODO: add tests for timestamps, parse_iso8601, parse_timedelta](https://github.com/e3krisztian/bead/blob/master/bead/tech/timestamp.py#L232)
+- [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L99)
 - [TODO: calculate and add index parameter (--next, --prev)](https://github.com/e3krisztian/bead/blob/master/bead_cli/common.py#L215)
 - [TODO: implement more options](https://github.com/e3krisztian/bead/blob/master/bead_cli/common.py#L118)
 - [TODO: support shortened content hashes](https://github.com/e3krisztian/bead/blob/master/bead/spec.py#L19)
 - [TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L220)
-- [TODO: user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L71)
 - [XXX: cli parsing: revisit when python 2.x no longer supported](https://github.com/e3krisztian/bead/blob/master/bead_cli/cmdparse.py#L86)
-- [XXX: directory itself might be a pattern - is it OK?](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L107)
+- [XXX: directory itself might be a pattern - is it OK?](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L135)
 - [XXX: heapq might be faster a bit?](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L57)
 - [XXX: introspect parameter names, default values, annotations?](https://github.com/e3krisztian/bead/blob/master/bead_cli/cmdparse.py#L121)
 - [XXX: list command: use tabulate?](https://github.com/e3krisztian/bead/blob/master/bead_cli/box.py#L60)

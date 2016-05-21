@@ -67,8 +67,36 @@ def order_and_limit_beads(beads, order=bead_spec.NEWEST_FIRST, limit=None):
     return [wrapper.wrapped for wrapper in wrapped_results]
 
 
+ARCHIVE_COMMENT = '''
+This file is a BEAD zip archive.
+
+It is a normal zip file that stores a discrete computation of the form
+
+    output = code(*inputs)
+
+The archive contains
+
+- inputs as part of metadata file: references (content hash) to other BEADs
+- code   as files
+- output as files
+- extra metadata to support
+  - linking different versions of the same computation
+  - determining the newest version
+  - reproducing multi-BEAD computation sequences built by a distributed team
+
+There {is,will be,was} more info about BEADs at
+
+- https://unknot.io
+- https://github.com/ceumicrodata/bead
+- https://github.com/e3krisztian/bead
+
+----
+
+'''
+
+
 class Box(object):
-    # TODO: user maintained directory hierarchy
+    # TODO: Box: support user maintained directory hierarchy
 
     def __init__(self, name=None, location=None):
         self.location = location
@@ -120,7 +148,7 @@ class Box(object):
                 .format(
                     bead_name=workspace.bead_name,
                     timestamp=timestamp)))
-        workspace.pack(zipfilename, timestamp=timestamp)
+        workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
         return Archive(zipfilename)
 
     def find_names(self, bead_uuid, content_hash, timestamp):
