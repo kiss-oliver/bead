@@ -1,3 +1,7 @@
+'''
+I am providing the content hash functions.
+'''
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -12,30 +16,47 @@ READ_BLOCK_SIZE = 1024 ** 2
 # length is hashed with content AND there is a known suffix
 
 
+def _add_prefix(hash, size):
+    hash.update('{}:'.format(size).encode('ascii'))
+
+
+def _add_suffix(hash, size):
+    hash.update(';{}'.format(size).encode('ascii'))
+
+
 def file(file, file_size):
-    '''Read file and return sha512 hash for its content.
+    '''
+    Read file and return sha512 hash for its content.
 
     Closes the file.
     Can process BIG files.
     '''
 
     hash = hashlib.sha512()
-    hash.update('{}:'.format(file_size).encode('ascii'))
+    _add_prefix(hash, file_size)
+
+    bytes_read = 0
+
     with file:
         while True:
             block = file.read(READ_BLOCK_SIZE)
             if not block:
                 break
+            bytes_read += len(block)
             hash.update(block)
-    hash.update(b';')
+
+    assert bytes_read == file_size
+
+    _add_suffix(hash, file_size)
     return ''.__class__(hash.hexdigest())
 
 
 def bytes(bytes):
-    '''Return sha512 hash for bytes.
+    '''
+    Return sha512 hash for bytes.
     '''
     hash = hashlib.sha512()
-    hash.update('{}:'.format(len(bytes)).encode('ascii'))
+    _add_prefix(hash, len(bytes))
     hash.update(bytes)
-    hash.update(b';')
+    _add_suffix(hash, len(bytes))
     return ''.__class__(hash.hexdigest())
