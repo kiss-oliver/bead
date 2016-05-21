@@ -8,6 +8,7 @@ import sys
 import appdirs
 from .cmdparse import Parser, Command
 
+from bead.tech.fs import Path
 from . import workspace
 from . import input
 from . import box
@@ -90,7 +91,7 @@ def make_argument_parser(defaults):
 
 
 def run(config_dir, argv):
-    parser_defaults = dict(config_dir=config_dir)
+    parser_defaults = dict(config_dir=Path(config_dir))
     parser = make_argument_parser(parser_defaults)
     return parser.dispatch(argv)
 

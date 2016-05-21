@@ -100,7 +100,7 @@ class Robot(fixtures.Fixture):
         with self.environment:
             with CaptureStdout() as stdout, CaptureStderr() as stderr:
                 try:
-                    self.retval = run(self.config_dir, args)
+                    self.retval = run(''.__class__(self.config_dir), args)
                 except BaseException as e:
                     TRACELOG(EXCEPTION=e)
                     raise
