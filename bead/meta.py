@@ -5,21 +5,24 @@ Keys for accessing fields in .BEAD_META structures
 with the following minimum structure:
 
 {
-    meta_version: ...,
+    meta_version: ...,        # uuid
+    hash_function_uuid: ...,  # uuid
     inputs: {
         'nick1' : {
-            bead_uuid: ...,
+            bead_uuid: ...,           # uuid
+            hash_function_uuid: ...,  # uuid
             content_hash: ...,
             freeze_time: ...,
         },
         'nick2' : {
-            bead_uuid: ...,
+            bead_uuid: ...,           # uuid
+            hash_function_uuid: ...,  # uuid
             content_hash: ...,
             freeze_time: ...,
         },
         ...
     },
-    bead_uuid: ...,
+    bead_uuid: ...,    # uuid
     freeze_time: ...,  # only archives - naive ordering
     freeze_name: ...,  # only archives, bead name for bootstrapping
 }
@@ -34,24 +37,29 @@ from __future__ import print_function
 from collections import namedtuple
 
 
-# Metadata versions determine the content-hash used and potentially
-# other processing differences. Having it in the metadata potentially
-# enables interoperability and backwards compatibility of BEADs.
-# If the content-hash ever needs to be changed/upgraded we still
+# Metadata versions determine how the data should be interpreted.
+# Having this version in the metadata potentially enables interoperability
+# and backwards compatibility of BEADs.
+# If the metadata ever needs to be changed/upgraded we still
 # want existing BEADs to remain connected and alive.
 
 META_VERSION = 'meta_version'
+
+# Defines the hash function used in hashing file contents for the checksums file
+# and further hashing in to get the BEAD's CONTENT_HASH
+HASH_FUNCTION_UUID = 'hash_function_uuid'
 
 BEAD_UUID = 'bead_uuid'
 
 INPUTS = 'inputs'
 
-INPUT_BEAD_UUID    = 'bead_uuid'
-INPUT_CONTENT_HASH = 'content_hash'
-INPUT_FREEZE_TIME  = 'freeze_time'
+INPUT_BEAD_UUID          = BEAD_UUID
+INPUT_HASH_FUNCTION_UUID = HASH_FUNCTION_UUID
+INPUT_CONTENT_HASH       = 'content_hash'
+INPUT_FREEZE_TIME        = 'freeze_time'
 
 
-InputSpec = namedtuple('InputSpec', 'name bead_uuid content_hash timestamp')
+InputSpec = namedtuple('InputSpec', 'name bead_uuid hash_function_uuid content_hash timestamp')
 
 
 def parse_inputs(meta):
@@ -64,6 +72,7 @@ def parse_inputs(meta):
         yield InputSpec(
             name,
             spec[INPUT_BEAD_UUID],
+            spec[INPUT_HASH_FUNCTION_UUID],
             spec[INPUT_CONTENT_HASH],
             spec[INPUT_FREEZE_TIME])
 

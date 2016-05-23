@@ -15,12 +15,14 @@ from . import tech
 
 # technology modules
 persistence = tech.persistence
-securehash = tech.securehash
 fs = tech.fs
 
 
 # generated with `uuidgen -t`
-META_VERSION = 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
+META_VERSION       = 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
+# this one must be implemented in bead.securehash!
+HASH_FUNCTION_UUID = 'd4bb4e72-20f1-11e6-8b37-180373c6afa1'
+securehash = tech.securehash.get_hash_function(HASH_FUNCTION_UUID)
 
 
 class AbstractWorkspace(object):
@@ -120,12 +122,14 @@ class AbstractWorkspace(object):
         return os.path.isdir(
             self.directory / layouts.Workspace.INPUT / input_nick)
 
-    def add_input(self, input_nick, bead_uuid, content_hash, timestamp_str):
+    def add_input(self, input_nick, bead_uuid, hash_function_uuid, content_hash, timestamp_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
-            meta.INPUT_BEAD_UUID: bead_uuid,
-            meta.INPUT_CONTENT_HASH: content_hash,
-            meta.INPUT_FREEZE_TIME: timestamp_str}
+            meta.INPUT_BEAD_UUID:          bead_uuid,
+            meta.INPUT_HASH_FUNCTION_UUID: hash_function_uuid,
+            meta.INPUT_CONTENT_HASH:       content_hash,
+            meta.INPUT_FREEZE_TIME:        timestamp_str,
+        }
         self.meta = m
 
     def delete_input(self, input_nick):
@@ -145,7 +149,7 @@ class AbstractWorkspace(object):
         try:
             self.add_input(
                 input_nick,
-                bead.bead_uuid, bead.content_hash, bead.timestamp_str)
+                bead.bead_uuid, bead.hash_function_uuid, bead.content_hash, bead.timestamp_str)
             destination_dir = input_dir / input_nick
             bead.unpack_data_to(destination_dir)
             for f in fs.all_subpaths(destination_dir):
@@ -256,16 +260,20 @@ class _ZipCreator(object):
 
     def add_meta(self, workspace, timestamp):
         bead_meta = {
-            meta.META_VERSION: META_VERSION,
-            meta.BEAD_UUID: workspace.bead_uuid,
-            meta.FREEZE_TIME: timestamp,
+            meta.META_VERSION:       META_VERSION,
+            meta.HASH_FUNCTION_UUID: HASH_FUNCTION_UUID,
+            meta.BEAD_UUID:          workspace.bead_uuid,
             meta.INPUTS: {
                 input.name: {
-                    meta.INPUT_BEAD_UUID: input.bead_uuid,
-                    meta.INPUT_CONTENT_HASH: input.content_hash,
-                    meta.INPUT_FREEZE_TIME: input.timestamp}
+                    meta.INPUT_BEAD_UUID:          input.bead_uuid,
+                    meta.INPUT_HASH_FUNCTION_UUID: input.hash_function_uuid,
+                    meta.INPUT_CONTENT_HASH:       input.content_hash,
+                    meta.INPUT_FREEZE_TIME:        input.timestamp,
+                }
                 for input in workspace.inputs},
-            meta.FREEZE_NAME: workspace.bead_name}
+            meta.FREEZE_NAME:        workspace.bead_name,
+            meta.FREEZE_TIME:        timestamp,
+        }
 
         self.add_string_content(
             layouts.Archive.BEAD_META,

@@ -79,6 +79,7 @@ class Environment:
     def is_known_box(self, name):
         return self.get_box(name) is not None
 
+    # FIXME: env.get_bead should also take hash_function_uuid as parameter
     def get_bead(self, bead_uuid, content_hash):
         query = ((bead_spec.BEAD_UUID, bead_uuid), (bead_spec.CONTENT_HASH, content_hash))
         for box in self.get_boxes():
