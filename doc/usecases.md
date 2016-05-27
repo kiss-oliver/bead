@@ -3,11 +3,11 @@
 ## Create a new bead
 
 Initial setup:
-
-    $ mkdir /somepath/BeadBox
-    $ bead box add main /somepath/BeadBox
-    Will remember box main
-
+```shell
+$ mkdir /somepath/BeadBox
+$ bead box add main /somepath/BeadBox
+Will remember box main
+```
 This is where completed beads will be stored. Create an empty bead with name `name`:
 
     /somepath$ bead new name
