@@ -1,16 +1,20 @@
 # Use case narratives
 
-## Initial setup
+## Create a new BEAD
+
+Initial setup:
 
     $ mkdir /somepath/BeadBox
     $ bead box add main /somepath/BeadBox
     Will remember box main
 
-## Create an empty BEAD with name `name`
+This is where completed beads will be stored. Create an empty BEAD with name `name`:
 
     /somepath$ bead new name
     Created name
     
+Add some data to the output of this new bead which we can use later. This bead has no computation, only data.
+
     /somepath$ cd name/
     /somepath/name$ echo World > output/name
     
@@ -20,52 +24,50 @@
     /somepath/name$ bead nuke
     Deleted workspace /somepath/name
 
-## Working in a new BEAD
+## Working with inputs in a new BEAD 
 
-Create a new data package, linking to existing inputs:
+Create a new data package:
 
     /somepath$ bead new hello
     Created hello
+
     /somepath$ cd hello/
 
-Add data from another bead at `input/<input-name>/`:
+Add data from an existing bead at `input/<input-name>/`:
 
-    /somepath/hello$ bead input add name name
-    name loaded on name.
+    /somepath/hello$ bead input add name who-do-i-greet
+    name loaded on who-do-i-greet.
 
-Create a program `greet` that produces a greeting:
+Create a program `greet` that produces a greeting, using `input/who-do-i-greet` as an input:
 
-    /somepath/hello$ cat > greet <<-'EOF'
-    read name < input/name/name
+    read name < input/name/who-do-i-greet
     echo "Hello $name!" > output/greeting
-    EOF
 
 Run the program:
 
     /somepath/hello$ bash greet 
 
-Verify output:
+This script has create a text file in `output/greeting`. Let us verify its content:
 
     /somepath/hello$ cat output/greeting
     Hello World!
 
-
 ## Package the data and send to an outside collaborator
 
-Save the greeting:
+Save our new bead:
 
     /somepath/hello$ bead save
     Successfully stored bead.
 
-Now the content of `/somepath/BeadBox` is
+This stores output, computation and references to inputs. Now the content of `/somepath/BeadBox` is
 
     /somepath$ ls -1 BeadBox/
     hello_20160527T130218513418+0200.zip
     name_20160527T113419427017+0200.zip
 
-Which are (in this case small) normal zip files, which can be transferred by any means (e.g. emailed) to someone who needs it she can either process it via the bead tool to keep the integrity of provenance information, or in the worst case access the data by directly unzipping relevant bits from the zip file
+These are regular (and, in this case, small) zip files, which can be transferred by usual means (e.g. emailed) to collaborators. The recipient can process it via the `bead` tool, keep the integrity of provenance information, and adding further dependencies as needed. Even withouth the tool, she can access the data by directly unzipping the file and inspecting its content. 
 
-Workspace's `output/*` is saved under `data/*`:
+The output of the computation is stored under `data/*`. An outide collaborator without access to `bead` can just ignore the computation and all other metadata.
 
     /somepath$ unzip -p BeadBox/hello_20160527T130218513418+0200.zip data/greeting
     Hello World!
