@@ -86,6 +86,8 @@ class CmdSave(Command):
         workspace = args.workspace
         env = args.get_env()
         assert_valid_workspace(workspace)
+        # FIXME: (usability) save - create ~/BeadBox as `main` box if there is none defined
+        # XXX: (usability) save - support saving directly to a directory outside of workspace
         if box_name is USE_THE_ONLY_BOX:
             boxes = list(env.get_boxes())
             if not boxes:
