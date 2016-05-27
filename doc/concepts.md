@@ -2,6 +2,10 @@
 
 Data packages can be in one of two states. Under active development in a `workspace`, or packaged and stored as a `bead`. Beads are stored in a `box`, which is just a collection of completed beads.
 
+![Workflows](https://raw.githubusercontent.com/ceumicrodata/bead/master/doc/workflows.png)
+
+To see how workspaces are created from beads and vice versa, also see https://github.com/ceumicrodata/bead/blob/master/doc/usecases.md
+
 ## Workspace
 
 The `workspace` contains a prototype of a bead, computation under active development. This is a directory, where the user works. At some time is supposed to have all the inputs, the code and the output of a computation.
