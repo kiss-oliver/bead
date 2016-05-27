@@ -1,6 +1,6 @@
 # Use case narratives
 
-## Create a new BEAD
+## Create a new bead
 
 Initial setup:
 
@@ -8,7 +8,7 @@ Initial setup:
     $ bead box add main /somepath/BeadBox
     Will remember box main
 
-This is where completed beads will be stored. Create an empty BEAD with name `name`:
+This is where completed beads will be stored. Create an empty bead with name `name`:
 
     /somepath$ bead new name
     Created name
@@ -24,7 +24,7 @@ Add some data to the output of this new bead which we can use later. This bead h
     /somepath/name$ bead nuke
     Deleted workspace /somepath/name
 
-## Working with inputs in a new BEAD 
+## Working with inputs in a new bead 
 
 Create a new data package:
 
@@ -40,7 +40,7 @@ Add data from an existing bead at `input/<input-name>/`:
 
 Create a program `greet` that produces a greeting, using `input/who-do-i-greet` as an input:
 
-    read name < input/name/who-do-i-greet
+    read name < input/who-do-i-greet/name
     echo "Hello $name!" > output/greeting
 
 Run the program:
@@ -52,7 +52,7 @@ This script has create a text file in `output/greeting`. Let us verify its conte
     /somepath/hello$ cat output/greeting
     Hello World!
 
-## Package the data and send to an outside collaborator
+## Package the data and send it to an outside collaborator
 
 Save our new bead:
 
@@ -65,7 +65,7 @@ This stores output, computation and references to inputs. Now the content of `/s
     hello_20160527T130218513418+0200.zip
     name_20160527T113419427017+0200.zip
 
-These are regular (and, in this case, small) zip files, which can be transferred by usual means (e.g. emailed) to collaborators. The recipient can process it via the `bead` tool, keep the integrity of provenance information, and adding further dependencies as needed. Even withouth the tool, she can access the data by directly unzipping the file and inspecting its content. 
+These are regular (and, in this case, small) zip files, which can be transferred by usual means (e.g. emailed) to collaborators. The recipient can process them via the `bead` tool, keep the integrity of provenance information, and adding further dependencies as needed. Even withouth the tool, she can access the data by directly unzipping the file and inspecting its content. 
 
 The output of the computation is stored under `data/*`. An outide collaborator without access to `bead` can just ignore the computation and all other metadata.
 
