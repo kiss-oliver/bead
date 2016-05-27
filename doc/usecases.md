@@ -1,4 +1,4 @@
-# Use case narratives:
+# Use case narratives
 
 ## Initial setup
 
@@ -20,13 +20,15 @@
     /somepath/name$ bead nuke
     Deleted workspace /somepath/name
 
-## Create a new data package, linking to existing inputs
+## Working in a new BEAD
+
+Create a new data package, linking to existing inputs:
 
     /somepath$ bead new hello
     Created hello
     /somepath$ cd hello/
 
-Add data from another bead at `input/<input-name>/`
+Add data from another bead at `input/<input-name>/`:
 
     /somepath/hello$ bead input add name name
     name loaded on name.
@@ -50,62 +52,55 @@ Verify output:
 
 ## Package the data and send to an outside collaborator
 
-# assume we are just after A.
+Save the greeting:
 
-# save the greeting
+    /somepath/hello$ bead save
+    Successfully stored bead.
 
-/somepath/hello$ bead save
-Successfully stored bead.
+Now the content of `/somepath/BeadBox` is
 
-# now the content of /somepath/BeadBox is
+    /somepath$ ls -1 BeadBox/
+    hello_20160527T130218513418+0200.zip
+    name_20160527T113419427017+0200.zip
 
-/somepath$ ls -1 BeadBox/
-hello_20160527T130218513418+0200.zip
-name_20160527T113419427017+0200.zip
+Which are (in this case small) normal zip files, which can be transferred by any means (e.g. emailed) to someone who needs it she can either process it via the bead tool to keep the integrity of provenance information, or in the worst case access the data by directly unzipping relevant bits from the zip file
 
-# which are (in this case small) normal zip files, which can be 
-# transferred by any means (e.g. emailed) to someone who needs it
-# she can either process it via the bead tool to keep the integrity
-# of provenance information, or in the worst case access the data
-# by directly unzipping relevant bits from the zip file
+Workspace's `output/*` is saved under `data/*`:
 
-# Workspace's output/* is saved under data/*
+    /somepath$ unzip -p BeadBox/hello_20160527T130218513418+0200.zip data/greeting
+    Hello World!
+    
+    /somepath$ unzip -v BeadBox/hello_20160527T130218513418+0200.zip 
+    Archive:  BeadBox/hello_20160527T130218513418+0200.zip
+		
+		This file is a BEAD zip archive.
+		
+		It is a normal zip file that stores a discrete computation of the form
+		
+		output = code(*inputs)
+		
+		The archive contains
 
-/somepath$ unzip -p BeadBox/hello_20160527T130218513418+0200.zip data/greeting
-Hello World!
+		- inputs as part of metadata file: references (content hash) to other BEADs
+		- code as files
+        - output as files
+        - extra metadata to support
+        - linking different versions of the same computation
+        - determining the newest version
+        - reproducing multi-BEAD computation sequences built by a distributed team
 
-/somepath$ unzip -v BeadBox/hello_20160527T130218513418+0200.zip 
-Archive:  BeadBox/hello_20160527T130218513418+0200.zip
+        There {is,will be,was} more info about BEADs at
+        - https://unknot.io
+        - https://github.com/ceumicrodata/bead
+        - https://github.com/e3krisztian/bead
 
-This file is a BEAD zip archive.
+        ----
 
-It is a normal zip file that stores a discrete computation of the form
-
-output = code(*inputs)
-
-The archive contains
-
-- inputs as part of metadata file: references (content hash) to other BEADs
-- code   as files
-- output as files
-- extra metadata to support
-- linking different versions of the same computation
-- determining the newest version
-- reproducing multi-BEAD computation sequences built by a distributed team
-
-There {is,will be,was} more info about BEADs at
-
-- https://unknot.io
-- https://github.com/ceumicrodata/bead
-- https://github.com/e3krisztian/bead
-
-----
-
-Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
---------  ------  ------- ---- ---------- ----- --------  ----
-13  Defl:N       15 -15% 2016-05-27 13:01 7d14dddd  data/greeting
-66  Defl:N       58  12% 2016-05-27 13:01 753b9d15  code/greet
-742  Defl:N      378  49% 2016-05-27 13:02 a4eb5de9  meta/bead
-456  Defl:N      281  38% 2016-05-27 13:02 9a206f53  meta/checksums
---------          -------  ---                            -------
-1277              732  43%                            4 files
+        Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
+        --------  ------  ------- ---- ---------- ----- --------  ----
+        13  Defl:N       15 -15% 2016-05-27 13:01 7d14dddd  data/greeting
+        66  Defl:N       58  12% 2016-05-27 13:01 753b9d15  code/greet
+        742  Defl:N      378  49% 2016-05-27 13:02 a4eb5de9  meta/bead
+        456  Defl:N      281  38% 2016-05-27 13:02 9a206f53  meta/checksums
+        --------          -------  ---                            -------
+        1277              732  43%                            4 files
