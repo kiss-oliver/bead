@@ -174,7 +174,6 @@ def _load(env, workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
-            # FIXME: env.get_bead should also take hash_function_uuid as parameter
             bead = env.get_bead(input.bead_uuid, input.content_hash)
         except LookupError:
             warning(

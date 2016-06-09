@@ -174,8 +174,7 @@ def print_inputs(env, workspace, verbose):
                 timestamp = time_from_timestamp(input.timestamp)
                 (
                     exact_match, best_guess, best_guess_timestamp, names
-                ) = box.find_names(
-                    input.bead_uuid, input.hash_function_uuid, input.content_hash, timestamp)
+                ) = box.find_names(input.bead_uuid, input.content_hash, timestamp)
                 #
                 has_name = has_name or exact_match or best_guess or names
                 if exact_match:

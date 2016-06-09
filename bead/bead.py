@@ -10,7 +10,6 @@ class Bead(object):
     __metaclass__ = ABCMeta
 
     bead_uuid = str
-    hash_function_uuid = str
     content_hash = str
     timestamp_str = str
     box_name = str

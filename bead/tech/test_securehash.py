@@ -48,19 +48,19 @@ class Test(TestCase):
         write_file(self.__file, self.__some_bytes)
 
     def when_bytes_are_hashed(self):
-        self.__hashresult = securehash._bytes(self.__some_bytes)
+        self.__hashresult = securehash.bytes(self.__some_bytes)
 
     def when_file_is_hashed(self):
         with open(self.__file, 'rb') as f:
             self.__hashresult = (
-                securehash._file(f, os.path.getsize(self.__file))
+                securehash.file(f, os.path.getsize(self.__file))
             )
 
     def when_file_and_bytes_are_hashed(self):
         with open(self.__file, 'rb') as f:
             self.__hashresult = (
-                securehash._bytes(self.__some_bytes),
-                securehash._file(f, os.path.getsize(self.__file))
+                securehash.bytes(self.__some_bytes),
+                securehash.file(f, os.path.getsize(self.__file))
             )
 
     def then_result_is_an_ascii_string_of_more_than_32_chars(self):

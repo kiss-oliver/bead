@@ -48,11 +48,7 @@ class Test_Archive(TestCase):
         z = zipfile.ZipFile(self.__bead, 'w')
         z.writestr(
             layouts.Archive.BEAD_META,
-            b'''{
-                    "meta_version":       "aaa947a6-1f7a-11e6-ba3a-0021cc73492e",
-                    "hash_function_uuid": "d4bb4e72-20f1-11e6-8b37-180373c6afa1"
-                }
-            ''')
+            b'{"meta_version": "aaa947a6-1f7a-11e6-ba3a-0021cc73492e"}')
         z.writestr('somefile1', b'''somefile1's known content''')
         z.writestr('path/file1', b'''?? file1's known content''')
         z.writestr('path/to/file1', b'''file1's known content''')

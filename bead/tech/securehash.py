@@ -24,7 +24,7 @@ def _add_suffix(hash, size):
     hash.update(';{}'.format(size).encode('ascii'))
 
 
-def _file(file, file_size):
+def file(file, file_size):
     '''
     Read file and return sha512 hash for its content.
 
@@ -51,7 +51,7 @@ def _file(file, file_size):
     return ''.__class__(hash.hexdigest())
 
 
-def _bytes(bytes):
+def bytes(bytes):
     '''
     Return sha512 hash for bytes.
     '''
@@ -60,26 +60,3 @@ def _bytes(bytes):
     hash.update(bytes)
     _add_suffix(hash, len(bytes))
     return ''.__class__(hash.hexdigest())
-
-
-class Hash_sha512_sbs:
-    name = 'sha512(size:bytes;size)'
-
-    def bytes(self, bytes):
-        return _bytes(bytes)
-
-    def file(self, file, file_size):
-        return _file(file, file_size)
-
-
-# UUID[s] generated with `uuidgen -t`
-HASHES = {
-    'd4bb4e72-20f1-11e6-8b37-180373c6afa1': Hash_sha512_sbs,
-}
-
-
-# FIXME: securehash.get_hash_function is a misnomer as it returns an object with two functions
-def get_hash_function(hash_function_uuid):
-    hash_class = HASHES.get(hash_function_uuid)
-    if hash_class:
-        return hash_class()

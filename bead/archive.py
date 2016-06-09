@@ -47,7 +47,6 @@ class Archive(Bead):
         self.name = bead_name_from_file_path(filename)
         self.zipfile = None
         self._meta = self._load_meta()
-        self._securehash = securehash.get_hash_function(self.hash_function_uuid)
 
     def __zipfile_user(method):
         # method is called with the zipfile opened
@@ -123,7 +122,7 @@ class Archive(Bead):
                 info = self.zipfile.getinfo(name)
             except KeyError:
                 return name
-            archived_hash = self._securehash.file(
+            archived_hash = securehash.file(
                 self.zipfile.open(info), info.file_size)
             if hash != archived_hash:
                 return name
@@ -135,19 +134,14 @@ class Archive(Bead):
             return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
 
     @property
-    def hash_function_uuid(self):
-        return self._meta[meta.HASH_FUNCTION_UUID]
-
-    @property
     @__zipfile_user
     def content_hash(self):
         # there is currently only one meta version
         # and it must match the one defined in workspace the module
-        # (it is unclear if there will ever be another one)
         assert self._meta[meta.META_VERSION] == 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
         zipinfo = self.zipfile.getinfo(layouts.Archive.CHECKSUMS)
         with self.zipfile.open(zipinfo) as f:
-            return self._securehash.file(f, zipinfo.file_size)
+            return securehash.file(f, zipinfo.file_size)
 
     @property
     def bead_uuid(self):

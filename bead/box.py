@@ -151,7 +151,7 @@ class Box(object):
         workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
         return Archive(zipfilename)
 
-    def find_names(self, bead_uuid, hash_function_uuid, content_hash, timestamp):
+    def find_names(self, bead_uuid, content_hash, timestamp):
         '''
         -> (exact_match, best_guess, best_guess_timestamp, names)
         where
@@ -172,10 +172,7 @@ class Box(object):
         best_guess_timedelta = None
         names                = set()
         for bead in candidates:
-            if (
-                bead.hash_function_uuid == hash_function_uuid and
-                bead.content_hash == content_hash
-            ):
+            if bead.content_hash == content_hash:
                 exact_match = bead.name
             #
             bead_timestamp = time_from_timestamp(bead.timestamp_str)
