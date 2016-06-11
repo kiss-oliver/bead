@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
+import sys
 
 from bead import tech
 from bead.workspace import Workspace, CurrentDirWorkspace
@@ -86,12 +87,21 @@ class CmdSave(Command):
         workspace = args.workspace
         env = args.get_env()
         assert_valid_workspace(workspace)
-        # FIXME: (usability) save - create ~/BeadBox as `main` box if there is none defined
         # XXX: (usability) save - support saving directly to a directory outside of workspace
         if box_name is USE_THE_ONLY_BOX:
             boxes = list(env.get_boxes())
             if not boxes:
-                die('No boxes defined, please define one!')
+                warning('No boxes have been defined')
+                beadbox = os.path.expanduser('~/BeadBox')
+                sys.stderr.write(
+                    'Creating and using a new one with name `home` and location {}'
+                    .format(beadbox))
+                tech.fs.ensure_directory(beadbox)
+                env.add_box('home', beadbox)
+                env.save()
+                # continue with newly created box
+                boxes = list(env.get_boxes())
+                assert len(boxes) == 1
             if len(boxes) > 1:
                 die(
                     'BOX parameter is not optional!\n' +

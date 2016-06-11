@@ -33,10 +33,17 @@ class Test_no_box(TestCase):
         return self.useFixture(fixtures.Robot())
 
     # tests
-    def test_missing_box_causes_error(self, robot):
+    def test_a_box_is_created_with_known_name(self, robot):
         robot.cli('new', 'bead')
-        self.assertRaises(SystemExit, robot.cli, 'save', 'bead')
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        robot.cd('bead')
+        robot.cli('save')
+        # there is a message on stderr that a new box has been created
+        self.assertThat(robot.stderr, Contains('home'))
+        # a new box with name `home` has been indeed created and it has exactly one bead
+        with robot.environment as e:
+            homebox = e.get_box('home')
+        beads = list(homebox.find_beads(()))
+        self.assertEquals(1, len(beads))
 
 
 Box = namedtuple('Box', 'name directory')
