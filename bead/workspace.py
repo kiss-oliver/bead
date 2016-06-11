@@ -1,5 +1,5 @@
 '''
-Filesystem layout of beads
+Proto-Beads & their filesystem layout
 '''
 from __future__ import absolute_import
 from __future__ import division
