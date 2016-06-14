@@ -1,6 +1,6 @@
 # Use case narratives
 
-![Workflows](https://raw.githubusercontent.com/ceumicrodata/bead/master/doc/workflows.png)
+![Workflows](./workflows.png)
 
 ## Create a new bead
 
@@ -110,4 +110,4 @@ The output of the computation is stored under `data/*`. An outide collaborator w
         1277              732  43%                            4 files
 
 The following graph summarizes the internal structure of a workspace and the logical links to other beads.
-![Internals](https://raw.githubusercontent.com/ceumicrodata/bead/master/doc/internals.png)
+![Internals](./internals.png)
