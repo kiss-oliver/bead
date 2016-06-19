@@ -23,8 +23,8 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
 
         bead_a = beads[bead_a]
         bead_with_inputs = beads[bead_with_inputs]
-        self.assertThat(robot.stdout, Not(Contains(bead_with_inputs.bead_uuid)))
-        self.assertThat(robot.stdout, Not(Contains(bead_a.bead_uuid)))
+        self.assertThat(robot.stdout, Not(Contains(bead_with_inputs.kind)))
+        self.assertThat(robot.stdout, Not(Contains(bead_a.kind)))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
         self.assertThat(robot.stdout, Not(Contains(bead_a.content_hash)))
 
@@ -38,8 +38,8 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
 
         bead_a = beads[bead_a]
         bead_with_inputs = beads[bead_with_inputs]
-        self.assertThat(robot.stdout, Contains(bead_with_inputs.bead_uuid))
-        self.assertThat(robot.stdout, Contains(bead_a.bead_uuid))
+        self.assertThat(robot.stdout, Contains(bead_with_inputs.kind))
+        self.assertThat(robot.stdout, Contains(bead_a.kind))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(bead_a.content_hash))
 
@@ -56,7 +56,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
 
         bead_a = beads[bead_a]
         self.assertThat(robot.stdout, Contains(bead_with_inputs))
-        self.assertThat(robot.stdout, Contains(bead_a.bead_uuid))
+        self.assertThat(robot.stdout, Contains(bead_a.kind))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(bead_a.content_hash))
 
@@ -72,8 +72,8 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
 
         bead_a = beads[bead_a]
         bead_with_inputs = beads[bead_with_inputs]
-        self.assertThat(robot.stdout, Contains(bead_with_inputs.bead_uuid))
-        self.assertThat(robot.stdout, Contains(bead_a.bead_uuid))
+        self.assertThat(robot.stdout, Contains(bead_with_inputs.kind))
+        self.assertThat(robot.stdout, Contains(bead_a.kind))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
         self.assertThat(robot.stdout, Contains(bead_a.content_hash))
 

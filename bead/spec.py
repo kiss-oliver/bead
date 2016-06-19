@@ -14,13 +14,13 @@ OLDEST_FIRST = 'oldest_first'
 OLDER_THAN     = 'OLDER_THAN'
 NEWER_THAN     = 'NEWER_THAN'
 BEAD_NAME_GLOB = 'BEAD_NAME_GLOB'
-BEAD_UUID      = 'BEAD_UUID'
+KIND           = 'KIND'
 CONTENT_HASH   = 'CONTENT_HASH'
 # TODO: support shortened content hashes
 
 
 # private and specific to Box implementation, when Box gains
-# more power, it should change how it handles queries (e.g. using BEAD_UUID
+# more power, it should change how it handles queries (e.g. using KIND
 # or CONTENT_HASH directly through an index)
 
 def _make_checkers():
@@ -39,9 +39,9 @@ def _make_checkers():
             return fnmatch(bead.name, nameglob)
         return filter
 
-    def has_uuid(bead_uuid):
+    def has_kind(kind):
         def filter(bead):
-            return bead.bead_uuid == bead_uuid
+            return bead.kind == kind
         return filter
 
     def has_content_prefix(hash_prefix):
@@ -53,7 +53,7 @@ def _make_checkers():
         OLDER_THAN:     is_older_than,
         NEWER_THAN:     is_newer_than,
         BEAD_NAME_GLOB: has_name_glob,
-        BEAD_UUID:      has_uuid,
+        KIND:           has_kind,
         CONTENT_HASH:   has_content_prefix,
     }
 

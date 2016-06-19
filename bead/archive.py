@@ -72,7 +72,7 @@ class Archive(Bead):
           in the archive, but not as data or code files)
         - the BEAD_META file is valid
             - has meta version
-            - has bead_uuid
+            - has kind
             - has freeze time
             - has freezed name
             - has inputs (even if empty)
@@ -89,7 +89,7 @@ class Archive(Bead):
         m = self.meta
         keys = (
             meta.META_VERSION,
-            meta.BEAD_UUID,
+            meta.KIND,
             meta.FREEZE_TIME,
             meta.FREEZE_NAME,
             meta.INPUTS)
@@ -144,8 +144,8 @@ class Archive(Bead):
             return securehash.file(f, zipinfo.file_size)
 
     @property
-    def bead_uuid(self):
-        return self._meta[meta.BEAD_UUID]
+    def kind(self):
+        return self._meta[meta.KIND]
 
     @property
     def timestamp_str(self):

@@ -49,8 +49,8 @@ class CmdNew(Command):
         assert_may_be_valid_name(workspace.bead_name)
         # FIXME: die with message when directory already exists
 
-        bead_uuid = tech.identifier.uuid()
-        workspace.create(bead_uuid)
+        kind = tech.identifier.uuid()
+        workspace.create(kind)
         print('Created {}'.format(workspace.bead_name))
 
 
@@ -184,7 +184,7 @@ def print_inputs(env, workspace, verbose):
                 timestamp = time_from_timestamp(input.timestamp)
                 (
                     exact_match, best_guess, best_guess_timestamp, names
-                ) = box.find_names(input.bead_uuid, input.content_hash, timestamp)
+                ) = box.find_names(input.kind, input.content_hash, timestamp)
                 #
                 has_name = has_name or exact_match or best_guess or names
                 if exact_match:
@@ -196,7 +196,7 @@ def print_inputs(env, workspace, verbose):
                 for name in sorted(names):
                     print('\t [-r {} {}]'.format(box.name, name))
             if verbose or not has_name:
-                print('\tBead UUID:', input.bead_uuid)
+                print('\tBead kind:', input.kind)
                 print('\tContent hash:', input.content_hash)
                 print('\tFreeze time:', input.timestamp)
 
@@ -230,11 +230,11 @@ class CmdStatus(Command):
         verbose = args.verbose
         env = args.get_env()
         # TODO: use a template and render it with passing in all data
-        uuid_needed = verbose
+        kind_needed = verbose
         if workspace.is_valid:
             print('Bead Name: {}'.format(workspace.bead_name))
-            if uuid_needed:
-                print('Bead UUID: {}'.format(workspace.bead_uuid))
+            if kind_needed:
+                print('Bead kind: {}'.format(workspace.kind))
             print()
             print_inputs(env, workspace, verbose)
         else:

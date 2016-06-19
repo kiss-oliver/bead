@@ -19,7 +19,7 @@ temp_dir = tech.fs.temp_dir
 timestamp = tech.timestamp.timestamp
 Path = tech.fs.Path
 
-A_BEAD_UUID = 'a fake uuid'
+A_KIND = 'an arbitrary identifier that is not used by chance'
 
 
 class Test_create(TestCase):
@@ -34,10 +34,10 @@ class Test_create(TestCase):
         self.when_initialized()
         self.then_workspace_has_no_inputs()
 
-    def test_has_specified_uuid(self):
+    def test_of_specified_kind(self):
         self.given_an_empty_directory()
         self.when_initialized()
-        self.then_workspace_has_the_specified_uuid()
+        self.then_workspace_is_of_specified_kind()
 
     # implementation
 
@@ -51,7 +51,7 @@ class Test_create(TestCase):
         self.__workspace_dir = self.new_temp_dir()
 
     def when_initialized(self):
-        self.workspace.create(A_BEAD_UUID)
+        self.workspace.create(A_KIND)
 
     def then_directory_is_a_valid_bead_dir(self):
         self.assertTrue(self.workspace.is_valid)
@@ -61,8 +61,8 @@ class Test_create(TestCase):
         self.assertFalse(self.workspace.is_loaded('bead1'))
         self.assertFalse(self.workspace.inputs)
 
-    def then_workspace_has_the_specified_uuid(self):
-        self.assertEquals(A_BEAD_UUID, self.workspace.bead_uuid)
+    def then_workspace_is_of_specified_kind(self):
+        self.assertEquals(A_KIND, self.workspace.kind)
 
 
 class Test_pack(TestCase):
@@ -104,7 +104,7 @@ class Test_pack(TestCase):
 
     def given_a_workspace(self):
         self.__workspace_dir = self.new_temp_dir()
-        self.workspace.create(A_BEAD_UUID)
+        self.workspace.create(A_KIND)
         l = layouts.Workspace
 
         write_file(
@@ -162,7 +162,7 @@ class Test_pack_stability(TestCase):
         def make_bead():
             output = self.new_temp_dir() / 'bead.zip'
             ws = m.Workspace(self.new_temp_dir() / 'a bead')
-            ws.create(A_BEAD_UUID)
+            ws.create(A_KIND)
             write_file(ws.directory / 'source1', 'code to produce output')
             write_file(ws.directory / 'output/output1', TS)
             ws.pack(output, TS, comment='')
@@ -176,7 +176,7 @@ class Test_pack_stability(TestCase):
 def make_bead(path, filespecs):
     with temp_dir() as root:
         workspace = m.Workspace(root)
-        workspace.create(A_BEAD_UUID)
+        workspace.create(A_KIND)
         for filename, content in filespecs.items():
             write_file(workspace.directory / filename, content)
         workspace.pack(path, timestamp(), 'no comment')
@@ -214,7 +214,7 @@ class Test_load(TestCase):
 
     def given_a_workspace(self):
         self.__workspace_dir = self.new_temp_dir()
-        self.workspace.create(A_BEAD_UUID)
+        self.workspace.create(A_KIND)
 
     def _load_a_bead(self, input_nick):
         path_of_bead_to_load = self.new_temp_dir() / 'bead.zip'
@@ -271,7 +271,7 @@ class Test_is_valid(TestCase):
 
     def workspace(self):
         workspace = m.Workspace(self.new_temp_dir())
-        workspace.create(A_BEAD_UUID)
+        workspace.create(A_KIND)
         return workspace
 
     def timestamp(self):

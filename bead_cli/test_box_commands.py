@@ -26,7 +26,7 @@ class Test_shared_box(TestCase):
     def bead(self, timestamp):
         tmp = self.new_temp_dir()
         ws = Workspace(tmp / 'ws')
-        ws.create('bead-uuid')
+        ws.create('a bead kind')
         bead_archive = tmp / 'bead.zip'
         ws.pack(bead_archive, timestamp, comment='bead for a shared box')
         return bead_archive

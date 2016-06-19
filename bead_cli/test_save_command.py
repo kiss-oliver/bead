@@ -49,9 +49,9 @@ class Test_no_box(TestCase):
 Box = namedtuple('Box', 'name directory')
 
 
-def bead_count(robot, box, bead_uuid):
+def bead_count(robot, box, kind):
     with robot.environment as env:
-        query = [(bead_spec.BEAD_UUID, bead_uuid)]
+        query = [(bead_spec.KIND, kind)]
         return sum(1 for _ in env.get_box(box.name).find_beads(query))
 
 
@@ -81,12 +81,12 @@ class Test_more_than_one_boxes(TestCase):
         robot.cli('new', 'bead')
         robot.cli('save', box1.name, '--workspace=bead')
         with robot.environment:
-            bead_uuid = Workspace('bead').bead_uuid
-        self.assertEquals(1, bead_count(robot, box1, bead_uuid))
-        self.assertEquals(0, bead_count(robot, box2, bead_uuid))
+            kind = Workspace('bead').kind
+        self.assertEquals(1, bead_count(robot, box1, kind))
+        self.assertEquals(0, bead_count(robot, box2, kind))
         robot.cli('save', box2.name, '-w', 'bead')
-        self.assertEquals(1, bead_count(robot, box1, bead_uuid))
-        self.assertEquals(1, bead_count(robot, box2, bead_uuid))
+        self.assertEquals(1, bead_count(robot, box1, kind))
+        self.assertEquals(1, bead_count(robot, box2, kind))
 
     def test_invalid_box_specified(self, robot, box1, box2):
         robot.cli('new', 'bead')

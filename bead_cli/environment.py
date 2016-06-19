@@ -79,9 +79,9 @@ class Environment:
     def is_known_box(self, name):
         return self.get_box(name) is not None
 
-    def get_bead(self, bead_uuid, content_hash):
-        query = ((bead_spec.BEAD_UUID, bead_uuid), (bead_spec.CONTENT_HASH, content_hash))
+    def get_bead(self, kind, content_hash):
+        query = ((bead_spec.KIND, kind), (bead_spec.CONTENT_HASH, content_hash))
         for box in self.get_boxes():
             for bead in box.find_beads(query):
                 return bead
-        raise LookupError('Bead {} {} not found'.format(bead_uuid, content_hash))
+        raise LookupError('Bead {} {} not found'.format(kind, content_hash))

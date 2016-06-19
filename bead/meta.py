@@ -8,18 +8,18 @@ with the following minimum structure:
     meta_version: ...,
     inputs: {
         'nick1' : {
-            bead_uuid: ...,
+            kind: ...,
             content_hash: ...,
             freeze_time: ...,
         },
         'nick2' : {
-            bead_uuid: ...,
+            kind: ...,
             content_hash: ...,
             freeze_time: ...,
         },
         ...
     },
-    bead_uuid: ...,
+    kind: ...,
     freeze_time: ...,  # only archives - naive ordering
     freeze_name: ...,  # only archives, bead name for bootstrapping
 }
@@ -42,16 +42,16 @@ from collections import namedtuple
 
 META_VERSION = 'meta_version'
 
-BEAD_UUID = 'bead_uuid'
+KIND = 'kind'
 
 INPUTS = 'inputs'
 
-INPUT_BEAD_UUID    = 'bead_uuid'
+INPUT_KIND    = 'kind'
 INPUT_CONTENT_HASH = 'content_hash'
 INPUT_FREEZE_TIME  = 'freeze_time'
 
 
-InputSpec = namedtuple('InputSpec', 'name bead_uuid content_hash timestamp')
+InputSpec = namedtuple('InputSpec', 'name kind content_hash timestamp')
 
 
 def parse_inputs(meta):
@@ -63,7 +63,7 @@ def parse_inputs(meta):
         spec = inputs[name]
         yield InputSpec(
             name,
-            spec[INPUT_BEAD_UUID],
+            spec[INPUT_KIND],
             spec[INPUT_CONTENT_HASH],
             spec[INPUT_FREEZE_TIME])
 

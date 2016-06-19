@@ -53,8 +53,8 @@ class AbstractWorkspace(object):
             return persistence.dump(meta, f)
 
     @property
-    def bead_uuid(self):
-        return self.meta[meta.BEAD_UUID]
+    def kind(self):
+        return self.meta[meta.KIND]
 
     @property
     def inputs(self):
@@ -65,7 +65,7 @@ class AbstractWorkspace(object):
             if name == input.name:
                 return input
 
-    def create(self, bead_uuid):
+    def create(self, kind):
         '''
         Set up an empty project structure.
 
@@ -80,7 +80,7 @@ class AbstractWorkspace(object):
         self.create_directories()
 
         bead_meta = {
-            meta.BEAD_UUID: bead_uuid,
+            meta.KIND: kind,
             meta.INPUTS: {}}
         fs.write_file(
             dir / layouts.Workspace.BEAD_META,
@@ -120,10 +120,10 @@ class AbstractWorkspace(object):
         return os.path.isdir(
             self.directory / layouts.Workspace.INPUT / input_nick)
 
-    def add_input(self, input_nick, bead_uuid, content_hash, timestamp_str):
+    def add_input(self, input_nick, kind, content_hash, timestamp_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
-            meta.INPUT_BEAD_UUID: bead_uuid,
+            meta.INPUT_KIND: kind,
             meta.INPUT_CONTENT_HASH: content_hash,
             meta.INPUT_FREEZE_TIME: timestamp_str}
         self.meta = m
@@ -145,7 +145,7 @@ class AbstractWorkspace(object):
         try:
             self.add_input(
                 input_nick,
-                bead.bead_uuid, bead.content_hash, bead.timestamp_str)
+                bead.kind, bead.content_hash, bead.timestamp_str)
             destination_dir = input_dir / input_nick
             bead.unpack_data_to(destination_dir)
             for f in fs.all_subpaths(destination_dir):
@@ -257,11 +257,11 @@ class _ZipCreator(object):
     def add_meta(self, workspace, timestamp):
         bead_meta = {
             meta.META_VERSION: META_VERSION,
-            meta.BEAD_UUID: workspace.bead_uuid,
+            meta.KIND: workspace.kind,
             meta.FREEZE_TIME: timestamp,
             meta.INPUTS: {
                 input.name: {
-                    meta.INPUT_BEAD_UUID: input.bead_uuid,
+                    meta.INPUT_KIND: input.kind,
                     meta.INPUT_CONTENT_HASH: input.content_hash,
                     meta.INPUT_FREEZE_TIME: input.timestamp}
                 for input in workspace.inputs},

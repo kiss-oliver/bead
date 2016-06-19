@@ -136,7 +136,7 @@ class CmdUpdate(Command):
 def _update(env, workspace, input, bead_ref=NEWEST_VERSION):
     if bead_ref is NEWEST_VERSION:
         query = [
-            (bead_spec.BEAD_UUID, input.bead_uuid),
+            (bead_spec.KIND, input.kind),
             (bead_spec.NEWER_THAN, time_from_timestamp(input.timestamp))]
         workspace_name = ''  # no workspace!
         bead_ref = BoxQueryReference(workspace_name, query, env.get_boxes())
@@ -174,7 +174,7 @@ def _load(env, workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
-            bead = env.get_bead(input.bead_uuid, input.content_hash)
+            bead = env.get_bead(input.kind, input.content_hash)
         except LookupError:
             warning(
                 'Could not find archive for {} - not loaded!'

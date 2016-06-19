@@ -121,7 +121,7 @@ class Box(object):
         '''
         match = bead_spec.compile_conditions(conditions)
 
-        # FUTURE IMPLEMENTATIONS: check for bead_uuid & content hash
+        # FUTURE IMPLEMENTATIONS: check for kind & content hash
         # they are good candidates for indexing
         bead_name_globs = [
             value
@@ -151,20 +151,20 @@ class Box(object):
         workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
         return Archive(zipfilename)
 
-    def find_names(self, bead_uuid, content_hash, timestamp):
+    def find_names(self, kind, content_hash, timestamp):
         '''
         -> (exact_match, best_guess, best_guess_timestamp, names)
         where
-            exact_match          = name (bead_uuid & content_hash matched)
-            best_guess           = name (bead_uuid matched, timestamp is closest to input's)
+            exact_match          = name (kind & content_hash matched)
+            best_guess           = name (kind matched, timestamp is closest to input's)
             best_guess_timestamp = timestamp ()
-            names                = sequence of names (bead_uuid matched)
+            names                = sequence of names (kind matched)
         '''
         assert isinstance(timestamp, datetime)
         paths = (self.directory / fname for fname in os.listdir(self.directory))
         # FIXME: Box.find_names dies on non bead in the directory
         beads = (Archive(path, self.name) for path in paths)
-        candidates = (bead for bead in beads if bead.bead_uuid == bead_uuid)
+        candidates = (bead for bead in beads if bead.kind == kind)
 
         exact_match          = None
         best_guess           = None

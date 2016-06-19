@@ -31,12 +31,15 @@ The bead format is designed to be
 The main technology involved is a combination of different probabilistic identifiers (UUID, secure hash, Merkle-tree).
 
 Main properties of a bead:
-- `bead_uuid` that is shared with other versions of a bead (book analogy: ISSN)
-- a `content_hash`, that is unique for every bead (~version, book analogy: ISBN)
+- `kind` that is shared with other versions of a bead (book analogy: ISSN)
+  - it is a technical name, whose existence allows the human name to
+    change/evolve/diverge over time, while still referring to conceptually
+    the same computation
+- `content_hash`, that is unique for every bead (~version, book analogy: ISBN)
  - it is calculated, so changes in a bead makes it either invalid or a new version
 - freeze time (for ordering versions, this is fragile in theory as depends on correctly set clocks, but in practice it is expected to cause few problems)
 - freeze name
-- references to its inputs (`bead_uuid`, `content_hash`)
+- references to its inputs (`kind`, `content_hash`)
 
 ## Box
 

@@ -70,7 +70,7 @@ class RobotAndBeads(object):
         hacked_bead_path = self.new_temp_dir() / 'hacked_bead.zip'
         workspace_dir = self.new_temp_dir() / 'hacked_bead'
         ws = Workspace(workspace_dir)
-        ws.create('hacked-uuid')
+        ws.create('hacked-kind')
         tech.fs.write_file(ws.directory / 'code', 'code')
         tech.fs.write_file(ws.directory / 'output/README', 'README')
         ws.pack(hacked_bead_path, TS1, comment='hacked bead')
@@ -83,12 +83,12 @@ class RobotAndBeads(object):
                 z.writestr(layouts.Archive.DATA / 'README', 'HACKED')
         return hacked_bead_path
 
-    def _bead_with_history(self, robot, box, bead_name, bead_uuid):
+    def _bead_with_history(self, robot, box, bead_name, bead_kind):
         def make_bead(timestamp):
             with TempDir() as tempdir_obj:
                 workspace_dir = os.path.join(tempdir_obj.path, bead_name)
                 ws = Workspace(workspace_dir)
-                ws.create(bead_uuid)
+                ws.create(bead_kind)
                 sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
                 tech.fs.write_file(sentinel_file, timestamp)
                 box.store(ws, timestamp)
@@ -101,7 +101,7 @@ class RobotAndBeads(object):
 
     def bead_with_history(self, robot, box):
         return self._bead_with_history(
-            robot, box, 'bead_with_history', 'UUID:bead_with_history')
+            robot, box, 'bead_with_history', 'KIND:bead_with_history')
 
     def bead_with_inputs(self, robot, beads, bead_a, bead_b):
         inputs = dict(input_a=bead_a, input_b=bead_b)
