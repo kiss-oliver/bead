@@ -16,17 +16,19 @@ P: find locally available packages
 D: local repos
  - a flat directory with many files
  - specially formatted directories with packages in hierarchy
-   - marked at the root with a marker file "HARE-REPO" with content "basic"
-   ? subdirectories containing packages have a file 'UUID' with the uuid content
-      -: introduces a reserved name?
+   - marked at the root with a marker file *BEADBOX-TYPE* with content "basic"
 
 
 P: resolve packages via human memorizable names
+D: responsibility of name-resolution is on repositories
 D: use file name [fragments]
- - ambiguous map, needs to handle ambiguity
  +: trivial discoverability of packages
 
 
 P: personal config needs to be protected from crashes
-?: simple config, little data, data is in the filesystem/structures
-?: lots of data, sqlite3 and transactions
+D: simple config, little data, data is in the filesystem/structures
+
+
+P: allow renaming of packages
+D: use technical name internally, that parallels and translates to/from human name[s]
+D: names are part of the human interface, allow them to be ambiguous, they are not necessary for operation

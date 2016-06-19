@@ -15,11 +15,9 @@ The tool must help in achieving product reproducibility and doing it in a distri
 
 Even partial success is better than either too much restrictions or chaos.
 
-Highly distributed means, that developers are working individually on their part.
-There is no user visible global namespace, concrete package files can be renamed arbitrarily.
-Developers in the analysis workflow need to access only directly used data packages (they would need those anyway!).
+Highly distributed means, that developers are working individually on their part. There is no user visible global namespace, concrete package files can be renamed arbitrarily. Developers in the analysis workflow need to access only directly used data packages (they would need those anyway!).
 
-Transparent means, that the code/data layout once looked like the one packaged including its data dependency information.
+Transparent means, that the code/data layout is preserved as it looked like at the time the package is created including data dependency information.
 
 
 # Assumptions
@@ -44,8 +42,8 @@ Transparent means, that the code/data layout once looked like the one packaged i
 - conceptual simplicity
     - package centric view of workflow
     - stores provenance, code and data output
-    - peer to peer, but file exchange is outside the core system
-    - tamper resistant packages (SHA1 hash as version)
+    - peer to peer, but file exchange is outside the core system (e.g. you can email or share via Dropbox/... your results)
+    - tamper resistant packages (secure hash as version)
 - cross-platform (Win-Mac-Lin)
     - single file executable (might be platform specific)
 - support distributed team-work

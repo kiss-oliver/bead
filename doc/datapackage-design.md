@@ -7,7 +7,7 @@
 - reproducibility must be verifiable
 - must be cross-platform (Win-Mac-Lin)
 - updates: easily create newer packages based on new input
-- access control with granularity of package-uuid - restricted packages
+- access control - allow for restricted packages
 - packages might be owned, but ownership surely changes over time
 
 
