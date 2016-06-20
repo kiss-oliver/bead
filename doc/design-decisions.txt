@@ -32,3 +32,14 @@ D: simple config, little data, data is in the filesystem/structures
 P: allow renaming of packages
 D: use technical name internally, that parallels and translates to/from human name[s]
 D: names are part of the human interface, allow them to be ambiguous, they are not necessary for operation
+
+
+P: interoperability with bagit
+D: will not happen
+   - it is not obvious if anyone would ever use the bagit support
+   - the serialization format of bagit forces to push the content one directory deeper
+     (see https://tools.ietf.org/html/draft-kunze-bagit-13#section-4 Serialization).
+     This either takes away some simplicity or the solution (known, fixed root name,
+     e.g. `bead`) would slightly violate the intent of bagit spec.
+   - bead code and metadata files are either put under `data` directory
+     or they are stored as "unexpected" bagit tag files
