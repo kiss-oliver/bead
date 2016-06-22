@@ -122,8 +122,7 @@ class Archive(Bead):
                 info = self.zipfile.getinfo(name)
             except KeyError:
                 return name
-            archived_hash = securehash.file(
-                self.zipfile.open(info), info.file_size)
+            archived_hash = securehash.file(self.zipfile.open(info), info.file_size)
             if hash != archived_hash:
                 return name
 
@@ -137,7 +136,7 @@ class Archive(Bead):
     @__zipfile_user
     def content_hash(self):
         # there is currently only one meta version
-        # and it must match the one defined in workspace the module
+        # and it must match the one defined in the workspace module
         assert self._meta[meta.META_VERSION] == 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
         zipinfo = self.zipfile.getinfo(layouts.Archive.CHECKSUMS)
         with self.zipfile.open(zipinfo) as f:
