@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 
-import bisect
+import heapq
 from datetime import datetime, timedelta
 import functools
 from glob import iglob
@@ -54,12 +54,7 @@ def order_and_limit_beads(beads, order=bead_spec.NEWEST_FIRST, limit=None):
 
     if limit:
         # assume we have lots of beads, so do it with memory limited
-        # XXX: heapq might be faster a bit?
-        wrapped_results = []
-        for bead in comparable_beads:
-            bisect.insort_right(wrapped_results, bead)
-            if len(wrapped_results) > limit:
-                del wrapped_results[limit]
+        wrapped_results = heapq.nsmallest(limit, comparable_beads)
     else:
         wrapped_results = sorted(comparable_beads)
 
