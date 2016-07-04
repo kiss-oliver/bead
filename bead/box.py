@@ -129,11 +129,20 @@ class Box(object):
 
         # XXX: directory itself might be a pattern - is it OK?
         paths = iglob(self.directory / glob)
-        # FIXME: Box.find_beads dies on non bead in the directory
-        beads = (Archive(path, self.name) for path in paths)
+        beads = self._archives_from(paths)
         candidates = (bead for bead in beads if match(bead))
 
         return order_and_limit_beads(candidates, order, limit)
+
+    def _archives_from(self, paths):
+        for path in paths:
+            try:
+                archive = Archive(path, self.name)
+            except:
+                # bad archive, ignore it
+                pass
+            else:
+                yield archive
 
     def store(self, workspace, timestamp):
         # -> Bead
@@ -157,8 +166,7 @@ class Box(object):
         '''
         assert isinstance(timestamp, datetime)
         paths = (self.directory / fname for fname in os.listdir(self.directory))
-        # FIXME: Box.find_names dies on non bead in the directory
-        beads = (Archive(path, self.name) for path in paths)
+        beads = self._archives_from(paths)
         candidates = (bead for bead in beads if bead.kind == kind)
 
         exact_match          = None

@@ -28,7 +28,7 @@ def bead_name_from_file_path(path):
     Might return a simpler name than intended
     '''
     name_with_timestamp, ext = os.path.splitext(os.path.basename(path).lower())
-    assert ext == '.zip'
+    # assert ext == '.zip'  # not enforced to allow having beads with different extensions
     name = re.sub('_[0-9]{8}(?:t[-+0-9]*)?$', '', name_with_timestamp)
     return name
 

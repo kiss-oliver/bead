@@ -78,8 +78,6 @@ Thank you for your interest!
 
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), text in this section and afterwards will be overwritten
 
-- [FIXME: Box.find_beads dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L132)
-- [FIXME: Box.find_names dies on non bead in the directory](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L160)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L50)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/master/bead_cli/test_robot.py#L36)
 - [FIXME: test_archive.given_a_bead is fragile and yields an invalid BEAD](https://github.com/e3krisztian/bead/blob/master/bead/test_archive.py#L46)
