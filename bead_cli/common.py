@@ -120,11 +120,12 @@ def arg_bead_query(parser):
 
     # bead_filters
     BEAD_QUERY = 'bead_query'
-    arg('-o', '--older', '--older-than', dest=BEAD_QUERY,
+    APPEND = 'append'
+    arg('-o', '--older', '--older-than', dest=BEAD_QUERY, action=APPEND,
         metavar='TIMEDEF', type=tag(bead_spec.OLDER_THAN, _parse_time))
-    arg('-n', '--newer', '--newer-than', dest=BEAD_QUERY,
+    arg('-n', '--newer', '--newer-than', dest=BEAD_QUERY, action=APPEND,
         metavar='TIMEDEF', type=tag(bead_spec.NEWER_THAN, _parse_time))
-    arg('--start-of-name', dest=BEAD_QUERY,
+    arg('--start-of-name', dest=BEAD_QUERY, action=APPEND,
         metavar='START-OF-BEAD-NAME',
         type=tag(bead_spec.BEAD_NAME_GLOB, _parse_start_of_name))
 

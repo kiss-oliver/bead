@@ -91,6 +91,7 @@ class RobotAndBeads(object):
                 ws.create(bead_kind)
                 sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
                 tech.fs.write_file(sentinel_file, timestamp)
+                tech.fs.write_file(ws.directory / 'output/README', timestamp)
                 box.store(ws, timestamp)
                 tech.fs.rmtree(workspace_dir)
 

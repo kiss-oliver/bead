@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from bead.test import TestCase, skip
+from bead.test import TestCase
 from testtools.matchers import FileContains, Not, Contains
 
 import os
@@ -19,13 +19,13 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
             FileContains(bead_name))
 
     # tests
-
-    @skip('bead version')
     def test_basic_usage(self, robot, bead_with_history):
         # nextbead with input1 as databead1
         robot.cli('new', 'nextbead')
         robot.cd('nextbead')
-        robot.cli('input', 'add', 'input1', 'bead_with_history@' + fixtures.TS1)
+        # add version TS1
+        robot.cli('input', 'add', 'input1', 'bead_with_history', '--older-than', fixtures.TS2)
+        self.assertThat(robot.cwd / 'input/input1/README', FileContains(fixtures.TS1))
         robot.cli('save')
         robot.cd('..')
         robot.cli('nuke', 'nextbead')
