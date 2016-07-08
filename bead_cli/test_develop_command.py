@@ -38,7 +38,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
             FileExists())
 
     def test_without_version(self, robot, bead_with_history):
-        self.assert_develop_version(robot, 'bead_with_history', fixtures.TS2)
+        self.assert_develop_version(robot, 'bead_with_history', fixtures.TS_LAST)
 
     @skip('bead version')
     def test_without_offset(self, robot, bead_with_history):

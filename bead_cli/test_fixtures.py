@@ -19,6 +19,10 @@ from .test_robot import Robot
 # timestamps
 TS1 = '20150901T151015000001+0200'
 TS2 = '20150901T151016000002+0200'
+TS3 = '20150901T151017000003+0200'
+TS4 = '20150901T151018000004+0200'
+TS5 = '20150901T151019000005+0200'
+TS_LAST = TS5
 
 
 class RobotAndBeads(object):
@@ -98,6 +102,9 @@ class RobotAndBeads(object):
         with robot.environment:
             make_bead(TS1)
             make_bead(TS2)
+            make_bead(TS3)
+            make_bead(TS4)
+            make_bead(TS5)
         return bead_name
 
     def bead_with_history(self, robot, box):

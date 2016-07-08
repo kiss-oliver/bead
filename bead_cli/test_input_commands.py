@@ -24,8 +24,8 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cli('new', 'nextbead')
         robot.cd('nextbead')
         # add version TS1
-        robot.cli('input', 'add', 'input1', 'bead_with_history', '--older-than', fixtures.TS2)
-        self.assert_loaded(robot, 'input1', fixtures.TS1)
+        robot.cli('input', 'add', 'input1', 'bead_with_history', '--older-than', fixtures.TS3)
+        self.assert_loaded(robot, 'input1', fixtures.TS2)
         robot.cli('save')
         robot.cd('..')
         robot.cli('nuke', 'nextbead')
