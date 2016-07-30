@@ -25,7 +25,7 @@ Path = tech.fs.Path
 
 # private and specific to Box implementation, when Box gains more power,
 # it should change how it handles queries (e.g. using BEAD_NAME_GLOB, KIND,
-# or CONTENT_HASH directly through an index)
+# or CONTENT_ID directly through an index)
 
 
 def _make_checkers():
@@ -39,15 +39,15 @@ def _make_checkers():
             return bead.kind == kind
         return filter
 
-    def has_content_prefix(hash_prefix):
+    def has_content_prefix(prefix):
         def filter(bead):
-            return bead.content_hash.startswith(hash_prefix)
+            return bead.content_id.startswith(prefix)
         return filter
 
     return {
         bead_spec.BEAD_NAME_GLOB: has_name_glob,
         bead_spec.KIND:           has_kind,
-        bead_spec.CONTENT_HASH:   has_content_prefix,
+        bead_spec.CONTENT_ID:     has_content_prefix,
     }
 
 _CHECKERS = _make_checkers()
@@ -120,7 +120,7 @@ It is a normal zip file that stores a discrete computation of the form
 
 The archive contains
 
-- inputs as part of metadata file: references (content hash) to other BEADs
+- inputs as part of metadata file: references (content_id) to other BEADs
 - code   as files
 - output as files
 - extra metadata to support
@@ -172,7 +172,7 @@ class Box(object):
         '''
         match = compile_conditions(conditions)
 
-        # FUTURE IMPLEMENTATIONS: check for kind & content hash
+        # FUTURE IMPLEMENTATIONS: check for kind & content_id
         # they are good candidates for indexing
         bead_name_globs = [
             value
@@ -211,11 +211,11 @@ class Box(object):
         TRACELOG('store as archive', zipfilename)
         return Archive(zipfilename)
 
-    def find_names(self, kind, content_hash, timestamp):
+    def find_names(self, kind, content_id, timestamp):
         '''
         -> (exact_match, best_guess, best_guess_timestamp, names)
         where
-            exact_match          = name (kind & content_hash matched)
+            exact_match          = name (kind & content_id matched)
             best_guess           = name (kind matched, timestamp is closest to input's)
             best_guess_timestamp = timestamp ()
             names                = sequence of names (kind matched)
@@ -231,7 +231,7 @@ class Box(object):
         best_guess_timedelta = None
         names                = set()
         for bead in candidates:
-            if bead.content_hash == content_hash:
+            if bead.content_id == content_id:
                 exact_match = bead.name
             #
             bead_timestamp = time_from_timestamp(bead.timestamp_str)
@@ -316,7 +316,7 @@ def make_context(time, beads):
                 next = bead
         else:
             assert bead.timestamp == time
-            assert match is None or match.content_hash == bead.content_hash, (
+            assert match is None or match.content_id == bead.content_id, (
                 'multiple beads with same timestamp')
             match = bead
     if match or prev or next:

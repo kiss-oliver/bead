@@ -30,17 +30,17 @@ class Test_Archive(TestCase):
         self.when_a_nonexistent_directory_is_extracted()
         self.then_an_empty_directory_is_created()
 
-    def test_content_hash(self):
+    def test_content_id(self):
         self.given_a_bead()
-        self.when_content_hash_is_checked()
-        self.then_content_hash_is_a_string()
+        self.when_content_id_is_checked()
+        self.then_content_id_is_a_string()
 
     # implementation
 
     __bead = None
     __extractedfile = None
     __extracteddir = None
-    __content_hash = None
+    __content_id = None
 
     def given_a_bead(self):
         # FIXME: test_archive.given_a_bead is fragile and yields an invalid BEAD
@@ -77,12 +77,12 @@ class Test_Archive(TestCase):
             set(os.listdir(self.__extracteddir))
         )
 
-    def when_content_hash_is_checked(self):
+    def when_content_id_is_checked(self):
         bead = m.Archive(self.__bead)
-        self.__content_hash = bead.content_hash
+        self.__content_id = bead.content_id
 
-    def then_content_hash_is_a_string(self):
-        self.assertIsInstance(self.__content_hash, ''.__class__)
+    def then_content_id_is_a_string(self):
+        self.assertIsInstance(self.__content_id, ''.__class__)
 
     def when_a_nonexistent_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'

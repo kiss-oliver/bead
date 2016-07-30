@@ -35,11 +35,11 @@ Main properties of a bead:
   - it is a technical name, whose existence allows the human name to
     change/evolve/diverge over time, while still referring to conceptually
     the same computation
-- `content_hash`, that is unique for every bead (~version, book analogy: ISBN)
+- `content_id`, that is unique for every bead (~version, book analogy: ISBN)
  - it is calculated, so changes in a bead makes it either invalid or a new version
 - freeze time (for ordering versions, this is fragile in theory as depends on correctly set clocks, but in practice it is expected to cause few problems)
 - freeze name
-- references to its inputs (`kind`, `content_hash`)
+- references to its inputs (`kind`, `content_id`)
 
 ## Box
 

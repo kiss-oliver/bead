@@ -177,7 +177,7 @@ def _load(env, workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
-            bead = env.get_bead(input.kind, input.content_hash)
+            bead = env.get_bead(input.kind, input.content_id)
         except LookupError:
             warning(
                 'Could not find archive for {} - not loaded!'

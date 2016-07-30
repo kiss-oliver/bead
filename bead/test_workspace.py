@@ -154,7 +154,7 @@ class Test_pack(TestCase):
 
 class Test_pack_stability(TestCase):
 
-    def test_directory_name_data_and_timestamp_determines_content_hashs(self):
+    def test_directory_name_data_and_timestamp_determines_content_ids(self):
         TS = '20150910T093724802366+0200'
 
         # note: it is important to create the same bead in
@@ -170,7 +170,7 @@ class Test_pack_stability(TestCase):
 
         bead1 = make_bead()
         bead2 = make_bead()
-        self.assertEquals(bead1.content_hash, bead2.content_hash)
+        self.assertEquals(bead1.content_id, bead2.content_id)
 
 
 def make_bead(path, filespecs):

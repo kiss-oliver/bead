@@ -36,7 +36,7 @@ class Test_box_with_beads(TestCase):
         timestamp = time_from_user('20160704T162800000000+0200')
         (
             exact_match, best_guess, best_guess_timestamp, names
-        ) = box.find_names(kind='test-bead1', content_hash='', timestamp=timestamp)
+        ) = box.find_names(kind='test-bead1', content_id='', timestamp=timestamp)
 
         self.assertIsNone(exact_match)
         self.assertEquals('bead1', best_guess)

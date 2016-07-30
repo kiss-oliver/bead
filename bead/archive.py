@@ -134,7 +134,7 @@ class Archive(Bead):
 
     @property
     @__zipfile_user
-    def content_hash(self):
+    def content_id(self):
         # there is currently only one meta version
         # and it must match the one defined in the workspace module
         assert self._meta[meta.META_VERSION] == 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'

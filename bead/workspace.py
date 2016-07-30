@@ -120,11 +120,11 @@ class AbstractWorkspace(object):
         return os.path.isdir(
             self.directory / layouts.Workspace.INPUT / input_nick)
 
-    def add_input(self, input_nick, kind, content_hash, timestamp_str):
+    def add_input(self, input_nick, kind, content_id, timestamp_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
             meta.INPUT_KIND: kind,
-            meta.INPUT_CONTENT_HASH: content_hash,
+            meta.INPUT_CONTENT_ID: content_id,
             meta.INPUT_FREEZE_TIME: timestamp_str}
         self.meta = m
 
@@ -145,7 +145,7 @@ class AbstractWorkspace(object):
         try:
             self.add_input(
                 input_nick,
-                bead.kind, bead.content_hash, bead.timestamp_str)
+                bead.kind, bead.content_id, bead.timestamp_str)
             destination_dir = input_dir / input_nick
             bead.unpack_data_to(destination_dir)
             for f in fs.all_subpaths(destination_dir):
@@ -262,7 +262,7 @@ class _ZipCreator(object):
             meta.INPUTS: {
                 input.name: {
                     meta.INPUT_KIND: input.kind,
-                    meta.INPUT_CONTENT_HASH: input.content_hash,
+                    meta.INPUT_CONTENT_ID: input.content_id,
                     meta.INPUT_FREEZE_TIME: input.timestamp_str}
                 for input in workspace.inputs},
             meta.FREEZE_NAME: workspace.bead_name}

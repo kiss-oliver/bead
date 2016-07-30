@@ -85,7 +85,7 @@ The output of the computation is stored under `data/*`. An outide collaborator w
 		
 		The archive contains
 
-		- inputs as part of metadata file: references (content hash) to other BEADs
+		- inputs as part of metadata file: references (content_id) to other BEADs
 		- code as files
         - output as files
         - extra metadata to support
@@ -100,14 +100,14 @@ The output of the computation is stored under `data/*`. An outide collaborator w
 
         ----
 
-        Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
+        Length    Method    Size  Cmpr    Date    Time   CRC-32   Name
         --------  ------  ------- ---- ---------- ----- --------  ----
-        13  Defl:N       15 -15% 2016-05-27 13:01 7d14dddd  data/greeting
-        66  Defl:N       58  12% 2016-05-27 13:01 753b9d15  code/greet
-        742  Defl:N      378  49% 2016-05-27 13:02 a4eb5de9  meta/bead
-        456  Defl:N      281  38% 2016-05-27 13:02 9a206f53  meta/checksums
+        13        Defl:N       15 -15% 2016-05-27 13:01 7d14dddd  data/greeting
+        66        Defl:N       58  12% 2016-05-27 13:01 753b9d15  code/greet
+        742       Defl:N      378  49% 2016-05-27 13:02 a4eb5de9  meta/bead
+        456       Defl:N      281  38% 2016-05-27 13:02 9a206f53  meta/checksums
         --------          -------  ---                            -------
-        1277              732  43%                            4 files
+        1277                  732  43%                            4 files
 
 The following graph summarizes the internal structure of a workspace and the logical links to other beads.
 ![Internals](./internals.png)

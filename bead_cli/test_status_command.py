@@ -26,7 +26,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Not(Contains(bead_with_inputs.kind)))
         self.assertThat(robot.stdout, Not(Contains(bead_a.kind)))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
-        self.assertThat(robot.stdout, Not(Contains(bead_a.content_hash)))
+        self.assertThat(robot.stdout, Not(Contains(bead_a.content_id)))
 
     def test_verbose(self, robot, beads, bead_with_inputs, bead_a):
         robot.cli('develop', bead_with_inputs)
@@ -41,7 +41,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(bead_with_inputs.kind))
         self.assertThat(robot.stdout, Contains(bead_a.kind))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
-        self.assertThat(robot.stdout, Contains(bead_a.content_hash))
+        self.assertThat(robot.stdout, Contains(bead_a.content_id))
 
     def test_inputs_not_in_known_boxes(
             self, robot, beads, bead_with_inputs, bead_a):
@@ -58,7 +58,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(bead_with_inputs))
         self.assertThat(robot.stdout, Contains(bead_a.kind))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
-        self.assertThat(robot.stdout, Contains(bead_a.content_hash))
+        self.assertThat(robot.stdout, Contains(bead_a.content_id))
 
     def test_verbose_inputs_not_in_known_boxes(
             self, robot, beads, bead_with_inputs, bead_a):
@@ -75,7 +75,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         self.assertThat(robot.stdout, Contains(bead_with_inputs.kind))
         self.assertThat(robot.stdout, Contains(bead_a.kind))
         self.assertThat(robot.stdout, Contains(bead_a.timestamp_str))
-        self.assertThat(robot.stdout, Contains(bead_a.content_hash))
+        self.assertThat(robot.stdout, Contains(bead_a.content_id))
 
     def test_invalid_workspace(self, robot):
         robot.cli('status')

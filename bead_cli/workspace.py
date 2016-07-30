@@ -181,7 +181,7 @@ def print_inputs(env, workspace, verbose):
             for box in boxes:
                 (
                     exact_match, best_guess, best_guess_timestamp, names
-                ) = box.find_names(input.kind, input.content_hash, input.timestamp)
+                ) = box.find_names(input.kind, input.content_id, input.timestamp)
                 #
                 has_name = has_name or exact_match or best_guess or names
                 if exact_match:
@@ -194,7 +194,7 @@ def print_inputs(env, workspace, verbose):
                     print('\t [-r {} {}]'.format(box.name, name))
             if verbose or not has_name:
                 print('\tBead kind:', input.kind)
-                print('\tContent hash:', input.content_hash)
+                print('\tContent id:', input.content_id)
                 print('\tFreeze time:', input.timestamp_str)
 
         print('')
