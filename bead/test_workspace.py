@@ -132,7 +132,7 @@ class Test_pack(TestCase):
 
         files = z.namelist()
         self.assertIn(l.BEAD_META, files)
-        self.assertIn(l.CHECKSUMS, files)
+        self.assertIn(l.MANIFEST, files)
 
     def then_archive_is_valid_bead(self):
         bead = Archive(self.__zipfile)
@@ -300,39 +300,33 @@ class Test_is_valid(TestCase):
     def test_newly_created_bead_is_valid(self, archive_with_two_files_path):
         self.assertTrue(Archive(archive_with_two_files_path).is_valid)
 
-    def test_adding_a_data_file_to_an_archive_makes_bead_invalid(
-            self, archive_path):
+    def test_adding_a_data_file_to_an_archive_makes_bead_invalid(self, archive_path):
         with zipfile.ZipFile(archive_path, 'a') as z:
             z.writestr(layouts.Archive.DATA / 'extra_file', b'something')
 
         self.assertFalse(Archive(archive_path).is_valid)
 
-    def test_adding_a_code_file_to_an_archive_makes_bead_invalid(
-            self, archive_path):
+    def test_adding_a_code_file_to_an_archive_makes_bead_invalid(self, archive_path):
         with zipfile.ZipFile(archive_path, 'a') as z:
             z.writestr(layouts.Archive.CODE / 'extra_file', b'something')
 
         self.assertFalse(Archive(archive_path).is_valid)
 
-    def test_unzipping_and_zipping_an_archive_remains_valid(
-            self, unzipped_archive_path):
+    def test_unzipping_and_zipping_an_archive_remains_valid(self, unzipped_archive_path):
         rezipped_archive_path = self.new_temp_dir() / 'rezipped_archive.zip'
         zip_up(unzipped_archive_path, rezipped_archive_path)
 
         self.assertTrue(Archive(rezipped_archive_path).is_valid)
 
-    def test_deleting_a_checksummed_file_makes_the_bead_invalid(
-            self, unzipped_archive_path):
+    def test_deleting_a_file_in_the_manifest_makes_the_bead_invalid(self, unzipped_archive_path):
         os.remove(unzipped_archive_path / layouts.Archive.CODE / 'code1')
         modified_archive_path = self.new_temp_dir() / 'modified_archive.zip'
         zip_up(unzipped_archive_path, modified_archive_path)
 
         self.assertFalse(Archive(modified_archive_path).is_valid)
 
-    def test_changing_a_file_makes_the_bead_invalid(
-            self, unzipped_archive_path):
-        write_file(
-            unzipped_archive_path / layouts.Archive.CODE / 'code1', b'HACKED')
+    def test_changing_a_file_makes_the_bead_invalid(self, unzipped_archive_path):
+        write_file(unzipped_archive_path / layouts.Archive.CODE / 'code1', b'HACKED')
         modified_archive_path = self.new_temp_dir() / 'modified_archive.zip'
         zip_up(unzipped_archive_path, modified_archive_path)
 

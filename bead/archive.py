@@ -67,8 +67,8 @@ class Archive(Bead):
     def is_valid(self):
         '''
         verify, that
-        - all files under code, data, meta are present in the checksums
-          file and they match their checksums (extra files are allowed
+        - all files under code, data, meta are present in the manifest
+          file and they match their content_id (extra files are allowed
           in the archive, but not as data or code files)
         - the BEAD_META file is valid
             - has meta version
@@ -83,7 +83,7 @@ class Archive(Bead):
         yield self._has_well_formed_meta()
         yield self._bead_creation_time_is_in_the_past()
         yield self._extra_file() is None
-        yield self._file_failing_checksum() is None
+        yield self._file_with_different_content_id() is None
 
     def _has_well_formed_meta(self):
         m = self.meta
@@ -105,19 +105,19 @@ class Archive(Bead):
     def _extra_file(self):
         data_dir_prefix = layouts.Archive.DATA + '/'
         code_dir_prefix = layouts.Archive.CODE + '/'
-        checksums = self.checksums
+        manifest = self.manifest
         # check that there are no extra files
         for name in self.zipfile.namelist():
             is_data = name.startswith(data_dir_prefix)
             is_code = name.startswith(code_dir_prefix)
             if is_data or is_code:
-                if name not in checksums:
+                if name not in manifest:
                     # unexpected extra file!
                     return name
 
     @__zipfile_user
-    def _file_failing_checksum(self):
-        for name, hash in self.checksums.items():
+    def _file_with_different_content_id(self):
+        for name, hash in self.manifest.items():
             try:
                 info = self.zipfile.getinfo(name)
             except KeyError:
@@ -128,8 +128,8 @@ class Archive(Bead):
 
     @property
     @__zipfile_user
-    def checksums(self):
-        with self.zipfile.open(layouts.Archive.CHECKSUMS) as f:
+    def manifest(self):
+        with self.zipfile.open(layouts.Archive.MANIFEST) as f:
             return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
 
     @property
@@ -138,7 +138,7 @@ class Archive(Bead):
         # there is currently only one meta version
         # and it must match the one defined in the workspace module
         assert self._meta[meta.META_VERSION] == 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
-        zipinfo = self.zipfile.getinfo(layouts.Archive.CHECKSUMS)
+        zipinfo = self.zipfile.getinfo(layouts.Archive.MANIFEST)
         with self.zipfile.open(zipinfo) as f:
             return securehash.file(f, zipinfo.file_size)
 

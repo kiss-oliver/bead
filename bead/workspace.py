@@ -271,5 +271,5 @@ class _ZipCreator(object):
             layouts.Archive.BEAD_META,
             persistence.dumps(bead_meta))
         self.add_string_content(
-            layouts.Archive.CHECKSUMS,
+            layouts.Archive.MANIFEST,
             persistence.dumps(self.hashes))

@@ -105,7 +105,7 @@ The output of the computation is stored under `data/*`. An outide collaborator w
         13        Defl:N       15 -15% 2016-05-27 13:01 7d14dddd  data/greeting
         66        Defl:N       58  12% 2016-05-27 13:01 753b9d15  code/greet
         742       Defl:N      378  49% 2016-05-27 13:02 a4eb5de9  meta/bead
-        456       Defl:N      281  38% 2016-05-27 13:02 9a206f53  meta/checksums
+        456       Defl:N      281  38% 2016-05-27 13:02 9a206f53  meta/manifest
         --------          -------  ---                            -------
         1277                  732  43%                            4 files
 

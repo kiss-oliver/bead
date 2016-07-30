@@ -19,7 +19,7 @@ class Archive:
     DATA = Path('data')
 
     BEAD_META = META / 'bead'
-    CHECKSUMS = META / 'checksums'
+    MANIFEST = META / 'manifest'
 
 
 class Workspace:
