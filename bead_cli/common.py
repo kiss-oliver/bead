@@ -12,8 +12,11 @@ from bead.archive import Archive
 from bead import box as bead_box
 from . import arg_help
 from . import arg_metavar
-from bead.tech.timestamp import time_from_user
+from bead.tech.timestamp import time_from_user, parse_iso8601
 from .environment import Environment
+
+
+TIME_LATEST = parse_iso8601('9999-12-31')
 
 ERROR_EXIT = 1
 
@@ -92,50 +95,13 @@ class DefaultArgSentinel(object):
         return self.description
 
 
-def tag(tag, parse):
-    '''
-    Make a function that parses and tags its input
-
-    parse is a function with one parameter,
-    it is expected to raise a ValueError if there is any problem
-    '''
-    return lambda value: (tag, parse(value))
+def BEAD_TIME(parser):
+    parser.arg('-t', '--time', dest='bead_time', type=time_from_user, default=TIME_LATEST)
 
 
-def _parse_time(timeish):
-    return time_from_user(timeish)
-
-
-def _parse_start_of_name(name):
-    return name + '*'
-
-
-def arg_bead_query(parser):
-    group = parser.argparser.add_argument_group(
-        'bead query',
-        'Restrict the bead version with these options')
-    arg = group.add_argument
-    # TODO: implement more options
-    # -b, --box
-
-    # bead_filters
-    BEAD_QUERY = 'bead_query'
-    APPEND = 'append'
-    arg('-o', '--older', '--older-than', dest=BEAD_QUERY, action=APPEND,
-        metavar='TIMEDEF', type=tag(bead_spec.OLDER_THAN, _parse_time))
-    arg('-n', '--newer', '--newer-than', dest=BEAD_QUERY, action=APPEND,
-        metavar='TIMEDEF', type=tag(bead_spec.NEWER_THAN, _parse_time))
-    arg('--start-of-name', dest=BEAD_QUERY, action=APPEND,
-        metavar='START-OF-BEAD-NAME',
-        type=tag(bead_spec.BEAD_NAME_GLOB, _parse_start_of_name))
-
-    # match reducers
-    # -N, --next
-    # -P, --prev, --previous
-    # --newest, --latest (default)
-    # --oldest
-
-BEAD_QUERY = arg_bead_query
+def BEAD_OFFSET(parser):
+    parser.arg('-N', '--next', dest='bead_offset', action='store_const', const=1, default=0)
+    parser.arg('-P', '--prev', '--previous', dest='bead_offset', action='store_const', const=-1)
 
 
 def arg_bead_ref_base(nargs, default):
@@ -155,63 +121,12 @@ def BEAD_REF_BASE_defaulting_to(name):
 BEAD_REF_BASE = arg_bead_ref_base(nargs=None, default=None)
 
 
-class BeadReference:
-    bead = Archive
-    default_workspace = Workspace
+def resolve_bead(env, bead_ref_base, time):
+    try:
+        return Archive(bead_ref_base)
+    except:
+        pass
 
+    unionbox = bead_box.UnionBox(env.get_boxes())
 
-class ArchiveReference(BeadReference):
-    def __init__(self, archive_path):
-        self.archive_path = archive_path
-
-    @property
-    def bead(self):
-        if os.path.isfile(self.archive_path):
-            return Archive(self.archive_path)
-        raise LookupError('Not a file', self.archive_path)
-
-    @property
-    def default_workspace(self):
-        return Workspace(self.bead.name)
-
-
-class BoxQueryReference(BeadReference):
-    def __init__(self, workspace_name, query, boxes, index=-1):
-        # index: like python list indices 0 = first, -1 = last
-        self.workspace_name = workspace_name
-        self.query = query
-        if index < 0:
-            self.order = bead_spec.NEWEST_FIRST
-            self.limit = -index
-        else:
-            self.order = bead_spec.OLDEST_FIRST
-            self.limit = index + 1
-        self.boxes = list(boxes)
-
-    @property
-    def bead(self):
-        matches = []
-        for box in self.boxes:
-            matches.extend(box.find_beads(self.query, self.order, self.limit))
-            # XXX: order_and_limit_beads is called twice - first in find_beads
-            matches = bead_box.order_and_limit_beads(matches, self.order, self.limit)
-        if len(matches) == self.limit:
-            return matches[-1]
-        raise LookupError
-
-    @property
-    def default_workspace(self):
-        return Workspace(self.workspace_name)
-
-
-def get_bead_ref(env, bead_ref_base, bead_query):
-    if os.path.sep in bead_ref_base and os.path.isfile(bead_ref_base):
-        return ArchiveReference(bead_ref_base)
-
-    query = list(bead_query or [])
-
-    if bead_ref_base:
-        query = [(bead_spec.BEAD_NAME_GLOB, bead_ref_base)] + query
-
-    # TODO: calculate and add index parameter (--next, --prev)
-    return BoxQueryReference(bead_ref_base, query, env.get_boxes())
+    return unionbox.get_at(bead_spec.BEAD_NAME_GLOB, bead_ref_base, time)
