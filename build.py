@@ -12,10 +12,9 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import contextlib
 
 
-BUILD = 'build'
+BUILD = 'executables'
 PKGS = BUILD + '/pkgs'
 SRC = BUILD + '/src'
-CHECKOUT = BUILD + '/checkout'
 TOOL_PYZ = BUILD + '/bead.pyz'
 UNIX_TOOL = BUILD + '/bead'
 WIN_TOOL = BUILD + '/bead.cmd'
@@ -26,8 +25,12 @@ def mkdir(dir):
         os.makedirs(dir)
 
 
-def pip_install(*args):
-    return check_call(('pip', 'install') + args)
+def pip(*args):
+    return check_call(('pip',) + args)
+
+
+def pip_download_source(*args):
+    return pip('download', '--no-binary', ':all:', *args)
 
 
 def rmtree(dir):
@@ -59,26 +62,24 @@ def further_output(msg):
     return notification(msg, long_output=True)
 
 progress = notification
+
+# start with no build directory
 rmtree(BUILD)
 
 with further_output('Downloading dependencies'):
     mkdir(PKGS)
-    pip_install(
-        '--no-use-wheel', '--download', PKGS,
-        '--src', CHECKOUT, '--exists-action', 'w',
-        '-r', 'requirements.txt')
-    rmtree(CHECKOUT)
+    pip_download_source('--dest', PKGS, '--exists-action', 'w', '-r', 'requirements.txt')
 
 with further_output('Unpacking packages'):
     mkdir(SRC)
     for package in glob(PKGS + '/*') + ['.']:
-        pip_install('--target', SRC, '--no-compile', '--no-deps', package)
+        pip('install', '--target', SRC, '--no-compile', '--no-deps', package)
 
-# Get rid of the packaging junk
-for dir in glob(SRC + '/*.egg-info'):
-    rmtree(dir)
+# # Get rid of the packaging junk
+# for dir in glob(SRC + '/*.egg-info'):
+#     rmtree(dir)
 
-with progress('Creating .pyz zip archive from the sources'):
+with progress('Creating .pyz zip archive from the sources ({})'.format(TOOL_PYZ)):
     with ZipFile(TOOL_PYZ, mode='w', compression=ZIP_DEFLATED) as zip:
         # add the entry point
         zip.write('__main__.py')
@@ -86,10 +87,10 @@ with progress('Creating .pyz zip archive from the sources'):
         for realroot, dirs, files in os.walk(SRC):
             ziproot = os.path.relpath(realroot, SRC)
             for file_name in files:
-                if file_name.endswith('.py'):
-                    zip.write(
-                        os.path.join(realroot, file_name),
-                        os.path.join(ziproot, file_name))
+                # if file_name.endswith('.py'):
+                zip.write(
+                    os.path.join(realroot, file_name),
+                    os.path.join(ziproot, file_name))
 
 
 def make_tool(tool_file_name, runner):
@@ -98,13 +99,13 @@ def make_tool(tool_file_name, runner):
         with open(TOOL_PYZ, 'rb') as pyz:
             f.write(pyz.read())
 
-with progress('Creating unix tool'):
+with progress('Creating unix tool ({})'.format(UNIX_TOOL)):
     UNIX_RUNNER = b'#!/usr/bin/env python\n'
 
     make_tool(UNIX_TOOL, UNIX_RUNNER)
     make_executable(UNIX_TOOL)
 
-with progress('Creating windows tool'):
+with progress('Creating windows tool ({})'.format(WIN_TOOL)):
     WINDOWS_RUNNER = b'\r\n'.join((
         b'@echo off',
         b'python.exe "%~f0" %*',

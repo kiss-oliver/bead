@@ -3,6 +3,9 @@
 test: clean
 	tox
 
+build: clean
+	python build.py
+
 clean:
 	git clean -fXd
 	rm -rf env test-env*

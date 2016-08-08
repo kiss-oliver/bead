@@ -25,7 +25,7 @@ class CmdVersion(Command):
 
 
 def make_argument_parser(defaults):
-    parser = Parser.new(defaults, prog=__name__)
+    parser = Parser.new(defaults)
     (parser
         .commands(
             'new',

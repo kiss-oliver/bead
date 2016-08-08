@@ -51,7 +51,7 @@ Run the `build.py` script to create the `bead` tool:
 $ python build.py
 ```
 
-This generates one-file executables for unix, mac, and windows in the `build` directory:
+This generates one-file executables for unix, mac, and windows in the `executables` directory:
 - `bead` unix & mac
 - `bead.cmd` windows
 
@@ -60,7 +60,7 @@ Move/copy the `bead` binary for your platform to some directory on your `PATH`.
 E.g.
 
 ```
-$ cp build/bead ~/.local/bin
+$ cp executables/bead ~/.local/bin
 ```
 
 If you test it, please give [feedback](../../issues) on
