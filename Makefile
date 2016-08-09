@@ -3,7 +3,7 @@
 test: clean
 	tox
 
-build: clean
+executables: clean
 	python build.py
 
 clean:

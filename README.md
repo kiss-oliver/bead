@@ -19,14 +19,20 @@ Given a discrete computation of the form
 
 a BEAD captures all three named parts:
 
-- `output` is the result of the computation - data, it is contained verbatim
-- `function` is a code that computes `output` from the `inputs`
-- `inputs` are stored as references to other BEADs - they are the `output` part of
-  computations
+- `output` - *data files* (results of the computation)
+- `function` - *source code files*, that when run hopefully compute `output` from `inputs`
+- `inputs` - are other BEADs' `output` and thus stored as *references to* those *BEADs*
 
-It also has some other metadata - e.g. a unique identifier that is supposed to be common 
-between different versions (either part is updated) of the same computation and a timestamp
-when it was frozen.
+As a special case pure data can be thought of as *constant computation*
+having only output but neither inputs nor source code.
+
+A BEAD has some other metadata - notably it has a `kind` property which is shared by
+different versions of the conceptually same computation (input or function may be updated/improved)
+and a timestamp when the computation was frozen.
+
+The `kind` and timestamp properties enable a meaningful `update` operation on inputs.
+
+New computations get a new, universally unique `kind` (technically an uuid).
 
 
 ## Status
@@ -37,7 +43,7 @@ Although most of the important stuff is implemented, the metadata format is stil
 which might render every existing BEAD incompatible after the change.
 
 Documentation for the tool is non-existent at this point - except for command line help.
-The doc directory currently contains design fragments - you will be mislead by them as they 
+The `doc` directory currently contains design fragments - you will be mislead by them as they
 are nor describing the current situations nor are they showing the future.
 
 
@@ -45,7 +51,7 @@ are nor describing the current situations nor are they showing the future.
 
 Ensure you have Python installed.
 
-Run the `build.py` script to create the `bead` tool:
+Run `make executables` to create the `bead` tool:
 
 ```
 $ python build.py
