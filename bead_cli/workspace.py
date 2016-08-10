@@ -88,7 +88,7 @@ class CmdSave(Command):
         assert_valid_workspace(workspace)
         # XXX: (usability) save - support saving directly to a directory outside of workspace
         if box_name is USE_THE_ONLY_BOX:
-            boxes = list(env.get_boxes())
+            boxes = env.get_boxes()
             if not boxes:
                 warning('No boxes have been defined')
                 beadbox = os.path.expanduser('~/BeadBox')
@@ -99,7 +99,7 @@ class CmdSave(Command):
                 env.add_box('home', beadbox)
                 env.save()
                 # continue with newly created box
-                boxes = list(env.get_boxes())
+                boxes = env.get_boxes()
                 assert len(boxes) == 1
             if len(boxes) > 1:
                 die(

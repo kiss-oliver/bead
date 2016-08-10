@@ -34,11 +34,11 @@ class Environment:
             persistence.dump(self._content, f)
 
     def get_boxes(self):
-        for box_spec in self._content.get(ENV_BOXES, ()):
-            box = Box(
+        def box(box_spec):
+            return Box(
                 box_spec.get(BOX_NAME),
                 box_spec.get(BOX_LOCATION))
-            yield box
+        return [box(spec) for spec in self._content.get(ENV_BOXES, ())]
 
     def set_boxes(self, boxes):
         self._content[ENV_BOXES] = [
@@ -49,7 +49,7 @@ class Environment:
             for box in boxes]
 
     def add_box(self, name, directory):
-        boxes = list(self.get_boxes())
+        boxes = self.get_boxes()
         # check unique box
         for box in boxes:
             if box.name == name:
