@@ -176,6 +176,7 @@ def print_inputs(env, workspace, verbose):
         print('Inputs:')
         for input in inputs:
             print('input/' + input.name)
+            print('\tFreeze time:', input.timestamp_str)
             print('\tName[s]:')
             has_name = False
             for box in boxes:
@@ -195,7 +196,6 @@ def print_inputs(env, workspace, verbose):
             if verbose or not has_name:
                 print('\tBead kind:', input.kind)
                 print('\tContent id:', input.content_id)
-                print('\tFreeze time:', input.timestamp_str)
 
         print('')
         unloaded = [

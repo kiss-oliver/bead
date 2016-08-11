@@ -52,17 +52,14 @@ class CmdList(Command):
 
         def print_box(box):
             print('{0.name}: {0.location}'.format(box))
-        try:
-            box = next(boxes)
-        except StopIteration:
-            print('There are no defined boxes')
-        else:
+        if boxes:
             # XXX: list command: use tabulate?
             print('Boxes:')
             print('-------------')
-            print_box(box)
             for box in boxes:
                 print_box(box)
+        else:
+            print('There are no defined boxes')
 
 
 class CmdForget(Command):
