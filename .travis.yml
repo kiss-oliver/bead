@@ -6,7 +6,8 @@ env:
     - TOXENV=py34
     - TOXENV=py35
     - TOXENV=pypy
-    - TOXENV=pypy3
+# Pypy3 is broken on travis - see https://github.com/travis-ci/travis-ci/issues/6277
+#    - TOXENV=pypy3
 
 install:
   - pip install tox
