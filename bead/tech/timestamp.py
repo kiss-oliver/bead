@@ -68,6 +68,7 @@ class LocalTimezone(tzinfo):
         tt = _time.localtime(stamp)
         return tt.tm_isdst > 0
 
+
 Local = LocalTimezone()
 
 
@@ -125,6 +126,7 @@ def _compile_parser(template):
                 v('microsec', 0),
                 FixedOffset(tzoffset, 'TZ' + str(tzoffset)))
     return convert
+
 
 _DEFAULT_FULL_TIMESTAMP = '{YEAR}{MONTH}{DAY}T{HOUR}{MINUTE}{SECOND}{MICROSEC}{TIMEZONE}'
 _parse_default_timestamp = _compile_parser(_DEFAULT_FULL_TIMESTAMP)

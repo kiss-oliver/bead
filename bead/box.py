@@ -50,6 +50,7 @@ def _make_checkers():
         bead_spec.CONTENT_ID:     has_content_prefix,
     }
 
+
 _CHECKERS = _make_checkers()
 
 

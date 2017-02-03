@@ -61,6 +61,7 @@ def notification(msg, long_output=False):
 def further_output(msg):
     return notification(msg, long_output=True)
 
+
 progress = notification
 
 # start with no build directory
@@ -98,6 +99,7 @@ def make_tool(tool_file_name, runner):
         f.write(runner)
         with open(TOOL_PYZ, 'rb') as pyz:
             f.write(pyz.read())
+
 
 with progress('Creating unix tool ({})'.format(UNIX_TOOL)):
     UNIX_RUNNER = b'#!/usr/bin/env python\n'

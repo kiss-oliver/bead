@@ -43,6 +43,7 @@ def _cleanup():
         trace_file.close()
     trace_file = None
 
+
 atexit.register(_cleanup)
 
 

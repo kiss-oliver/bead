@@ -118,6 +118,7 @@ def arg_bead_ref_base(nargs, default):
 def BEAD_REF_BASE_defaulting_to(name):
     return arg_bead_ref_base(nargs='?', default=name)
 
+
 BEAD_REF_BASE = arg_bead_ref_base(nargs=None, default=None)
 
 
