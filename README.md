@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/e3krisztian/bead.svg?branch=master)](https://travis-ci.org/e3krisztian/bead)
+[!["Unix" Build Status](https://travis-ci.org/e3krisztian/bead.svg?branch=master)](https://travis-ci.org/e3krisztian/bead)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/e3krisztian/bead?branch=master&svg=true)](https://ci.appveyor.com/project/e3krisztian/bead)
 
     B-E-+
      \ \ \
