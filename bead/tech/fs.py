@@ -13,6 +13,12 @@ import tempfile
 
 class Path(''.__class__):
 
+    def __new__(cls, path):
+        assert os.path.sep == '\\' or '\\' not in path, (
+            '\\ in file names prevents being cross-platform', path)
+        slash_path = os.path.normpath(path).replace('\\', '/')
+        return super(Path, cls).__new__(cls, slash_path)
+
     def __div__(self, other):
         return self.__class__(os.path.join(self, other))
 

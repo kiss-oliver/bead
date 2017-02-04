@@ -13,11 +13,8 @@ import os
 class TestPath(TestCase):
 
     def test_div(self):
-        result = m.Path('a') / 'b'
-        self.assertEquals(
-            ('a', os.path.sep, 'b'),
-            result.partition(os.path.sep)
-        )
+        result = m.Path('a') / 'b' / '..' / 'b'
+        self.assertEquals(('a', '/', 'b'), result.partition('/'))
 
 
 class Test_make_readonly(TestCase):
