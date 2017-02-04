@@ -8,6 +8,7 @@ import functools
 import io
 import os
 import re
+import shutil
 import zipfile
 
 from .bead import Bead
@@ -163,43 +164,42 @@ class Archive(Bead):
             return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
 
     @__zipfile_user
-    def extract_file(self, zip_path, destination):
-        '''Extract zip_path from zipfile to destination'''
+    def extract_file(self, zip_path, fs_path):
+        '''
+            Extract zip_path from zipfile to fs_path.
+        '''
+        fs_path = os.path.normpath(fs_path)
 
-        assert not os.path.exists(destination)
+        upperdirs = os.path.dirname(fs_path)
+        if upperdirs:
+            tech.fs.ensure_directory(upperdirs)
 
-        with tech.fs.temp_dir(destination.parent) as unzip_dir:
-            self.zipfile.extract(zip_path, unzip_dir)
-            os.rename(unzip_dir / zip_path, destination)
+        with self.zipfile.open(zip_path) as source:
+            with open(fs_path, 'wb') as target:
+                shutil.copyfileobj(source, target)
 
     @__zipfile_user
-    def extract_dir(self, zip_dir, destination):
+    def extract_dir(self, zip_dir, fs_dir):
         '''
-        Extract all files from zipfile under zip_dir to destination.
+            Extract all files from zipfile under zip_dir to fs_dir.
         '''
 
-        if os.path.exists(destination):
-            os.rmdir(destination)
+        tech.fs.ensure_directory(fs_dir)
 
         zip_dir_prefix = zip_dir + '/'
-        filelist = [
-            name
-            for name in self.zipfile.namelist()
-            if name.startswith(zip_dir_prefix)
-        ]
+        zip_dir_prefix_len = len(zip_dir_prefix)
 
-        if filelist:
-            with tech.fs.temp_dir(destination.parent) as unzip_dir:
-                self.zipfile.extractall(unzip_dir, filelist)
-                os.rename(unzip_dir / zip_dir, destination)
-        else:
-            tech.fs.ensure_directory(destination)
+        for zip_path in self.zipfile.namelist():
+            if not zip_path.startswith(zip_dir_prefix):
+                continue
+            fs_path = fs_dir / zip_path[zip_dir_prefix_len:]
+            self.extract_file(zip_path, fs_path)
 
-    def unpack_code_to(self, destination):
-        self.extract_dir(layouts.Archive.CODE, destination)
+    def unpack_code_to(self, fs_dir):
+        self.extract_dir(layouts.Archive.CODE, fs_dir)
 
-    def unpack_data_to(self, destination):
-        self.extract_dir(layouts.Archive.DATA, destination)
+    def unpack_data_to(self, fs_dir):
+        self.extract_dir(layouts.Archive.DATA, fs_dir)
 
     def unpack_meta_to(self, workspace):
         workspace.meta = self.meta
