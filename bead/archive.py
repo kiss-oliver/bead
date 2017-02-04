@@ -100,7 +100,12 @@ class Archive(Bead):
         read_time = timestamp.time_from_timestamp
         now = read_time(timestamp.timestamp())
         freeze_time = read_time(self.meta[meta.FREEZE_TIME])
-        return freeze_time < now
+        # we could be strict, but unfortunately on windows the resolution
+        # of datetime.now is low yielding the same value for multiple calls
+        # so we need that = in the <= to get the tests pass
+        # see e.g. https://blogs.msdn.microsoft.com/ericlippert/
+        #                 2010/04/08/precision-and-accuracy-of-datetime/
+        return freeze_time <= now
 
     @__zipfile_user
     def _extra_file(self):
