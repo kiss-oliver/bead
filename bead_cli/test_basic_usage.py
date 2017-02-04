@@ -51,8 +51,8 @@ class Test_basic_command_line(TestCase):
         self.assertIn('Inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
 
-        cli('nuke', robot.cwd.parent / 'something')
         cli('nuke')
-
         cd('..')
+        cli('nuke', 'something')
+
         self.assertEqual([], ls(robot.home))
