@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from ..test import TestCase
+from ..test import TestCase, skipIf
 from . import fs as m
 
 import os
@@ -24,6 +24,12 @@ class Test_make_readonly(TestCase):
         self.when_made_readonly()
         self.then_file_can_not_be_written()
 
+    @skipIf(os.name != 'posix', 'read only folders do not work e.g. on Windows')
+    # According to https://support.microsoft.com/EN-US/help/256614
+    # "Unlike the Read-only attribute for a file, the Read-only attribute
+    # for a folder is typically ignored by Windows, Windows components and
+    # accessories, and other programs. For example, you can delete, rename,
+    # and change a folder with the Read-only attribute by using Windows Explorer."
     def test_directory(self):
         self.given_a_directory()
         self.when_made_readonly()

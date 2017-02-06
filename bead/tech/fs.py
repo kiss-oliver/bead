@@ -59,6 +59,11 @@ def temp_dir(dir='.'):
 
 
 def make_readonly(path):
+    '''
+    WARNING: It does not work for Windows folders.
+
+    Might fail (silently) on other systems as well.
+    '''
     mode = os.stat(path)[stat.ST_MODE]
     os.chmod(path, mode & ~stat.S_IWRITE)
 

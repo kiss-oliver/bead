@@ -5,7 +5,7 @@ from __future__ import print_function
 
 import testtools
 import fixtures
-from unittest import skip
+from unittest import skip, skipIf
 
 from . import tech
 import os
@@ -15,7 +15,7 @@ import arglinker
 from tracelog import TRACELOG
 
 
-skip  # reexport
+skip, skipIf  # reexport
 
 TestCase = arglinker.add_test_linker(testtools.TestCase)
 
