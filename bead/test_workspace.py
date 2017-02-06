@@ -238,7 +238,9 @@ class Test_load(TestCase):
         root = self.__workspace_dir / 'input/bead1'
         self.assertTrue(os.path.exists(root))
         self.assertRaises(IOError, open, root / 'output1', 'ab')
-        self.assertRaises(IOError, open, root / 'new-file', 'wb')
+        # also folders are read only - this does not work on Windows
+        if os.name == 'posix':
+            self.assertRaises(IOError, open, root / 'new-file', 'wb')
 
     def then_input_info_is_added_to_bead_meta(self):
         self.assertTrue(self.workspace.has_input('bead1'))
