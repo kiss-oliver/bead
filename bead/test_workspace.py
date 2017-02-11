@@ -123,16 +123,16 @@ class Test_pack(TestCase):
         self.workspace.pack(self.__zipfile, timestamp(), self.__BEAD_COMMENT)
 
     def then_archive_contains_files_from_bead_directory(self):
-        z = zipfile.ZipFile(self.__zipfile)
-        l = layouts.Archive
+        with zipfile.ZipFile(self.__zipfile) as z:
+            l = layouts.Archive
 
-        self.assertEquals(self.__OUTPUT1, z.read(l.DATA / 'output1'))
-        self.assertEquals(self.__SOURCE1, z.read(l.CODE / 'source1'))
-        self.assertEquals(self.__SOURCE2, z.read(l.CODE / 'subdir/source2'))
+            self.assertEquals(self.__OUTPUT1, z.read(l.DATA / 'output1'))
+            self.assertEquals(self.__SOURCE1, z.read(l.CODE / 'source1'))
+            self.assertEquals(self.__SOURCE2, z.read(l.CODE / 'subdir/source2'))
 
-        files = z.namelist()
-        self.assertIn(l.BEAD_META, files)
-        self.assertIn(l.MANIFEST, files)
+            files = z.namelist()
+            self.assertIn(l.BEAD_META, files)
+            self.assertIn(l.MANIFEST, files)
 
     def then_archive_is_valid_bead(self):
         bead = Archive(self.__zipfile)
@@ -144,9 +144,9 @@ class Test_pack(TestCase):
 
     def then_archive_does_not_contain_workspace_meta_and_temp_files(self):
         def does_not_contain(workspace_path):
-            z = zipfile.ZipFile(self.__zipfile)
-            archive_path = layouts.Archive.CODE / workspace_path
-            self.assertRaises(KeyError, z.getinfo, archive_path)
+            with zipfile.ZipFile(self.__zipfile) as z:
+                archive_path = layouts.Archive.CODE / workspace_path
+                self.assertRaises(KeyError, z.getinfo, archive_path)
 
         does_not_contain(layouts.Workspace.BEAD_META)
         does_not_contain(layouts.Workspace.TEMP / 'README')
