@@ -28,7 +28,7 @@ test_script:
     - "if defined DUMP_CI_VM_INFO dir C:\\Python*"
     - if defined DUMP_CI_VM_INFO   set
     - if defined RUN_TESTS         pip freeze
-    - if defined RUN_TESTS         green -vvv --run-coverage -t %SOURCE_DIRS%
+    - if defined RUN_TESTS         green -vvv --run-coverage --processes 1 -t %SOURCE_DIRS%
     - if defined CHECK_SOURCE_CODE flake8 %SOURCE_DIRS%
 
 platform:
