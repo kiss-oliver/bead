@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import os
 from bead.test import TestCase
 from testtools.content import text_content
 
@@ -51,8 +52,16 @@ class Test_basic_command_line(TestCase):
         self.assertIn('Inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
 
+        # this might leave behind the empty directory on windows
         cli('nuke')
         cd('..')
         cli('nuke', 'something')
 
+        something_develop_dir = robot.home / 'something-develop'
+        if os.path.exists(something_develop_dir):
+            # on windows it is not possible to remove
+            # the current working directory (nuke does this)
+            self.assertNotEqual(os.name, 'posix', 'Must be removed on posix')
+            self.assertEqual([], ls(something_develop_dir))
+            os.rmdir(something_develop_dir)
         self.assertEqual([], ls(robot.home))

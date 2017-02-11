@@ -250,5 +250,5 @@ class CmdNuke(Command):
         workspace = args.workspace
         assert_valid_workspace(workspace)
         directory = workspace.directory
-        tech.fs.rmtree(directory)
+        tech.fs.rmtree(directory, ignore_errors=os.name != 'posix')
         print('Deleted workspace {}'.format(directory))
