@@ -52,6 +52,9 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cli('develop', bead_with_inputs)
         robot.cd(bead_with_inputs)
 
+        robot.cli('status')
+        self.assertThat(robot.stdout, Contains(bead_b))
+
         assert not Workspace(robot.cwd).is_loaded('input_b')
 
         robot.cli('input', 'update', 'input_b', bead_a)
