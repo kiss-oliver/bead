@@ -88,7 +88,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         with robot.environment:
             self.assertFalse(Workspace('.').is_loaded('input_b'))
 
-    def test_partially_deleted_box(self, robot, bead_with_inputs):
+    def test_deleted_box_does_not_stop_load(self, robot, bead_with_inputs):
         deleted_box = self.new_temp_dir()
         robot.cli('box', 'add', 'missing', deleted_box)
         os.rmdir(deleted_box)
