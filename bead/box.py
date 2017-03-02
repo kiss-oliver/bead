@@ -56,9 +56,9 @@ _CHECKERS = _make_checkers()
 
 def compile_conditions(conditions):
     '''
-    Compile list of (check-name, check-param)-s into a match function.
+    Compile list of (check-type, check-param)-s into a match function.
     '''
-    checkers = [_CHECKERS[check](param) for check, param in conditions]
+    checkers = [_CHECKERS[check_type](check_param) for check_type, check_param in conditions]
 
     def match(bead):
         for check in checkers:
@@ -252,10 +252,10 @@ class Box(object):
 
         return exact_match, best_guess, best_guess_timestamp, names
 
-    def get_context(self, string_type, string, time):
+    def get_context(self, check_type, check_param, time):
         # in theory timestamps can be [intentionally] duplicated, but let's
         # treat that as an error condition to be fixed ASAP
-        conditions = [(string_type, string)]
+        conditions = [(check_type, check_param)]
         return make_context(time, self._beads(conditions))
 
 
@@ -263,11 +263,11 @@ class UnionBox:
     def __init__(self, boxes):
         self.boxes = tuple(boxes)
 
-    def get_context(self, string_type, string, time):
+    def get_context(self, check_type, check_param, time):
         context = None
         for box in self.boxes:
             try:
-                box_context = box.get_context(string_type, string, time)
+                box_context = box.get_context(check_type, check_param, time)
             except LookupError:
                 continue
             else:
@@ -277,8 +277,8 @@ class UnionBox:
             return context
         raise LookupError
 
-    def get_at(self, string_type, string, time):
-        context = self.get_context(string_type, string, time)
+    def get_at(self, check_type, check_param, time):
+        context = self.get_context(check_type, check_param, time)
         return context.best
 
 
