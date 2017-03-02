@@ -8,6 +8,7 @@ from .box import Box
 from .tech.fs import write_file
 from .tech.timestamp import time_from_user
 from .workspace import Workspace
+from . import spec as bead_spec
 
 
 class Test_box_with_beads(TestCase):
@@ -23,17 +24,20 @@ class Test_box_with_beads(TestCase):
 
         add_bead('bead1', 'test-bead1', '20160704T000000000000+0200')
         add_bead('bead2', 'test-bead2', '20160704T162800000000+0200')
+        add_bead('BEAD3', 'test-bead3', '20160704T162800000001+0200')
         return box
+
+    def timestamp(self):
+        return time_from_user('20160704T162800000000+0200')
 
     # tests
     def test_find_beads(self, box):
         conditions = ()
         self.assertEquals(
-            set(['bead1', 'bead2']),
+            set(['bead1', 'bead2', 'BEAD3']),
             set(b.name for b in box.find_beads(conditions)))
 
-    def test_find_names(self, box):
-        timestamp = time_from_user('20160704T162800000000+0200')
+    def test_find_names(self, box, timestamp):
         (
             exact_match, best_guess, best_guess_timestamp, names
         ) = box.find_names(kind='test-bead1', content_id='', timestamp=timestamp)
@@ -42,6 +46,10 @@ class Test_box_with_beads(TestCase):
         self.assertEquals('bead1', best_guess)
         self.assertIsNotNone(best_guess_timestamp)
         self.assertEquals(set(['bead1']), set(names))
+
+    def test_find_with_uppercase_name(self, box, timestamp):
+        matches = box.get_context(bead_spec.BEAD_NAME_GLOB, 'BEAD3', timestamp)
+        self.assertEquals('BEAD3', matches.best.name)
 
 
 class Test_box_methods_tolerate_junk_in_box(Test_box_with_beads):
