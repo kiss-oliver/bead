@@ -101,8 +101,9 @@ def main():
         PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
     try:
         retval = run(config_dir, sys.argv[1:])
-    except BaseException as e:
-        retval = e
+    except BaseException:
+        # TODO: ask the user to report the exception?!
+        raise
     sys.exit(retval)
 
 
