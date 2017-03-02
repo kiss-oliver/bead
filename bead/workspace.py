@@ -105,8 +105,13 @@ class AbstractWorkspace(object):
         '''
         Create archive from workspace.
         '''
-
-        _ZipCreator().create(zipfilename, self, timestamp, comment)
+        assert not os.path.exists(zipfilename)
+        try:
+            _ZipCreator().create(zipfilename, self, timestamp, comment)
+        except:
+            if os.path.exists(zipfilename):
+                os.remove(zipfilename)
+            raise
 
     def has_input(self, input_nick):
         '''
