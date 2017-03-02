@@ -73,8 +73,8 @@ def make_writable(path):
     os.chmod(path, mode | stat.S_IWRITE)
 
 
-def all_subpaths(dir):
-    for root, dirs, files in os.walk(dir):
+def all_subpaths(dir, followlinks=False):
+    for root, dirs, files in os.walk(dir, followlinks=followlinks):
         root = Path(root)
         yield root
         for file in files:
@@ -82,6 +82,7 @@ def all_subpaths(dir):
 
 
 def rmtree(root, *args, **kwargs):
-    for path in all_subpaths(root):
-        make_writable(path)
+    for path in all_subpaths(root, followlinks=False):
+        if not os.path.islink(path):
+            make_writable(path)
     shutil.rmtree(root, *args, **kwargs)
