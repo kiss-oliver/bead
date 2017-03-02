@@ -3,8 +3,10 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from bead.test import TestCase
-from testtools.matchers import Contains
+import os
+
+from bead.test import TestCase, skipIf
+from testtools.matchers import Contains, FileContains
 
 from . import test_fixtures as fixtures
 from collections import namedtuple
@@ -24,6 +26,22 @@ class Test(TestCase, fixtures.RobotAndBeads):
         robot.cli('save')
         self.assertNotEquals(
             robot.stdout, '', 'Expected some feedback, but got none :(')
+
+    @skipIf(not hasattr(os, 'symlink'), 'missing os.symlink')
+    def test_symlink_is_resolved_on_save(self, robot, box):
+        # create a workspace with a symlink to a file
+        robot.cli('new', 'bead')
+        robot.cd('bead')
+        robot.write_file('file', 'content')
+        with robot.environment:
+            os.symlink('file', 'symlink')
+        # save to box & clean up
+        robot.cli('save')
+        robot.cd('..')
+        robot.cli('nuke', 'bead')
+
+        robot.cli('develop', 'bead')
+        self.assertThat(robot.cwd / 'bead/symlink', FileContains('content'))
 
 
 class Test_no_box(TestCase):

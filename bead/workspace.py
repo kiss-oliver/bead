@@ -205,12 +205,10 @@ class _ZipCreator(object):
             securehash.file(open(path, 'rb'), os.path.getsize(path)))
 
     def add_path(self, path, zip_path):
-        if os.path.islink(path):
-            raise ValueError(
-                'workspace contains a link: {}'.format(path))
-        elif os.path.isdir(path):
+        if os.path.isdir(path):
             self.add_directory(path, zip_path)
-        elif os.path.isfile(path):
+        else:
+            assert os.path.isfile(path), '%s is neither a file nor a directory' % path
             self.add_file(path, zip_path)
 
     def add_directory(self, path, zip_path):
