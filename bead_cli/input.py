@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import os.path
+
 from .cmdparse import Command
 
 from . import arg_metavar
@@ -63,6 +65,9 @@ class CmdAdd(Command):
         bead_ref_base = args.bead_ref_base
         workspace = args.workspace
         env = args.get_env()
+
+        if os.path.dirname(input_nick):
+            die('Invalid input name: {}'.format(input_nick))
 
         if bead_ref_base is USE_INPUT_NICK:
             bead_ref_base = input_nick

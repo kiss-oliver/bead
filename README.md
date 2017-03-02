@@ -93,7 +93,7 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), 
 - [TODO: add tests for timestamps, parse_iso8601, parse_timedelta](https://github.com/e3krisztian/bead/blob/master/bead/tech/timestamp.py#L234)
 - [TODO: ask the user to report the exception?!](https://github.com/e3krisztian/bead/blob/master/bead_cli/main.py#L105)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L144)
-- [TODO: update: assert there is no other argument](https://github.com/e3krisztian/bead/blob/master/bead_cli/input.py#L113)
+- [TODO: update: assert there is no other argument](https://github.com/e3krisztian/bead/blob/master/bead_cli/input.py#L118)
 - [TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L229)
 - [XXX: cli parsing: revisit when python 2.x no longer supported](https://github.com/e3krisztian/bead/blob/master/bead_cli/cmdparse.py#L86)
 - [XXX: directory itself might be a pattern - is it OK?](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L187)

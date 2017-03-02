@@ -106,6 +106,20 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
             self.assertThat(robot.stderr, Contains('ERROR'))
             self.assertThat(robot.stderr, Contains('non-existing-bead'))
 
+    def test_add_with_path_separator_in_name_is_error(self, robot, bead_a, bead_b):
+        robot.cli('develop', bead_a)
+        robot.cd(bead_a)
+        try:
+            robot.cli('input', 'add', 'name/with/path/separator', bead_b)
+            self.fail('Expected an error exit!')
+        except SystemExit:
+            self.assertThat(robot.stderr, Contains('ERROR'))
+            self.assertThat(robot.stderr, Contains('name/with/path/separator'))
+
+            robot.cli('status')
+            self.assertThat(robot.stdout, Not(Contains(bead_b)))
+            self.assertEquals([], list(robot.ls('input')))
+
     def test_add_with_hacked_bead_is_refused(self, robot, hacked_bead, bead_a):
         robot.cli('develop', bead_a)
         robot.cd(bead_a)
