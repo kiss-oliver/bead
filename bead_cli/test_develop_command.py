@@ -38,7 +38,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
             FileExists())
 
     def test_last_version(self, robot, bead_with_history):
-        self.assert_develop_version(robot, fixtures.TS_LAST, 'bead_with_history')
+        self.assert_develop_version(robot, fixtures.TS_LAST, bead_with_history)
 
     def test_at_time(self, robot, bead_with_history):
         self.assert_develop_version(robot, fixtures.TS1, 'bead_with_history', '-t', fixtures.TS1)

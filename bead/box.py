@@ -11,9 +11,7 @@ from __future__ import print_function
 from tracelog import TRACELOG
 
 from fnmatch import fnmatch
-import heapq
 from datetime import datetime, timedelta
-import functools
 from glob import iglob
 import os
 
@@ -67,50 +65,6 @@ def compile_conditions(conditions):
                 return False
         return True
     return match
-
-
-class _CompareWrapper(object):
-    def __init__(self, bead):
-        self.bead = bead
-
-    def __eq__(self, other):
-        return self.bead.timestamp == other.bead.timestamp
-
-
-@functools.total_ordering
-class _ReverseCompare(_CompareWrapper):
-    def __lt__(self, other):
-        return self.bead.timestamp > other.bead.timestamp
-
-
-@functools.total_ordering
-class _Compare(_CompareWrapper):
-    def __lt__(self, other):
-        return self.bead.timestamp < other.bead.timestamp
-
-
-def order_and_limit_beads(beads, order=bead_spec.NEWEST_FIRST, limit=None):
-    '''
-    Order beads by timestamps and keep only the closest ones.
-    '''
-    TRACELOG(beads, order, limit)
-
-    # wrap beads so that they can be compared by timestamps
-    compare_wrap = {
-        bead_spec.NEWEST_FIRST: _ReverseCompare,
-        bead_spec.OLDEST_FIRST: _Compare,
-    }[order]
-    comparable_beads = (compare_wrap(bead) for bead in beads)
-
-    if limit:
-        # assume we have lots of beads, so do it with memory limited
-        wrapped_results = heapq.nsmallest(limit, comparable_beads)
-        TRACELOG([_.bead.timestamp_str for _ in wrapped_results])
-    else:
-        wrapped_results = sorted(comparable_beads)
-
-    # unwrap wrapped_results
-    return [_.bead for _ in wrapped_results]
 
 
 ARCHIVE_COMMENT = '''
