@@ -13,6 +13,8 @@ from .common import (
     OPTIONAL_WORKSPACE, OPTIONAL_ENV,
     DefaultArgSentinel,
     CurrentDirWorkspace,
+    verify_with_feedback,
+    print3,
     die, warning
 )
 from .common import BEAD_REF_BASE_defaulting_to, BEAD_OFFSET, BEAD_TIME, resolve_bead, TIME_LATEST
@@ -77,7 +79,7 @@ class CmdAdd(Command):
         except LookupError:
             die('Not a known bead name: {}'.format(bead_ref_base))
 
-        _check_load_with_feedback(workspace, args.input_nick, bead, bead_ref_base)
+        _check_load_with_feedback(workspace, args.input_nick, bead)
 
 
 class CmdDelete(Command):
@@ -122,12 +124,13 @@ class CmdUpdate(Command):
                     bead = unionbox.get_at(bead_spec.KIND, input.kind, args.bead_time)
                 except LookupError:
                     if workspace.is_loaded(input.name):
-                        print('{} is already newest ({})'.format(input.name, input.timestamp))
+                        print(
+                            'Skipping update of {}: no other candidate found ({})'
+                            .format(input.name, input.timestamp))
                     else:
                         warning('Can not find bead for {}'.format(input.name))
                 else:
-                    _check_load_with_feedback(workspace, input.name, bead)
-
+                    _update_input(workspace, input, bead)
             print('All inputs are up to date.')
         else:
             input = workspace.get_input(input_nick)
@@ -148,9 +151,20 @@ class CmdUpdate(Command):
                 assert args.bead_offset == 0
                 bead = resolve_bead(env, bead_ref_base, args.bead_time)
             if bead:
-                _check_load_with_feedback(workspace, input.name, bead, bead_ref_base)
+                _update_input(workspace, input, bead)
             else:
                 die('Can not find matching bead')
+
+
+def _update_input(workspace, input, bead):
+    if workspace.is_loaded(input.name) and input.content_id == bead.content_id:
+        assert input.kind == bead.kind
+        assert input.timestamp == bead.timestamp
+        print(
+            'Skipping update of {}: it is already at requested version ({})'
+            .format(input.name, input.timestamp))
+    else:
+        _check_load_with_feedback(workspace, input.name, bead)
 
 
 class CmdLoad(Command):
@@ -193,15 +207,15 @@ def _load(env, workspace, input):
         print('Skipping {} (already loaded)'.format(input.name))
 
 
-def _check_load_with_feedback(workspace, input_name, bead, bead_name=None):
-    if bead.is_valid:
+def _check_load_with_feedback(workspace, input_name, bead):
+    is_valid = verify_with_feedback(bead)
+    if is_valid:
         if workspace.is_loaded(input_name):
+            print('Removing current data from {}'.format(input_name))
             workspace.unload(input_name)
+        print3('Loading new data to {} ...'.format(input_name), end='', flush=True)
         workspace.load(input_name, bead)
-        if bead_name:
-            print('{} loaded on {}.'.format(bead_name, input_name))
-        else:
-            print('Loaded {}.'.format(input_name))
+        print(' Done')
     else:
         warning(
             'Bead for {} is found but damaged - not loading.'

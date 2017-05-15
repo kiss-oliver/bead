@@ -162,3 +162,43 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
 
         robot.cli('input', 'update', 'input1', '-P')
         self.assert_loaded(robot, 'input1', fixtures.TS2)
+
+    def test_update_up_to_date_inputs_is_noop(self, robot, bead_a, bead_b):
+        robot.cli('new', 'test-workspace')
+        robot.cd('test-workspace')
+        robot.cli('input', 'add', bead_a)
+        robot.cli('input', 'add', bead_b)
+
+        def files_with_times():
+            basepath = robot.cwd
+            for dirpath, dirs, files in os.walk(basepath):
+                for file in files:
+                    filename = os.path.join(dirpath, file)
+                    yield filename, os.path.getctime(filename)
+
+        orig_files = sorted(files_with_times())
+        robot.cli('input', 'update')
+        after_update_files = sorted(files_with_times())
+        self.assertEquals(orig_files, after_update_files)
+
+        self.assertThat(robot.stdout, Contains('Skipping update of {}:'.format(bead_a)))
+        self.assertThat(robot.stdout, Contains('Skipping update of {}:'.format(bead_b)))
+
+    def test_update_with_same_bead_is_noop(self, robot, bead_a):
+        robot.cli('new', 'test-workspace')
+        robot.cd('test-workspace')
+        robot.cli('input', 'add', bead_a)
+
+        def files_with_times():
+            basepath = robot.cwd
+            for dirpath, dirs, files in os.walk(basepath):
+                for file in files:
+                    filename = os.path.join(dirpath, file)
+                    yield filename, os.path.getctime(filename)
+
+        orig_files = sorted(files_with_times())
+        robot.cli('input', 'update', bead_a)
+        after_update_files = sorted(files_with_times())
+        self.assertEquals(orig_files, after_update_files)
+
+        self.assertThat(robot.stdout, Contains('Skipping update of {}:'.format(bead_a)))

@@ -131,3 +131,30 @@ def resolve_bead(env, bead_ref_base, time):
     unionbox = bead_box.UnionBox(env.get_boxes())
 
     return unionbox.get_at(bead_spec.BEAD_NAME_GLOB, bead_ref_base, time)
+
+
+_USE_SYS_STDOUT = object()
+
+
+def print3(msg, file=_USE_SYS_STDOUT, end='\n', flush=False):
+    '''
+        Partial reimplementation of python3's print to work on python27.
+
+        REASON: under python27 print does not understand the same keyword arguments
+    '''
+    if file is _USE_SYS_STDOUT:
+        file = sys.stdout
+    file.write(msg)
+    file.write(end)
+    if flush:
+        file.flush()
+
+
+def verify_with_feedback(archive):
+    print3('Verifying archive {} ...'.format(archive.archive_filename), end='', flush=True)
+    is_valid = archive.is_valid
+    if is_valid:
+        print3(' OK', flush=True)
+    else:
+        print3(' DAMAGED!', flush=True)
+    return is_valid

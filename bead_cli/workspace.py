@@ -15,6 +15,7 @@ from .common import die, warning
 from .common import DefaultArgSentinel
 from .common import OPTIONAL_WORKSPACE, OPTIONAL_ENV
 from .common import BEAD_REF_BASE, BEAD_TIME, resolve_bead
+from .common import verify_with_feedback
 from . import arg_metavar
 from . import arg_help
 
@@ -141,7 +142,8 @@ class CmdDevelop(Command):
             bead = resolve_bead(env, args.bead_ref_base, args.bead_time)
         except LookupError:
             die('Bead not found!')
-        if not bead.is_valid:
+        is_valid = verify_with_feedback(bead)
+        if not is_valid:
             die('Bead is found but damaged')
         if args.workspace is DERIVE_FROM_BEAD_NAME:
             workspace = Workspace(bead.name)
