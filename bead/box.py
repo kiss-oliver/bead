@@ -7,7 +7,8 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from tracelog import TRACELOG  # TODO: remove TRACELOG
+# TODO: remove TRACELOG
+from tracelog import TRACELOG
 
 from fnmatch import fnmatch
 import heapq
