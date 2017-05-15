@@ -9,7 +9,6 @@ from __future__ import print_function
 
 from bead.box import Box
 from bead.tech import persistence
-import bead.spec as bead_spec
 import os
 
 ENV_BOXES = 'boxes'
@@ -80,8 +79,9 @@ class Environment:
         return self.get_box(name) is not None
 
     def get_bead(self, kind, content_id):
-        query = ((bead_spec.KIND, kind), (bead_spec.CONTENT_ID, content_id))
         for box in self.get_boxes():
-            for bead in box.find_beads(query):
-                return bead
+            try:
+                return box.get_bead(kind, content_id)
+            except LookupError:
+                pass
         raise LookupError('Bead {} {} not found'.format(kind, content_id))

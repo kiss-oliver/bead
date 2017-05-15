@@ -9,9 +9,8 @@ from bead.test import TestCase, skipIf
 from testtools.matchers import Contains, FileContains
 
 from . import test_fixtures as fixtures
-from collections import namedtuple
-from bead import spec as bead_spec
 from bead.workspace import Workspace
+from bead.box import Box
 
 
 class Test(TestCase, fixtures.RobotAndBeads):
@@ -58,19 +57,13 @@ class Test_no_box(TestCase):
         # there is a message on stderr that a new box has been created
         self.assertThat(robot.stderr, Contains('home'))
         # a new box with name `home` has been indeed created and it has exactly one bead
-        with robot.environment as e:
-            homebox = e.get_box('home')
-        beads = list(homebox.find_beads(()))
-        self.assertEquals(1, len(beads))
+        with robot.environment as env:
+            homebox = env.get_box('home')
+        self.assertEquals(1, bead_count(homebox))
 
 
-Box = namedtuple('Box', 'name directory')
-
-
-def bead_count(robot, box, kind):
-    with robot.environment as env:
-        query = [(bead_spec.KIND, kind)]
-        return sum(1 for _ in env.get_box(box.name).find_beads(query))
+def bead_count(box, kind=None):
+    return sum(1 for bead in box.all_beads() if kind in [None, bead.kind])
 
 
 class Test_more_than_one_boxes(TestCase):
@@ -100,11 +93,11 @@ class Test_more_than_one_boxes(TestCase):
         robot.cli('save', box1.name, '--workspace=bead')
         with robot.environment:
             kind = Workspace('bead').kind
-        self.assertEquals(1, bead_count(robot, box1, kind))
-        self.assertEquals(0, bead_count(robot, box2, kind))
+        self.assertEquals(1, bead_count(box1, kind))
+        self.assertEquals(0, bead_count(box2, kind))
         robot.cli('save', box2.name, '-w', 'bead')
-        self.assertEquals(1, bead_count(robot, box1, kind))
-        self.assertEquals(1, bead_count(robot, box2, kind))
+        self.assertEquals(1, bead_count(box1, kind))
+        self.assertEquals(1, bead_count(box2, kind))
 
     def test_invalid_box_specified(self, robot, box1, box2):
         robot.cli('new', 'bead')

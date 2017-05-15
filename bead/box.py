@@ -157,16 +157,17 @@ class Box(object):
         '''
         return Path(self.location)
 
-    # XXX: is find_beads in use still?
-    def find_beads(self, conditions, order=bead_spec.NEWEST_FIRST, limit=None):
-        '''
-        Retrieve matching beads.
+    def get_bead(self, kind, content_id):
+        query = ((bead_spec.KIND, kind), (bead_spec.CONTENT_ID, content_id))
+        for bead in self._beads(query):
+            return bead
+        raise LookupError('Bead {} {} not found'.format(kind, content_id))
 
-        (future possibility), it might run in another process,
-        potentially on another machine, so it might be faster to restrict
-        the results here and not send the whole list over the network.
+    def all_beads(self):
         '''
-        return order_and_limit_beads(self._beads(conditions), order, limit)
+        Iterator for all beads in this Box
+        '''
+        return iter(self._beads([]))
 
     def _beads(self, conditions):
         '''

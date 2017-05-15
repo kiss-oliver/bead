@@ -31,11 +31,10 @@ class Test_box_with_beads(TestCase):
         return time_from_user('20160704T162800000000+0200')
 
     # tests
-    def test_find_beads(self, box):
-        conditions = ()
+    def test_all_beads(self, box):
         self.assertEquals(
             set(['bead1', 'bead2', 'BEAD3']),
-            set(b.name for b in box.find_beads(conditions)))
+            set(b.name for b in box.all_beads()))
 
     def test_find_names(self, box, timestamp):
         (
