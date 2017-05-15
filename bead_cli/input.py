@@ -207,16 +207,46 @@ def _load(env, workspace, input):
         print('Skipping {} (already loaded)'.format(input.name))
 
 
-def _check_load_with_feedback(workspace, input_name, bead):
+def _check_load_with_feedback(workspace, input_nick, bead):
     is_valid = verify_with_feedback(bead)
     if is_valid:
-        if workspace.is_loaded(input_name):
-            print('Removing current data from {}'.format(input_name))
-            workspace.unload(input_name)
-        print3('Loading new data to {} ...'.format(input_name), end='', flush=True)
-        workspace.load(input_name, bead)
+        if workspace.is_loaded(input_nick):
+            print('Removing current data from {}'.format(input_nick))
+            workspace.unload(input_nick)
+        print3('Loading new data to {} ...'.format(input_nick), end='', flush=True)
+        workspace.load(input_nick, bead)
         print(' Done')
     else:
         warning(
             'Bead for {} is found but damaged - not loading.'
-            .format(input_name))
+            .format(input_nick))
+
+
+class CmdUnload(Command):
+    '''
+    Remove input data.
+    '''
+
+    def declare(self, arg):
+        arg(OPTIONAL_INPUT_NICK)
+        arg(OPTIONAL_WORKSPACE)
+
+    def run(self, args):
+        input_nick = args.input_nick
+        workspace = args.workspace
+        if input_nick is ALL_INPUTS:
+            inputs = workspace.inputs
+            if inputs:
+                for input in inputs:
+                    _unload(workspace, input.name)
+        else:
+            _unload(workspace, input_nick)
+
+
+def _unload(workspace, input_nick):
+    if workspace.is_loaded(input_nick):
+        print3('Unloading', input_nick, '...', end='', flush=True)
+        workspace.unload(input_nick)
+        print3(' Done', flush=True)
+    else:
+        print(input_nick, 'was not loaded - skipping')

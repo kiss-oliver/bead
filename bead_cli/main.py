@@ -55,7 +55,6 @@ def make_argument_parser(defaults):
     (parser
         .group('input', 'Manage data loaded from other beads')
         .commands(
-            # named('unload')(unload_input),
             'add',
             input.CmdAdd,
             'Define dependency and load its data.',
@@ -70,7 +69,11 @@ def make_argument_parser(defaults):
 
             'load',
             input.CmdLoad,
-            'Load data from already defined dependency.',))
+            'Load data from already defined dependency.',
+
+            'unload',
+            input.CmdUnload,
+            'Unload input data.',))
 
     (parser
         .group('box', 'Manage bead boxes')

@@ -13,9 +13,9 @@ from . import test_fixtures as fixtures
 
 class Test_input_commands(TestCase, fixtures.RobotAndBeads):
 
-    def assert_loaded(self, robot, input_name, bead_name):
+    def assert_loaded(self, robot, input_nick, bead_name):
         self.assertThat(
-            robot.cwd / 'input' / input_name / 'README',
+            robot.cwd / 'input' / input_nick / 'README',
             FileContains(bead_name))
 
     # tests
@@ -202,3 +202,33 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         self.assertEquals(orig_files, after_update_files)
 
         self.assertThat(robot.stdout, Contains('Skipping update of {}:'.format(bead_a)))
+
+    def test_unload_all(self, robot, bead_with_inputs):
+        robot.cli('develop', bead_with_inputs)
+        robot.cd(bead_with_inputs)
+        robot.cli('input', 'load')
+        assert os.path.exists(robot.cwd / 'input/input_a')
+        assert os.path.exists(robot.cwd / 'input/input_b')
+
+        robot.cli('input', 'unload')
+        assert not os.path.exists(robot.cwd / 'input/input_a')
+        assert not os.path.exists(robot.cwd / 'input/input_b')
+
+    def test_unload(self, robot, bead_with_inputs):
+        robot.cli('develop', bead_with_inputs)
+        robot.cd(bead_with_inputs)
+        robot.cli('input', 'load')
+        assert os.path.exists(robot.cwd / 'input/input_a')
+        assert os.path.exists(robot.cwd / 'input/input_b')
+
+        robot.cli('input', 'unload', 'input_a')
+        assert not os.path.exists(robot.cwd / 'input/input_a')
+        assert os.path.exists(robot.cwd / 'input/input_b')
+
+        robot.cli('input', 'unload', 'input_b')
+        assert not os.path.exists(robot.cwd / 'input/input_a')
+        assert not os.path.exists(robot.cwd / 'input/input_b')
+
+        robot.cli('input', 'unload', 'input_a')
+        assert not os.path.exists(robot.cwd / 'input/input_a')
+        assert not os.path.exists(robot.cwd / 'input/input_b')

@@ -133,18 +133,19 @@ def resolve_bead(env, bead_ref_base, time):
     return unionbox.get_at(bead_spec.BEAD_NAME_GLOB, bead_ref_base, time)
 
 
-_USE_SYS_STDOUT = object()
-
-
-def print3(msg, file=_USE_SYS_STDOUT, end='\n', flush=False):
+def print3(*messages, **kwargs):
     '''
         Partial reimplementation of python3's print to work on python27.
 
         REASON: under python27 print does not understand the same keyword arguments
     '''
-    if file is _USE_SYS_STDOUT:
-        file = sys.stdout
-    file.write(msg)
+    assert set(kwargs) - {'sep', 'file', 'end', 'flush'} == set(), set(kwargs)
+    file = kwargs.get('file', sys.stdout)
+    sep = kwargs.get('sep', ' ')
+    end = kwargs.get('end', '\n')
+    flush = kwargs.get('flush', False)
+
+    file.write(sep.join(messages))
     file.write(end)
     if flush:
         file.flush()
