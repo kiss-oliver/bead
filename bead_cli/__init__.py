@@ -4,4 +4,4 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 PACKAGE = __name__
-VERSION = '0.0.1'
+VERSION = '0.0.2'
