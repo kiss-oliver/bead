@@ -7,7 +7,7 @@ import os
 import sys
 
 from bead import tech
-from bead.workspace import Workspace, CurrentDirWorkspace
+from bead.workspace import Workspace
 from bead import layouts
 
 from .cmdparse import Command
@@ -52,9 +52,6 @@ class CmdNew(Command):
         kind = tech.identifier.uuid()
         workspace.create(kind)
         print('Created {}'.format(workspace.bead_name))
-
-
-CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 
 def WORKSPACE_defaulting_to(default_workspace):
@@ -246,7 +243,7 @@ class CmdNuke(Command):
     '''
 
     def declare(self, arg):
-        arg(WORKSPACE_defaulting_to(CURRENT_DIRECTORY))
+        arg(WORKSPACE_defaulting_to(Workspace(os.getcwd())))
 
     def run(self, args):
         workspace = args.workspace

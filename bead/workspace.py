@@ -23,10 +23,12 @@ fs = tech.fs
 META_VERSION = 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
 
 
-class AbstractWorkspace(object):
+class Workspace(object):
 
-    # directory of workspace - subclasses need to specify it
     directory = None
+
+    def __init__(self, directory):
+        self.directory = fs.Path(os.path.abspath(directory))
 
     @property
     def is_valid(self):
@@ -174,19 +176,25 @@ class AbstractWorkspace(object):
         # default values are printed as repr of the value
         return self.directory
 
+    @classmethod
+    def for_current_working_directory(cls):
+        '''
+        Create Workspace based on current working directory.
 
-class Workspace(AbstractWorkspace):
+        Determine the correct Workspace for the current working directory.
+        As a result, the returned workspace may be for a parent directory,
+        if the cwd is under a valid workspace, but not at its root.
 
-    def __init__(self, directory):
-        super(Workspace, self).__init__()
-        self.directory = fs.Path(os.path.abspath(directory))
-
-
-class CurrentDirWorkspace(AbstractWorkspace):
-
-    @property
-    def directory(self):
-        return fs.Path(os.path.abspath(os.getcwd()))
+        Can return an invalid Workspace.
+        '''
+        cwd = cls(os.getcwd())
+        ws = cwd
+        while not ws.is_valid:
+            parent = ws.directory / '..'
+            if parent == ws.directory:
+                return cwd
+            ws = cls(parent)
+        return ws
 
 
 class _ZipCreator(object):

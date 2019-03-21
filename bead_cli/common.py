@@ -6,7 +6,7 @@ from __future__ import print_function
 import os
 import sys
 
-from bead.workspace import Workspace, CurrentDirWorkspace
+from bead.workspace import Workspace
 from bead import spec as bead_spec
 from bead.archive import Archive
 from bead import box as bead_box
@@ -40,7 +40,7 @@ def OPTIONAL_WORKSPACE(parser):
     '''
     parser.arg(
         '--workspace', '-w', metavar=arg_metavar.WORKSPACE,
-        type=Workspace, default=CurrentDirWorkspace(),
+        type=Workspace, default=Workspace.for_current_working_directory(),
         help=arg_help.WORKSPACE)
 
 

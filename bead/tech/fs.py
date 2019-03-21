@@ -74,7 +74,7 @@ def make_writable(path):
 
 
 def all_subpaths(dir, followlinks=False):
-    for root, dirs, files in os.walk(dir, followlinks=followlinks):
+    for root, _dirs, files in os.walk(dir, followlinks=followlinks):
         root = Path(root)
         yield root
         for file in files:

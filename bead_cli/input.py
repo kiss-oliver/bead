@@ -12,7 +12,6 @@ from . import arg_help
 from .common import (
     OPTIONAL_WORKSPACE, OPTIONAL_ENV,
     DefaultArgSentinel,
-    CurrentDirWorkspace,
     verify_with_feedback,
     print3,
     die, warning
@@ -46,8 +45,6 @@ def INPUT_NICK(parser):
 # bead_ref
 SAME_KIND_NEWEST_VERSION = DefaultArgSentinel('same bead, newest version')
 USE_INPUT_NICK = DefaultArgSentinel('use {}'.format(arg_metavar.INPUT_NICK))
-# default workspace
-CURRENT_DIRECTORY = CurrentDirWorkspace()
 
 
 class CmdAdd(Command):
