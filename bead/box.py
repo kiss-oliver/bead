@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from glob import iglob
 import os
 
-from .archive import Archive
+from .archive import Archive, InvalidArchive
 from . import spec as bead_spec
 from .tech.timestamp import time_from_timestamp
 from .import tech
@@ -150,8 +150,8 @@ class Box(object):
         for path in paths:
             try:
                 archive = Archive(path, self.name)
-            except:
-                # bad archive, ignore it
+            except InvalidArchive:
+                # TODO: log/report problem
                 pass
             else:
                 yield archive

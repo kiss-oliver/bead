@@ -4,3 +4,5 @@
 .coverage
 test-env
 build
+executables/*
+.vscode/*

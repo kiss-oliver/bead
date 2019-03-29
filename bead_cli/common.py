@@ -123,11 +123,11 @@ BEAD_REF_BASE = arg_bead_ref_base(nargs=None, default=None)
 
 
 def resolve_bead(env, bead_ref_base, time):
-    try:
+    # prefer exact file name over box search
+    if os.path.isfile(bead_ref_base):
         return Archive(bead_ref_base)
-    except:
-        pass
 
+    # not a file - try box search
     unionbox = bead_box.UnionBox(env.get_boxes())
 
     return unionbox.get_at(bead_spec.BEAD_NAME_GLOB, bead_ref_base, time)

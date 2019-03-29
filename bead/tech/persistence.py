@@ -17,6 +17,9 @@ import json
 #   favor of a new json-like one
 
 
+ReadError = json.JSONDecodeError
+
+
 def load(istream):
     return json.load(istream)
 

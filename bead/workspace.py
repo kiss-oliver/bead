@@ -110,7 +110,7 @@ class Workspace(object):
         assert not os.path.exists(zipfilename)
         try:
             _ZipCreator().create(zipfilename, self, timestamp, comment)
-        except:
+        except (RuntimeError, Exception):
             if os.path.exists(zipfilename):
                 os.remove(zipfilename)
             raise

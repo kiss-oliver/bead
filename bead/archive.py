@@ -40,6 +40,10 @@ assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012
 assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012345-0200.zip')
 
 
+class InvalidArchive(Exception):
+    """Not a valid bead archive"""
+
+
 class Archive(Bead):
 
     def __init__(self, filename, box_name=''):
@@ -58,6 +62,8 @@ class Archive(Bead):
             try:
                 with zipfile.ZipFile(self.archive_filename) as self.zipfile:
                     return method(self, *args, **kwargs)
+            except zipfile.BadZipFile:
+                raise InvalidArchive(self.archive_filename)
             finally:
                 self.zipfile = None
         return f
@@ -169,7 +175,10 @@ class Archive(Bead):
     @__zipfile_user
     def _load_meta(self):
         with self.zipfile.open(layouts.Archive.BEAD_META) as f:
-            return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
+            try:
+                return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
+            except persistence.ReadError:
+                raise InvalidArchive(self.archive_filename)
 
     @__zipfile_user
     def extract_file(self, zip_path, fs_path):
