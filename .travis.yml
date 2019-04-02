@@ -3,7 +3,6 @@ language: python
 env:
   matrix:
     - TOXENV=py27
-    - TOXENV=py34
     - TOXENV=py36
 # Pypy slows down builds on travis
 #    - TOXENV=pypy
@@ -13,7 +12,6 @@ env:
 before_install:
   # work around https://github.com/travis-ci/travis-ci/issues/8363
   - pyenv global system 2.7
-  - pyenv global system 3.4
   - pyenv global system 3.6
 
 install:
