@@ -17,15 +17,28 @@ import json
 #   favor of a new json-like one
 
 
-ReadError = json.JSONDecodeError
+if hasattr(json, 'JSONDecodeError'):
+    JSONDecodeError = json.JSONDecodeError
+else:
+    JSONDecodeError = ValueError
+
+
+class ReadError(Exception):
+    """Error loading JSON"""
 
 
 def load(istream):
-    return json.load(istream)
+    try:
+        return json.load(istream)
+    except JSONDecodeError as e:
+        raise ReadError(e)
 
 
 def loads(string):
-    return json.loads(string)
+    try:
+        return json.loads(string)
+    except JSONDecodeError as e:
+        raise ReadError(e)
 
 
 JSON_SAVE_OPTIONS = dict(
