@@ -39,19 +39,21 @@ New computations get a new, universally unique `kind` (technically an uuid).
 
 ## Status
 
-### bead as a tool *is not production ready, yet!*
+### Used in production for 2 years now, there are 100+ frozen computations
 
-Although most of the important stuff is implemented, the metadata format is still not fixed,
-which might render every existing BEAD incompatible after the change.
+Although most of the important stuff is implemented, there are still some raw edges.
 
-Documentation for the tool is non-existent at this point - except for command line help.
-The `doc` directory currently contains design fragments - you will be mislead by them as they
+Documentation for the tool is mostly the command line help.
+
+The `doc` directory has concept descriptions, maybe some use cases,
+but there are also design fragments - you might be mislead by them as they
 are nor describing the current situations nor are they showing the future.
+FIXME: clean up documentation.
 
 
 ## Install instructions
 
-Ensure you have Python installed.
+Ensure you have Python 3.6+ installed.
 
 Run `make executables` to create the `bead` tool:
 
