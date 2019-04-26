@@ -12,6 +12,7 @@ import zipfile
 from . import layouts
 from . import meta
 from . import tech
+from .bead import Bead
 
 # technology modules
 persistence = tech.persistence
@@ -23,7 +24,7 @@ fs = tech.fs
 META_VERSION = 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
 
 
-class Workspace(object):
+class Workspace(Bead):
 
     directory = None
 
@@ -54,19 +55,36 @@ class Workspace(object):
         with open(self.meta_path, 'wt') as f:
             return persistence.dump(meta, f)
 
+    # Bead properties
     @property
     def kind(self):
         return self.meta[meta.KIND]
 
     @property
+    def name(self):
+        return os.path.basename(self.directory)
+
+    @property
     def inputs(self):
         return tuple(meta.parse_inputs(self.meta))
 
-    def get_input(self, name):
-        for input in self.inputs:
-            if name == input.name:
-                return input
+    # faked Bead properties
+    @property
+    def content_id(self):
+        # note, that it is not a valid, unique
+        # content_id for referencing
+        # however it is easily recognisable on graphs
+        return f'<WORKSPACE {self.directory}>'
 
+    @property
+    def timestamp_str(self):
+        return tech.timestamp.timestamp()
+
+    @property
+    def box_name(self):
+        return '<UNSAVED>'
+
+    # workspace constructors
     def create(self, kind):
         '''
         Set up an empty project structure.
@@ -98,10 +116,6 @@ class Workspace(object):
         fs.ensure_directory(dir / layouts.Workspace.OUTPUT)
         fs.ensure_directory(dir / layouts.Workspace.TEMP)
         fs.ensure_directory(dir / layouts.Workspace.META)
-
-    @property
-    def bead_name(self):
-        return os.path.basename(self.directory)
 
     def pack(self, zipfilename, timestamp, comment):
         '''
@@ -276,7 +290,7 @@ class _ZipCreator(object):
                     meta.INPUT_CONTENT_ID: input.content_id,
                     meta.INPUT_FREEZE_TIME: input.timestamp_str}
                 for input in workspace.inputs},
-            meta.FREEZE_NAME: workspace.bead_name}
+            meta.FREEZE_NAME: workspace.name}
 
         self.add_string_content(
             layouts.Archive.BEAD_META,

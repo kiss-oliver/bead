@@ -88,8 +88,8 @@ Thank you for your interest!
 
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), text in this section and afterwards will be overwritten
 
-- [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/master/bead/archive.py#L72)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L50)
+- [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/master/bead/archive.py#L73)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/master/bead_cli/test_robot.py#L26)
 - [FIXME: test_archive.given_a_bead is fragile and yields an invalid BEAD](https://github.com/e3krisztian/bead/blob/master/bead/test_archive.py#L46)
 - [TODO: add tests for timestamps, parse_iso8601, parse_timedelta](https://github.com/e3krisztian/bead/blob/master/bead/tech/timestamp.py#L234)

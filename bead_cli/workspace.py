@@ -46,12 +46,12 @@ class CmdNew(Command):
 
     def run(self, args):
         workspace = args.workspace
-        assert_may_be_valid_name(workspace.bead_name)
+        assert_may_be_valid_name(workspace.name)
         # FIXME: die with message when directory already exists
 
         kind = tech.identifier.uuid()
         workspace.create(kind)
-        print('Created {}'.format(workspace.bead_name))
+        print('Created {}'.format(workspace.name))
 
 
 def WORKSPACE_defaulting_to(default_workspace):
@@ -228,13 +228,13 @@ class CmdStatus(Command):
         # TODO: use a template and render it with passing in all data
         kind_needed = verbose
         if workspace.is_valid:
-            print('Bead Name: {}'.format(workspace.bead_name))
+            print(f'Bead Name: {workspace.name}')
             if kind_needed:
-                print('Bead kind: {}'.format(workspace.kind))
+                print(f'Bead kind: {workspace.kind}')
             print()
             print_inputs(env, workspace, verbose)
         else:
-            warning('Invalid workspace ({})'.format(workspace.directory))
+            warning(f'Invalid workspace ({workspace.directory})')
 
 
 class CmdNuke(Command):

@@ -159,11 +159,7 @@ class Box(object):
     def store(self, workspace, timestamp):
         # -> Bead
         zipfilename = (
-            self.directory / (
-                '{bead_name}_{timestamp}.zip'
-                .format(
-                    bead_name=workspace.bead_name,
-                    timestamp=timestamp)))
+            self.directory / f'{workspace.name}_{timestamp}.zip')
         workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
         TRACELOG('store as archive', zipfilename)
         return Archive(zipfilename)
