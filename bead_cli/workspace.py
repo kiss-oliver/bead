@@ -5,10 +5,14 @@ from __future__ import print_function
 
 import os
 import sys
+import subprocess
+import webbrowser
 
 from bead import tech
 from bead.workspace import Workspace
 from bead import layouts
+
+from bead.box import UnionBox
 
 from .cmdparse import Command
 from .common import die, warning
@@ -18,12 +22,15 @@ from .common import BEAD_REF_BASE, BEAD_TIME, resolve_bead
 from .common import verify_with_feedback
 from . import arg_metavar
 from . import arg_help
-
+from . import web
 
 timestamp = tech.timestamp.timestamp
 
 
 def assert_may_be_valid_name(name):
+    '''
+    Refuse bead names that are non cross platform file-system compatible
+    '''
     valid_syntax = (
         name
         and os.path.sep not in name
@@ -32,7 +39,7 @@ def assert_may_be_valid_name(name):
         and ':' not in name
     )
     if not valid_syntax:
-        die('Invalid name "{}"'.format(name))
+        die(f'Invalid name "{name}"')
 
 
 class CmdNew(Command):
@@ -251,3 +258,48 @@ class CmdNuke(Command):
         directory = workspace.directory
         tech.fs.rmtree(directory, ignore_errors=os.name != 'posix')
         print('Deleted workspace {}'.format(directory))
+
+
+class CmdWeb(Command):
+    '''
+    Visualize connections to other beads.
+    '''
+
+    def declare(self, arg):
+        arg(OPTIONAL_ENV)
+        arg('-o', '--output', default='web.dot',
+            help='File name of generated dot file')
+        arg('--svg', default=False, action='store_true',
+            help="Call GraphViz's `dot` on the generated file to create an svg file as well")
+        arg('--png', default=False, action='store_true',
+            help="Call GraphViz's `dot` on the generated file to create an png file as well")
+        arg('--view', default=False, action='store_true',
+            help="Open web browser with the generated SVG file (implies --svg)")
+
+    def run(self, args):
+        env = args.get_env()
+        boxes = env.get_boxes()
+
+        all_beads = list(UnionBox(boxes).all_beads())
+        weaver = web.Weaver(all_beads)
+        dot_str = weaver.weave()
+
+        dot_file = args.output
+        tech.fs.write_file(dot_file, dot_str)
+
+        if args.png:
+            png_file = f'{dot_file}.png'
+            graphviz_dot(dot_file, png_file)
+
+        if args.svg or args.view:
+            svg_file = f'{dot_file}.svg'
+            graphviz_dot(dot_file, svg_file)
+            if args.view:
+                webbrowser.open(svg_file)
+
+
+def graphviz_dot(dot_file, output_file):
+    _, ext = os.path.splitext(output_file)
+    filetype = ext.lstrip('.')
+    cmd = ['dot', dot_file, '-o', output_file, '-T', filetype]
+    subprocess.check_call(cmd)

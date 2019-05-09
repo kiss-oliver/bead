@@ -48,6 +48,10 @@ def make_argument_parser(defaults):
             workspace.CmdNuke,
             'Delete workspace.',
 
+            'web',
+            workspace.CmdWeb,
+            'Visualize connections to other beads.',
+
             'version',
             CmdVersion,
             'Show program version.'))

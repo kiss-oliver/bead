@@ -52,6 +52,8 @@ class Test_basic_command_line(TestCase):
         self.assertIn('Inputs', robot.stdout)
         self.assertIn('older-self', robot.stdout)
 
+        cli('web')
+
         # this might leave behind the empty directory on windows
         cli('nuke')
         cd('..')

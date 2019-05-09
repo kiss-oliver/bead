@@ -233,6 +233,13 @@ class UnionBox:
         context = self.get_context(check_type, check_param, time)
         return context.best
 
+    def all_beads(self):
+        '''
+        Iterator for all beads in this Box
+        '''
+        for box in self.boxes:
+            yield from box.all_beads()
+
 
 class BeadContext:
     def __init__(self, time, bead, prev, next):
