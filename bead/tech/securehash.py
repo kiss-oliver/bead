@@ -12,11 +12,11 @@ READ_BLOCK_SIZE = 1024 ** 2
 
 
 def _add_prefix(hash, size):
-    hash.update('{}:'.format(size).encode('ascii'))
+    hash.update(f'{size}:'.encode('ascii'))
 
 
 def _add_suffix(hash, size):
-    hash.update(';{}'.format(size).encode('ascii'))
+    hash.update(f';{size}'.encode('ascii'))
 
 
 def file(file, file_size):

@@ -16,7 +16,7 @@ class CmdVersion(Command):
     '''
 
     def run(self, args):
-        print('{} version {}'.format(PACKAGE, VERSION))
+        print(f'{PACKAGE} version {VERSION}')
 
 
 def make_argument_parser(defaults):

@@ -59,7 +59,7 @@ class get_env:
         return Environment(config_dir / 'env.json')
 
     def __repr__(self):
-        return 'Environment at {}'.format(self.config_dir)
+        return f'Environment at {self.config_dir}'
 
 
 def OPTIONAL_ENV(parser):
@@ -128,29 +128,11 @@ def resolve_bead(env, bead_ref_base, time):
     return unionbox.get_at(bead_spec.BEAD_NAME_GLOB, bead_ref_base, time)
 
 
-def print3(*messages, **kwargs):
-    '''
-        Partial reimplementation of python3's print to work on python27.
-
-        REASON: under python27 print does not understand the same keyword arguments
-    '''
-    assert set(kwargs) - {'sep', 'file', 'end', 'flush'} == set(), set(kwargs)
-    file = kwargs.get('file', sys.stdout)
-    sep = kwargs.get('sep', ' ')
-    end = kwargs.get('end', '\n')
-    flush = kwargs.get('flush', False)
-
-    file.write(sep.join(messages))
-    file.write(end)
-    if flush:
-        file.flush()
-
-
 def verify_with_feedback(archive):
-    print3('Verifying archive {} ...'.format(archive.archive_filename), end='', flush=True)
+    print(f'Verifying archive {archive.archive_filename} ...', end='', flush=True)
     is_valid = archive.is_valid
     if is_valid:
-        print3(' OK', flush=True)
+        print(' OK', flush=True)
     else:
-        print3(' DAMAGED!', flush=True)
+        print(' DAMAGED!', flush=True)
     return is_valid

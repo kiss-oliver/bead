@@ -53,7 +53,7 @@ class CmdNew(Command):
 
         kind = tech.identifier.uuid()
         workspace.create(kind)
-        print('Created {}'.format(workspace.name))
+        print(f'Created {workspace.name}')
 
 
 def WORKSPACE_defaulting_to(default_workspace):
@@ -93,8 +93,7 @@ class CmdSave(Command):
                 warning('No boxes have been defined')
                 beadbox = os.path.expanduser('~/BeadBox')
                 sys.stderr.write(
-                    'Creating and using a new one with name `home` and location {}'
-                    .format(beadbox))
+                    f'Creating and using a new one with name `home` and location {beadbox}')
                 tech.fs.ensure_directory(beadbox)
                 env.add_box('home', beadbox)
                 env.save()
@@ -109,7 +108,7 @@ class CmdSave(Command):
         else:
             box = env.get_box(box_name)
             if box is None:
-                die('Unknown box: {}'.format(box_name))
+                die(f'Unknown box: {box_name}')
         box.store(workspace, timestamp())
         print('Successfully stored bead.')
 
@@ -156,7 +155,7 @@ class CmdDevelop(Command):
             output_directory = workspace.directory / layouts.Workspace.OUTPUT
             bead.unpack_data_to(output_directory)
 
-        print('Extracted source into {}'.format(workspace.directory))
+        print(f'Extracted source into {workspace.directory}')
         # XXX: try to load smaller inputs?
         if workspace.inputs:
             print('Input data not loaded, update if needed and load manually')
@@ -164,7 +163,7 @@ class CmdDevelop(Command):
 
 def assert_valid_workspace(workspace):
     if not workspace.is_valid:
-        die('{} is not a valid workspace'.format(workspace.directory))
+        die(f'{workspace.directory} is not a valid workspace')
 
 
 def print_inputs(env, workspace, verbose):
@@ -187,13 +186,13 @@ def print_inputs(env, workspace, verbose):
                 #
                 has_name = has_name or exact_match or best_guess or names
                 if exact_match:
-                    print('\t * -r {} {}'.format(box.name, exact_match))
+                    print(f'\t * -r {box.name} {exact_match}')
                     names.remove(exact_match)
                 elif best_guess:
-                    print('\t ? -r {} {}'.format(box.name, best_guess))
+                    print(f'\t ? -r {box.name} {best_guess}')
                     names.remove(best_guess)
                 for name in sorted(names):
-                    print('\t [-r {} {}]'.format(box.name, name))
+                    print(f'\t [-r {box.name} {name}]')
             if verbose or not has_name:
                 print('\tBead kind:', input.kind)
                 print('\tContent id:', input.content_id)
@@ -254,7 +253,7 @@ class CmdNuke(Command):
         # on non-posix systems (Windows) it might happen, that we can not remove
         # the directory we are in -> ignore errors
         tech.fs.rmtree(directory, ignore_errors=os.name != 'posix')
-        print('Deleted workspace {}'.format(directory))
+        print(f'Deleted workspace {directory}')
 
 
 class CmdWeb(Command):

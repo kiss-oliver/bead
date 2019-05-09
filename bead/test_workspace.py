@@ -242,7 +242,7 @@ class Test_load(TestCase):
             path_of_bead_to_load,
             {
                 'output/output1':
-                'data for {}'.format(input_nick).encode('utf-8')
+                f'data for {input_nick}'.encode('utf-8')
             }
         )
         self.workspace.load(input_nick, Archive(path_of_bead_to_load))

@@ -110,7 +110,7 @@ class Box(object):
         query = ((bead_spec.KIND, kind), (bead_spec.CONTENT_ID, content_id))
         for bead in self._beads(query):
             return bead
-        raise LookupError('Bead {} {} not found'.format(kind, content_id))
+        raise LookupError(f'Bead {kind}/{content_id} not found')
 
     def all_beads(self):
         '''

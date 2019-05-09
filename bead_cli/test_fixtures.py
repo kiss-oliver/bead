@@ -88,7 +88,7 @@ class RobotAndBeads(object):
                 workspace_dir = os.path.join(tempdir_obj.path, bead_name)
                 ws = Workspace(workspace_dir)
                 ws.create(bead_kind)
-                sentinel_file = ws.directory / 'sentinel-{}'.format(timestamp)
+                sentinel_file = ws.directory / f'sentinel-{timestamp}'
                 tech.fs.write_file(sentinel_file, timestamp)
                 tech.fs.write_file(ws.directory / 'output/README', timestamp)
                 box.store(ws, timestamp)

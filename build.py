@@ -100,7 +100,7 @@ with further_output('Unpacking packages'):
 # for dir in glob(SRC + '/*.egg-info'):
 #     rmtree(dir)
 
-with progress('Creating .pyz zip archive from the sources ({})'.format(TOOL_PYZ)):
+with progress(f'Creating .pyz zip archive from the sources ({TOOL_PYZ})'):
     with ZipFile(TOOL_PYZ, mode='w', compression=ZIP_DEFLATED) as zip:
         # add the entry point
         zip.write('__main__.py')
@@ -122,13 +122,13 @@ def make_tool(tool_file_name, runner):
             f.write(pyz.read())
 
 
-with progress('Creating unix tool ({})'.format(UNIX_TOOL)):
+with progress(f'Creating unix tool ({UNIX_TOOL})'):
     UNIX_RUNNER = b'#!/usr/bin/env python3\n'
 
     make_tool(UNIX_TOOL, UNIX_RUNNER)
     make_executable(UNIX_TOOL)
 
-with progress('Creating windows tool ({})'.format(WIN_TOOL)):
+with progress('Creating windows tool ({WIN_TOOL})'):
     WINDOWS_RUNNER = b'\r\n'.join((
         b'@echo off',
         b'python3.exe "%~f0" %*',
