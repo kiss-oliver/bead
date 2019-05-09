@@ -2,9 +2,6 @@
 We are responsible to store (and retrieve) beads.
 '''
 
-# TODO: remove TRACELOG
-from tracelog import TRACELOG
-
 from fnmatch import fnmatch
 from datetime import datetime, timedelta
 from glob import iglob
@@ -156,7 +153,6 @@ class Box(object):
         zipfilename = (
             self.directory / f'{workspace.name}_{timestamp}.zip')
         workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
-        TRACELOG('store as archive', zipfilename)
         return Archive(zipfilename)
 
     def find_names(self, kind, content_id, timestamp):
