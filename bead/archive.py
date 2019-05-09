@@ -63,7 +63,7 @@ class Archive(UnpackableBead):
             try:
                 with zipfile.ZipFile(self.archive_filename) as self.zipfile:
                     return method(self, *args, **kwargs)
-            except zipfile.BadZipFile:
+            except (zipfile.BadZipFile, OSError, IOError):
                 raise InvalidArchive(self.archive_filename)
             finally:
                 self.zipfile = None

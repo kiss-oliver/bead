@@ -250,12 +250,14 @@ class CmdNuke(Command):
     '''
 
     def declare(self, arg):
-        arg(WORKSPACE_defaulting_to(Workspace(os.getcwd())))
+        arg(WORKSPACE_defaulting_to(Workspace.for_current_working_directory()))
 
     def run(self, args):
         workspace = args.workspace
         assert_valid_workspace(workspace)
         directory = workspace.directory
+        # on non-posix systems (Windows) it might happen, that we can not remove
+        # the directory we are in -> ignore errors
         tech.fs.rmtree(directory, ignore_errors=os.name != 'posix')
         print('Deleted workspace {}'.format(directory))
 
