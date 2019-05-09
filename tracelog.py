@@ -9,11 +9,6 @@ Command line usage:
 Beware of multi-process capable runners: they will interweave messages.
 '''
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import atexit
 from datetime import datetime
 import inspect
