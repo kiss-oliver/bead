@@ -179,11 +179,14 @@ class Archive(UnpackableBead):
     # -
     @__zipfile_user
     def _load_meta(self):
-        with self.zipfile.open(layouts.Archive.BEAD_META) as f:
-            try:
-                return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
-            except persistence.ReadError:
-                raise InvalidArchive(self.archive_filename)
+        try:
+            with self.zipfile.open(layouts.Archive.BEAD_META) as f:
+                try:
+                    return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
+                except persistence.ReadError:
+                    raise InvalidArchive(self.archive_filename)
+        except:
+            raise InvalidArchive(self.archive_filename)
 
     @__zipfile_user
     def extract_file(self, zip_path, fs_path):
