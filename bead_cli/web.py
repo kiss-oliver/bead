@@ -1,5 +1,6 @@
 from collections import defaultdict
 from enum import Enum
+import html
 
 
 class BeadState(Enum):
@@ -228,18 +229,35 @@ class Weaver:
     def format_cluster(self, beads):
         # beads are sorted in descending order by timestamp
         assert beads
+        kinds = {bead.kind for bead in beads}
+        assert len(kinds) == 1
+
+        kind = kinds.pop()
 
         def fragments():
-            dot_nodes = []
-            name = beads[0].name + 'X'  # forces name difference for first bead
+            yield node_kind(kind)
+            yield '[shape="plaintext" color="grey"'
+            yield 'label=<<TABLE CELLBORDER="1">\n'
+            name = beads[0].name + 'X'
+            # + 'X' forces name difference for first bead
             for bead in beads:
                 if bead.name != name:
                     name = bead.name
-                    dot_nodes.append(node_bead_name(bead))
-                    yield dot_node_bead_name(bead)
-                dot_nodes.append(node_bead(bead))
-                yield dot_node_bead(bead, bead_color(bead))
-            yield dot_cluster(dot_nodes)
+                    yield '    <TR>'
+                    yield '<TD BORDER="0"></TD>'
+                    yield '<TD BORDER="0">'
+                    yield f'<B><I>{html.escape(name)}</I></B>'
+                    yield '</TD>'
+                    yield '</TR>\n'
+                color = f'BGCOLOR="{bead_color(bead)}:none" style="radial"'
+                yield '    <TR>'
+                yield f'<TD PORT="{port(bead, "in")}" {color}></TD>'
+                yield f'<TD PORT="{port(bead, "out")}" {color}>'
+                yield f'{bead.timestamp}'
+                yield '</TD>'
+                yield '</TR>\n'
+            yield '</TABLE>>'
+            yield ']'
         return ''.join(fragments())
 
     def format_inputs(self):
@@ -255,37 +273,26 @@ class Weaver:
 DOT_GRAPH_TEMPLATE = """\
 digraph {{
   layout=dot
-  rankdir=LR
-  edge [weight=1]
+  rankdir="LR"
+  pad="1"
+  pack="true"
+  packmode="node"
 
   // node definitions clustered by bead.kind
 {bead_kinds}
 
   // edges: input links
-  edge [headport=w tailport=e]
+  edge [headport="w" tailport="e"]
+  edge [weight="100"]
+  // edge [labelfloat="true"]
+  edge [decorate="true"]
 {bead_inputs}
 }}
 """
 
 
-def node_bead_name(bead):
-    return f"bead_name_{bead.content_id}"
-
-
-def node_bead(bead):
-    return f"bead_{bead.content_id}"
-
-
-def dot_node_bead_name(bead):
-    return f'  {node_bead_name(bead)} [shape=underline style="" label="{bead.name}"]\n'
-
-
-def dot_node_bead(bead, color):
-    return (
-        f'  {node_bead(bead)} ['
-        + 'shape=parallelogram style=radial color=grey'
-        + f' fillcolor="{color}:none" label="{bead.timestamp}"'
-        + ']\n')
+def node_kind(kind):
+    return f"kind_{kind}".replace('-', '_')
 
 
 BEAD_COLOR = {
@@ -300,21 +307,19 @@ def bead_color(bead):
     return BEAD_COLOR[bead.state]
 
 
-def dot_cluster(dot_nodes):
-    return DOT_KIND_CLUSTER_TEMPLATE.format(same_kind_beads=' -> '.join(dot_nodes))
-
-
-DOT_KIND_CLUSTER_TEMPLATE = """\
-  {{
-    rank=same
-    edge [style=dotted arrowhead=none]
-    {same_kind_beads}
-    edge [style="" arrowhead=normal]
-  }}
-"""
+def port(bead, port_type):
+    assert port_type in ("in", "out")
+    return f"{port_type}_{bead.content_id}"
 
 
 def dot_edge(bead_src, bead_dest, name):
+    # TODO: emphasize incoming edges to most recent beads
+    src = f'{node_kind(bead_src.kind)}:{port(bead_src, "out")}:e'
+    dest = f'{node_kind(bead_dest.kind)}:{port(bead_dest, "in")}:w'
     return (
-        f'  {node_bead(bead_src)} -> {node_bead(bead_dest)}'
-        + f' [color="{bead_color(bead_src)}" label="{name}" fontsize=10]')
+        f'  {src} -> {dest} '
+        + '['
+        + f'color="{bead_color(bead_src)}" '
+        + 'fontsize="10" '
+        + f'headlabel="{html.escape(name)}"'
+        + ']')

@@ -95,6 +95,7 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), 
 - [TODO: add tests for timestamps, parse_iso8601, parse_timedelta](https://github.com/e3krisztian/bead/blob/master/bead/tech/timestamp.py#L229)
 - [TODO: ask the user to report the exception?!](https://github.com/e3krisztian/bead/blob/master/bead_cli/main.py#L107)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L91)
+- [TODO: emphasize incoming edges to most recent beads](https://github.com/e3krisztian/bead/blob/master/bead_cli/web.py#L316)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L146)
 - [TODO: update: assert there is no other argument](https://github.com/e3krisztian/bead/blob/master/bead_cli/input.py#L111)
 - [TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L229)
