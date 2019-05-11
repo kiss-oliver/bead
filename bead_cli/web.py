@@ -1,6 +1,68 @@
+import csv
+import html
+
 from collections import defaultdict
 from enum import Enum
-import html
+
+from bead.tech.timestamp import time_from_timestamp
+from bead.meta import InputSpec
+
+
+def _read_csv(csv_stream):
+    records = list(csv.DictReader(csv_stream))
+    return records
+
+
+def _read_inputs(csv_stream):
+    inputs_by_owner = defaultdict(list)
+    for raw_input in _read_csv(csv_stream):
+        input = InputSpec(
+            raw_input['name'],
+            raw_input['kind'],
+            raw_input['content_id'],
+            raw_input['freeze_time'])
+        inputs_by_owner[raw_input['owner']].append(input)
+    return dict(inputs_by_owner)
+
+
+def read_beads(beads_csv_stream, inputs_csv_stream):
+    inputs_by_owner = _read_inputs(inputs_csv_stream)
+    beads = [
+        Bead(
+            kind=rb['kind'],
+            timestamp_str=rb['freeze_time'],
+            content_id=rb['content_id'],
+            inputs=inputs_by_owner.get(rb['content_id'], ()),
+            name=rb['name'])
+        for rb in _read_csv(beads_csv_stream)]
+    return beads
+
+
+def write_beads(beads, beads_csv_stream, inputs_csv_stream, write_headers=True):
+    bead_writer = (
+        csv.DictWriter(beads_csv_stream, 'name kind content_id freeze_time'.split()))
+    inputs_writer = (
+        csv.DictWriter(inputs_csv_stream, 'owner name kind content_id freeze_time'.split()))
+    if write_headers:
+        bead_writer.writeheader()
+        inputs_writer.writeheader()
+    for bead in beads:
+        bead_writer.writerow(
+            {
+                'name': bead.name,
+                'kind': bead.kind,
+                'content_id': bead.content_id,
+                'freeze_time': bead.timestamp_str
+            })
+        for input in bead.inputs:
+            inputs_writer.writerow(
+                {
+                    'owner': bead.content_id,
+                    'name': input.name,
+                    'kind': input.kind,
+                    'content_id': input.content_id,
+                    'freeze_time': input.timestamp_str
+                })
 
 
 class BeadState(Enum):
@@ -20,7 +82,7 @@ class Bead:
 
     Also has metadata for coloring (state).
     """
-    def __init__(self, kind, timestamp, content_id,
+    def __init__(self, kind, timestamp_str, content_id,
                  inputs=(),
                  box_name=None,
                  name="UNKNOWN"):
@@ -29,7 +91,8 @@ class Bead:
         self.box_name = box_name
         self.name = name
         self.kind = kind
-        self.timestamp = timestamp
+        self.timestamp_str = timestamp_str
+        self.timestamp = time_from_timestamp(timestamp_str)
         self.state = BeadState.SUPERSEDED
 
     @classmethod
@@ -39,7 +102,7 @@ class Bead:
             content_id=bead.content_id,
             kind=bead.kind,
             name=bead.name,
-            timestamp=bead.timestamp,
+            timestamp_str=bead.timestamp_str,
             box_name=bead.box_name)
 
     @classmethod
@@ -54,7 +117,7 @@ class Bead:
             name=inputspec.name,
             content_id=inputspec.content_id,
             kind=inputspec.kind,
-            timestamp=inputspec.timestamp)
+            timestamp_str=inputspec.timestamp_str)
         phantom.state = BeadState.PHANTOM
         return phantom
 

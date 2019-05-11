@@ -21,6 +21,7 @@ class Bead:
     timestamp_str: str
     box_name: str
 
+    # FIXME: rename Bead.timestamp* to .freeze_time*
     @property
     def timestamp(self):
         return time_from_timestamp(self.timestamp_str)
