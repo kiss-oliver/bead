@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import subprocess
 import webbrowser
 
@@ -259,38 +260,80 @@ class CmdNuke(Command):
 class CmdWeb(Command):
     '''
     Visualize connections to other beads.
+
+    Write a GraphViz .dot file and create other representations as requested.
     '''
 
     def declare(self, arg):
         arg(OPTIONAL_ENV)
-        arg('-o', '--output', default='web.dot',
-            help='File name of generated dot file')
+        arg('-o', '--output-base', default='web',
+            help='File name base of generated files'
+            + ' (e.g. dot file will be stored as <OUTPUT_BASE>.dot)')
+        arg('--csv', default=False, action='store_true',
+            help='Write bead meta data to files:'
+            + ' <OUTPUT_BASE>-beads.csv and <OUTPUT_BASE>-inputs.csv')
+        arg('--from-csv', metavar='INPUT_BASE',
+            help='Load bead metadata from <INPUT_BASE>-beads.csv and <INPUT_BASE>-inputs.csv')
         arg('--svg', default=False, action='store_true',
-            help="Call GraphViz's `dot` on the generated file to create an svg file as well")
+            help="Call GraphViz's `dot` to create <OUTPUT_BASE>.svg file as well")
         arg('--png', default=False, action='store_true',
-            help="Call GraphViz's `dot` on the generated file to create an png file as well")
+            help="Call GraphViz's `dot` to create an <OUTPUT_BASE>.png file as well")
         arg('--view', default=False, action='store_true',
             help="Open web browser with the generated SVG file (implies --svg)")
+        arg('--all-edges', default=False, action='store_true',
+            help="Show all edges, not just for the most recent beads for each kind")
 
     def run(self, args):
-        env = args.get_env()
-        boxes = env.get_boxes()
+        base_file = args.output_base
 
-        all_beads = list(UnionBox(boxes).all_beads())
-        weaver = web.Weaver(all_beads)
-        dot_str = weaver.weave()
+        if args.from_csv:
+            with open(f'{args.from_csv}_beads.csv') as beads_csv_stream:
+                with open(f'{args.from_csv}_inputs.csv') as inputs_csv_stream:
+                    all_beads = web.read_beads(beads_csv_stream, inputs_csv_stream)
+        else:
+            env = args.get_env()
+            boxes = env.get_boxes()
+            columns = int(os.environ.get('COLUMNS', 80))
+            all_beads = []
+            load_start = time.perf_counter()
+            # This UnionBox.all_beads is the meat, the rest is just user feedback for big/slow
+            # environments
+            for n, bead in enumerate(UnionBox(boxes).all_beads()):
+                load_end = time.perf_counter()
 
-        dot_file = args.output
+                msg = f"\rLoaded bead {n+1} ({bead.archive_filename})"[:columns]
+                msg = msg + ' ' * (columns - len(msg))
+                print(msg, end="", flush=True)
+                if load_end - load_start > 1:
+                    print(f"\nLoading took {load_end - load_start} seconds")
+                all_beads.append(bead)
+                load_start = time.perf_counter()
+            print("\r" + " " * columns + "\r", end="")
+            print(f"Loaded {n + 1} beads")
+
+        if args.csv:
+            with open(f'{base_file}_beads.csv', 'w') as beads_csv_stream:
+                with open(f'{base_file}_inputs.csv', 'w') as inputs_csv_stream:
+                    web.write_beads(all_beads, beads_csv_stream, inputs_csv_stream)
+
+        dot_weaver = web.Weaver(all_beads)
+        dot_str = dot_weaver.weave(args.all_edges)
+
+        dot_file = f'{base_file}.dot'
+        print(f"Creating {dot_file}")
         tech.fs.write_file(dot_file, dot_str)
 
         if args.png:
-            png_file = f'{dot_file}.png'
+            png_file = f'{base_file}.png'
+            print(f"Creating {png_file}")
             graphviz_dot(dot_file, png_file)
 
         if args.svg or args.view:
-            svg_file = f'{dot_file}.svg'
+            svg_file = f'{base_file}.svg'
+            print(f"Creating {svg_file}")
             graphviz_dot(dot_file, svg_file)
             if args.view:
+                print(f"Viewing {svg_file}")
                 webbrowser.open(svg_file)
 
 

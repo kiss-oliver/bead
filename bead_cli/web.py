@@ -271,7 +271,7 @@ class Weaver:
         for content_id in self.content_ids_to_plot:
             yield self.content_id_to_bead[content_id]
 
-    def weave(self):
+    def weave(self, do_all_edges):
         """
         Generate GraphViz .dot file describing the connections between beads
         and their up-to-dateness.
@@ -279,7 +279,7 @@ class Weaver:
         """
         return DOT_GRAPH_TEMPLATE.format(
             bead_kinds=self.format_bead_kinds(),
-            bead_inputs=self.format_inputs()
+            bead_inputs=self.format_inputs(do_all_edges)
         )
 
     def format_bead_kinds(self):
@@ -299,7 +299,7 @@ class Weaver:
 
         def fragments():
             yield node_kind(kind)
-            yield '[shape="plaintext" color="grey"'
+            yield '[shape="plaintext" color="grey" '
             yield 'label=<<TABLE CELLBORDER="1">\n'
             name = beads[0].name + 'X'
             # + 'X' forces name difference for first bead
@@ -323,9 +323,12 @@ class Weaver:
             yield ']'
         return ''.join(fragments())
 
-    def format_inputs(self):
+    def format_inputs(self, do_all_edges):
         def edges_to_plot():
             for bead in self.beads_to_plot:
+                if not do_all_edges and (
+                        bead.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE)):
+                    continue
                 for input in bead.inputs:
                     if input.content_id in self.content_ids_to_plot:
                         input_bead = self.content_id_to_bead[input.content_id]
@@ -348,7 +351,7 @@ digraph {{
   edge [headport="w" tailport="e"]
   edge [weight="100"]
   // edge [labelfloat="true"]
-  edge [decorate="true"]
+  // edge [decorate="true"]
 {bead_inputs}
 }}
 """
@@ -384,5 +387,5 @@ def dot_edge(bead_src, bead_dest, name):
         + '['
         + f'color="{bead_color(bead_src)}" '
         + 'fontsize="10" '
-        + f'headlabel="{html.escape(name)}"'
+        + f'label="{html.escape(name)}"'
         + ']')

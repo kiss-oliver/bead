@@ -95,7 +95,7 @@ class Test_Weaver(TestCase):
 
     def test_weave(self, weaver):
         # test no exception
-        web = weaver.weave()
+        web = weaver.weave(do_all_edges=True)
         assert web.startswith('digraph {\n'), web
 
     # helper - in context of Weaver
