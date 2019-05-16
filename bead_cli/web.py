@@ -326,13 +326,14 @@ class Weaver:
     def format_inputs(self, do_all_edges):
         def edges_to_plot():
             for bead in self.beads_to_plot:
-                if not do_all_edges and (
-                        bead.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE)):
+                is_auxiliary_edge = bead.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE)
+                if is_auxiliary_edge and not do_all_edges:
                     continue
+
                 for input in bead.inputs:
                     if input.content_id in self.content_ids_to_plot:
                         input_bead = self.content_id_to_bead[input.content_id]
-                        yield dot_edge(input_bead, bead, input.name)
+                        yield dot_edge(input_bead, bead, input.name, is_auxiliary_edge)
         return '\n'.join(edges_to_plot())
 
 
@@ -349,9 +350,9 @@ digraph {{
 
   // edges: input links
   edge [headport="w" tailport="e"]
-  edge [weight="100"]
+  // edge [weight="100"]
   // edge [labelfloat="true"]
-  // edge [decorate="true"]
+  edge [decorate="true"]
 {bead_inputs}
 }}
 """
@@ -378,14 +379,52 @@ def port(bead, port_type):
     return f"{port_type}_{bead.content_id}"
 
 
-def dot_edge(bead_src, bead_dest, name):
-    # TODO: emphasize incoming edges to most recent beads
+_unique_node_counter = 0
+
+
+def get_unique_node_id():
+    """
+    Generate unique node ids.
+    """
+    global _unique_node_counter
+    _unique_node_counter += 1
+    return f"uniq_{_unique_node_counter}"
+
+
+def dot_edge(bead_src, bead_dest, name, is_auxiliary_edge):
     src = f'{node_kind(bead_src.kind)}:{port(bead_src, "out")}:e'
     dest = f'{node_kind(bead_dest.kind)}:{port(bead_dest, "in")}:w'
-    return (
-        f'  {src} -> {dest} '
-        + '['
-        + f'color="{bead_color(bead_src)}" '
-        + 'fontsize="10" '
-        + f'label="{html.escape(name)}"'
-        + ']')
+    before_label = [src]
+    after_label = [dest]
+    silent_helper_nodes = []
+    color = bead_color(bead_src) if not is_auxiliary_edge else 'grey90'
+    label = html.escape(name)
+
+    def add_before_label():
+        unique_node = get_unique_node_id()
+        before_label.append(unique_node)
+        silent_helper_nodes.append(unique_node)
+
+    def add_after_label():
+        unique_node = get_unique_node_id()
+        after_label.insert(0, unique_node)
+        silent_helper_nodes.append(unique_node)
+
+    for _ in range(4):
+        add_before_label()
+
+    def long_path(nodes):
+        if len(nodes) > 1:
+            # return ' -> '.join(nodes) + f'[color={color} headport="w" tailport="e"];'
+            return ' -> '.join(nodes) + f'[color={color}];'
+        return ''
+
+    return ''.join(
+        [f' {node}[shape=plain label=""];' for node in silent_helper_nodes]
+        + [long_path(before_label)]
+        + [
+            f'  {before_label[-1]} -> {after_label[0]} ',
+            f'[fontcolor="{color}" color="{color}" fontsize="10" label="{label}" weight="100"]',
+            ';'
+        ]
+        + [long_path(after_label)])
