@@ -128,7 +128,7 @@ with progress(f'Creating unix tool ({UNIX_TOOL})'):
     make_tool(UNIX_TOOL, UNIX_RUNNER)
     make_executable(UNIX_TOOL)
 
-with progress('Creating windows tool ({WIN_TOOL})'):
+with progress(f'Creating windows tool ({WIN_TOOL})'):
     WINDOWS_RUNNER = b'\r\n'.join((
         b'@echo off',
         b'python3.exe "%~f0" %*',
