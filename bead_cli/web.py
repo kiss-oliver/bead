@@ -69,11 +69,11 @@ class BeadState(Enum):
     PHANTOM = 0,
     # (red) unknown bead
     SUPERSEDED = 1,
-    # (grey) not latest of its kind
+    # (grey) not latest in cluster
     UP_TO_DATE = 2,
     # (green) latest and all its inputs are also referencing an UP_TO_DATE
     OUT_OF_DATE = 3,
-    # (yellow) latest of its kind, but needs updating, because of newer input version
+    # (yellow) latest in cluster, but needs updating, because of newer input version
 
 
 class Bead:
@@ -173,25 +173,25 @@ def toposort(content_id_to_bead):
     return content_id_order
 
 
-def cluster_by_kind(beads):
+def cluster_beads(beads):
     """
-    Sort beads into ordered lists by their :kind.
+    Sort beads into ordered lists by their :name.
 
     The lists are ordered descending by bead.timestamp (first one most recent)
     """
-    beads_by_kind = defaultdict(list)
+    bead_clusters = defaultdict(list)
     for bead in beads:
-        beads_by_kind[bead.kind].append(bead)
-    beads_by_kind = dict(beads_by_kind)
+        bead_clusters[bead.name].append(bead)
+    bead_clusters = dict(bead_clusters)
 
-    def time_sorted_cluster(kind):
+    def time_sorted_cluster(cluster_id):
         return sorted(
-            beads_by_kind[kind],
+            bead_clusters[cluster_id],
             key=(lambda bead: bead.timestamp),
             reverse=True)
-    for kind in beads_by_kind.keys():
-        beads_by_kind[kind] = time_sorted_cluster(kind)
-    return beads_by_kind
+    for cluster_id in bead_clusters.keys():
+        bead_clusters[cluster_id] = time_sorted_cluster(cluster_id)
+    return bead_clusters
 
 
 class Weaver:
@@ -204,6 +204,9 @@ class Weaver:
     """
     def __init__(self, beads):
         self.all_beads = list(beads)
+        # NOTE: this needs further work if proper branch-references are needed
+        # especially if same bead is present under different names,
+        # content_id_to_bead would not be enough
         self.content_id_to_bead = {
             bead.content_id: Bead.from_bead(bead)
             for bead in self.all_beads}
@@ -250,14 +253,14 @@ class Weaver:
         """
         Assign states to beads.
         """
-        # time ordered (desc!) clusters by bead kind
-        beads_by_kind = cluster_by_kind(self.all_beads)
-        # assign UP_TO_DATE for latest members of each kind cluster
-        for kind in beads_by_kind:
-            cluster_head = beads_by_kind[kind][0]
+        # time ordered (desc!) clusters
+        bead_clusters = cluster_beads(self.all_beads)
+        # assign UP_TO_DATE for latest members of each cluster
+        for cluster_id in bead_clusters:
+            cluster_head = bead_clusters[cluster_id][0]
             cluster_head.set_state(BeadState.UP_TO_DATE)
 
-        # downgrade latest members of each kind cluster, if out of date
+        # downgrade latest members of each cluster, if out of date
         for bead in self.all_beads:
             if bead.state == BeadState.UP_TO_DATE:
                 out_of_date = any(
@@ -275,43 +278,35 @@ class Weaver:
         """
         Generate GraphViz .dot file describing the connections between beads
         and their up-to-dateness.
-
         """
         return DOT_GRAPH_TEMPLATE.format(
-            bead_kinds=self.format_bead_kinds(),
-            bead_inputs=self.format_inputs(do_all_edges)
-        )
+            bead_clusters=self.format_bead_clusters(),
+            bead_inputs=self.format_inputs(do_all_edges))
 
-    def format_bead_kinds(self):
-        beads_by_kind = cluster_by_kind(self.beads_to_plot)
+    def format_bead_clusters(self):
+        bead_clusters = cluster_beads(self.beads_to_plot)
         return (
             '  \n'.join(
                 self.format_cluster(
-                    beads_by_kind[kind]) for kind in beads_by_kind))
+                    bead_clusters[cluster_id]) for cluster_id in bead_clusters))
 
     def format_cluster(self, beads):
         # beads are sorted in descending order by timestamp
         assert beads
-        kinds = {bead.kind for bead in beads}
-        assert len(kinds) == 1
-
-        kind = kinds.pop()
+        names = {bead.name for bead in beads}
+        assert len(names) == 1
 
         def fragments():
-            yield node_kind(kind)
+            yield node_cluster(beads[0])
             yield '[shape="plaintext" color="grey" '
             yield 'label=<<TABLE CELLBORDER="1">\n'
-            name = beads[0].name + 'X'
-            # + 'X' forces name difference for first bead
+            yield '    <TR>'
+            yield '<TD BORDER="0"></TD>'
+            yield '<TD BORDER="0">'
+            yield f'<B><I>{html.escape(beads[0].name)}</I></B>'
+            yield '</TD>'
+            yield '</TR>\n'
             for bead in beads:
-                if bead.name != name:
-                    name = bead.name
-                    yield '    <TR>'
-                    yield '<TD BORDER="0"></TD>'
-                    yield '<TD BORDER="0">'
-                    yield f'<B><I>{html.escape(name)}</I></B>'
-                    yield '</TD>'
-                    yield '</TR>\n'
                 color = f'BGCOLOR="{bead_color(bead)}:none" style="radial"'
                 yield '    <TR>'
                 yield f'<TD PORT="{port(bead, "in")}" {color}></TD>'
@@ -345,8 +340,8 @@ digraph {{
   pack="true"
   packmode="node"
 
-  // node definitions clustered by bead.kind
-{bead_kinds}
+  // clustered node definitions
+{bead_clusters}
 
   // edges: input links
   edge [headport="w" tailport="e"]
@@ -358,8 +353,9 @@ digraph {{
 """
 
 
-def node_kind(kind):
-    return f"kind_{kind}".replace('-', '_')
+def node_cluster(bead):
+    id = bead.name.replace('"', '\\"')
+    return f'"cluster_{id}"'
 
 
 BEAD_COLOR = {
@@ -392,8 +388,8 @@ def get_unique_node_id():
 
 
 def dot_edge(bead_src, bead_dest, name, is_auxiliary_edge):
-    src = f'{node_kind(bead_src.kind)}:{port(bead_src, "out")}:e'
-    dest = f'{node_kind(bead_dest.kind)}:{port(bead_dest, "in")}:w'
+    src = f'{node_cluster(bead_src)}:{port(bead_src, "out")}:e'
+    dest = f'{node_cluster(bead_dest)}:{port(bead_dest, "in")}:w'
     before_label = [src]
     after_label = [dest]
     silent_helper_nodes = []

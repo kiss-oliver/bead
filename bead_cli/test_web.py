@@ -99,21 +99,18 @@ class Test_Weaver(TestCase):
         assert web.startswith('digraph {\n'), web
 
     # helper - in context of Weaver
-    def test_cluster_by_kind(self, weaver):
-        beads_by_kind = m.cluster_by_kind(weaver.all_beads)
-        kinds = {
-            "kind_ood1", "kind_ood2", "kind_ood3",
-            "kind_root_1", "kind_root_2"}
-        self.assertEqual(kinds, set(beads_by_kind))
+    def test_cluster_beads(self, weaver):
+        bead_clusters = m.cluster_beads(weaver.all_beads)
+        names = {'root1', 'root2', 'ood1', 'ood2', 'ood3', 'phantom'}
+        self.assertEqual(names, set(bead_clusters))
 
-        def content_ids_by_kind(kind):
-            return [bead.content_id for bead in beads_by_kind[kind]]
+        def content_ids_by_name(name):
+            return [bead.content_id for bead in bead_clusters[name]]
 
         self.assertEqual(
             ["id_root1_utd", "id_root1_ood"],
-            content_ids_by_kind("kind_root_1"))
+            content_ids_by_name("root1"))
 
-        self.assertEqual(["id_ood1"], content_ids_by_kind("kind_ood1"))
+        self.assertEqual(["id_ood1"], content_ids_by_name("ood1"))
 
-        self.assertEqual(
-            ["id_ood2", "id_phantom"], content_ids_by_kind("kind_ood2"))
+        self.assertEqual(["id_ood2"], content_ids_by_name("ood2"))
