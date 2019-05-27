@@ -292,24 +292,7 @@ class CmdWeb(Command):
                     all_beads = web.read_beads(beads_csv_stream, inputs_csv_stream)
         else:
             env = args.get_env()
-            boxes = env.get_boxes()
-            columns = int(os.environ.get('COLUMNS', 80))
-            all_beads = []
-            load_start = time.perf_counter()
-            # This UnionBox.all_beads is the meat, the rest is just user feedback for big/slow
-            # environments
-            for n, bead in enumerate(UnionBox(boxes).all_beads()):
-                load_end = time.perf_counter()
-
-                msg = f"\rLoaded bead {n+1} ({bead.archive_filename})"[:columns]
-                msg = msg + ' ' * (columns - len(msg))
-                print(msg, end="", flush=True)
-                if load_end - load_start > 1:
-                    print(f"\nLoading took {load_end - load_start} seconds")
-                all_beads.append(bead)
-                load_start = time.perf_counter()
-            print("\r" + " " * columns + "\r", end="")
-            print(f"Loaded {n + 1} beads")
+            all_beads = load_all_beads(env.get_boxes())
 
         if args.to_csv:
             with open(f'{base_file}_beads.csv', 'w') as beads_csv_stream:
@@ -335,6 +318,27 @@ class CmdWeb(Command):
             if args.view:
                 print(f"Viewing {svg_file}")
                 webbrowser.open(svg_file)
+
+
+def load_all_beads(boxes):
+    columns = int(os.environ.get('COLUMNS', 80))
+    all_beads = []
+    load_start = time.perf_counter()
+    # This UnionBox.all_beads is the meat, the rest is just user feedback for big/slow
+    # environments
+    for n, bead in enumerate(UnionBox(boxes).all_beads()):
+        load_end = time.perf_counter()
+
+        msg = f"\rLoaded bead {n+1} ({bead.archive_filename})"[:columns]
+        msg = msg + ' ' * (columns - len(msg))
+        print(msg, end="", flush=True)
+        if load_end - load_start > 1:
+            print(f"\nLoading took {load_end - load_start} seconds")
+        all_beads.append(bead)
+        load_start = time.perf_counter()
+    print("\r" + " " * columns + "\r", end="")
+    print(f"Loaded {n + 1} beads")
+    return all_beads
 
 
 def graphviz_dot(dot_file, output_file):
