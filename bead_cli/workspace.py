@@ -280,8 +280,8 @@ class CmdWeb(Command):
             help="Call GraphViz's `dot` to create an <OUTPUT_BASE>.png file as well")
         arg('--view', default=False, action='store_true',
             help="Open web browser with the generated SVG file (implies --svg)")
-        arg('--all-edges', default=False, action='store_true',
-            help="Show all edges, not just for the most recent beads for each kind")
+        arg('--drop-edges', default=False, action='store_true',
+            help="Show only edges for the most recent beads for each kind")
 
     def run(self, args):
         base_file = args.output_base
@@ -300,7 +300,8 @@ class CmdWeb(Command):
                     web.write_beads(all_beads, beads_csv_stream, inputs_csv_stream)
 
         dot_weaver = web.Weaver(all_beads)
-        dot_str = dot_weaver.weave(args.all_edges)
+        do_all_edges = not args.drop_edges
+        dot_str = dot_weaver.weave(do_all_edges)
 
         dot_file = f'{base_file}.dot'
         print(f"Creating {dot_file}")
