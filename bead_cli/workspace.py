@@ -295,6 +295,7 @@ class CmdWeb(Command):
         else:
             env = args.get_env()
             all_beads = load_all_beads(env.get_boxes())
+        print(f"Loaded {len(all_beads)} beads")
 
         if args.to_csv:
             with open(f'{base_file}_beads.csv', 'w') as beads_csv_stream:
@@ -346,7 +347,6 @@ def load_all_beads(boxes):
         all_beads.append(bead)
         load_start = time.perf_counter()
     print("\r" + " " * columns + "\r", end="")
-    print(f"Loaded {n + 1} beads")
     return all_beads
 
 
