@@ -269,7 +269,7 @@ class CmdWeb(Command):
         arg('-o', '--output-base', default='web',
             help='File name base of generated files'
             + ' (e.g. dot file will be stored as <OUTPUT_BASE>.dot)')
-        arg('--csv', default=False, action='store_true',
+        arg('--to-csv', default=False, action='store_true',
             help='Write bead meta data to files:'
             + ' <OUTPUT_BASE>-beads.csv and <OUTPUT_BASE>-inputs.csv')
         arg('--from-csv', metavar='INPUT_BASE',
@@ -311,7 +311,7 @@ class CmdWeb(Command):
             print("\r" + " " * columns + "\r", end="")
             print(f"Loaded {n + 1} beads")
 
-        if args.csv:
+        if args.to_csv:
             with open(f'{base_file}_beads.csv', 'w') as beads_csv_stream:
                 with open(f'{base_file}_inputs.csv', 'w') as inputs_csv_stream:
                     web.write_beads(all_beads, beads_csv_stream, inputs_csv_stream)
