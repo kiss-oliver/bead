@@ -282,6 +282,8 @@ class CmdWeb(Command):
             help="Open web browser with the generated SVG file (implies --svg)")
         arg('--drop-edges', default=False, action='store_true',
             help="Show only edges for the most recent beads for each kind")
+        arg('names', metavar='NAME', nargs='*',
+            help="Restrict output graph to these names and their inputs (default: all beads)")
 
     def run(self, args):
         base_file = args.output_base
@@ -300,6 +302,12 @@ class CmdWeb(Command):
                     web.write_beads(all_beads, beads_csv_stream, inputs_csv_stream)
 
         dot_weaver = web.Weaver(all_beads)
+        if args.names:
+            beads_to_plot = {
+                bead.content_id
+                for bead in dot_weaver.all_beads
+                if bead.name in args.names}
+            dot_weaver.restrict_to(beads_to_plot)
         do_all_edges = not args.drop_edges
         dot_str = dot_weaver.weave(do_all_edges)
 
