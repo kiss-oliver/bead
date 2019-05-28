@@ -165,7 +165,11 @@ class Box(object):
             names                = sequence of names (kind matched)
         '''
         assert isinstance(timestamp, datetime)
-        paths = (self.directory / fname for fname in os.listdir(self.directory))
+        try:
+            filenames = os.listdir(self.directory)
+        except FileNotFoundError:
+            filenames = []
+        paths = (self.directory / fname for fname in filenames)
         beads = self._archives_from(paths)
         candidates = (bead for bead in beads if bead.kind == kind)
 
