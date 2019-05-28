@@ -270,6 +270,52 @@ class Test_load(TestCase):
         self._load_a_bead('bead2')
 
 
+class Test_branch(TestCase):
+
+    def test_default_value(self, workspace_with_input, input_nick):
+        self.assertEquals(input_nick, workspace_with_input.get_branch(input_nick))
+
+    def test_define(self, workspace_with_input, input_nick):
+        branch_name = f'{input_nick}2'
+        workspace_with_input.set_branch(input_nick, branch_name)
+        self.assertEquals(branch_name, workspace_with_input.get_branch(input_nick))
+
+    def test_update(self, workspace_with_input, input_nick):
+        workspace_with_input.set_branch(input_nick, f'{input_nick}2')
+        branch_name = f'{input_nick}42'
+        workspace_with_input.set_branch(input_nick, branch_name)
+        self.assertEquals(branch_name, workspace_with_input.get_branch(input_nick))
+
+    def test_independent_update(self, workspace_with_input, input_nick):
+        input_nick2 = f'{input_nick}2'
+        self.add_input(workspace_with_input, input_nick2)
+
+        workspace_with_input.set_branch(input_nick, f'{input_nick}1111')
+        workspace_with_input.set_branch(input_nick2, f'{input_nick2}222')
+        self.assertEquals(f'{input_nick}1111', workspace_with_input.get_branch(input_nick))
+        self.assertEquals(f'{input_nick2}222', workspace_with_input.get_branch(input_nick2))
+
+    # implementation
+
+    def workspace_dir(self):
+        return self.new_temp_dir()
+
+    def workspace(self, workspace_dir):
+        workspace = m.Workspace(workspace_dir)
+        workspace.create(A_KIND)
+        return workspace
+
+    def input_nick(self):
+        return 'input_nick'
+
+    def add_input(self, workspace, input_nick):
+        workspace.add_input(input_nick, A_KIND, 'content_id', timestamp())
+
+    def workspace_with_input(self, workspace, input_nick):
+        self.add_input(workspace, input_nick)
+        return workspace
+
+
 def unzip(archive_path, directory):
     ensure_directory(directory)
     with zipfile.ZipFile(archive_path) as z:

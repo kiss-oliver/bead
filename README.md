@@ -98,7 +98,7 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L91)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L146)
 - [TODO: update: assert there is no other argument](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/input.py#L111)
-- [TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L230)
+- [TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L234)
 - [XXX: cli parsing: revisit when python 2.x no longer supported](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/cmdparse.py#L80)
 - [XXX: directory itself might be a pattern - is it OK?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L135)
 - [XXX: introspect parameter names, default values, annotations?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/cmdparse.py#L115)

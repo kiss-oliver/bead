@@ -177,7 +177,9 @@ def print_inputs(env, workspace, verbose):
         print('Inputs:')
         for input in inputs:
             print('input/' + input.name)
-            print('\tFreeze time:', input.timestamp_str)
+            branch = workspace.get_branch(input.name)
+            print(f'\tBranch name: {branch}')
+            print(f'\tFreeze time: {input.timestamp_str}')
             print('\tName[s]:')
             has_name = False
             for box in boxes:
@@ -194,9 +196,11 @@ def print_inputs(env, workspace, verbose):
                     names.remove(best_guess)
                 for name in sorted(names):
                     print(f'\t [-r {box.name} {name}]')
+            if not has_name:
+                print('\t!!! Not found !!!')
             if verbose or not has_name:
-                print('\tBead kind:', input.kind)
-                print('\tContent id:', input.content_id)
+                print(f'\tBead kind:   {input.kind}')
+                print(f'\tContent id:  {input.content_id}')
 
         print('')
         unloaded = [

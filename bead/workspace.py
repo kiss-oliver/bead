@@ -20,12 +20,52 @@ fs = tech.fs
 META_VERSION = 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
 
 
+class PersistentVariable:
+    """
+    Persistence support for variables.
+    """
+
+    def __init__(self, path, ignore_errors=False):
+        self.path = path
+        self.ignore_errors = ignore_errors
+
+    def load(self):
+        try:
+            with open(self.path) as f:
+                return persistence.load(f)
+        except (OSError, persistence.ReadError):
+            if self.ignore_errors:
+                return {}
+            raise
+
+    def dump(self, value):
+        try:
+            with open(self.path, 'wt') as f:
+                persistence.dump(value, f)
+        except OSError:
+            if not self.ignore_errors:
+                raise
+
+    def delete(self):
+        try:
+            os.remove(self.path)
+        except OSError:
+            if not self.ignore_errors:
+                raise
+
+
 class Workspace(Bead):
 
     directory = None
 
     def __init__(self, directory):
         self.directory = fs.Path(os.path.abspath(directory))
+        self.input_map = PersistentVariable(
+            self.directory / layouts.Workspace.INPUT_MAP,
+            ignore_errors=True)
+        self._meta = PersistentVariable(
+            self.directory / layouts.Workspace.BEAD_META,
+            ignore_errors=False)
 
     @property
     def is_valid(self):
@@ -38,18 +78,12 @@ class Workspace(Bead):
                 os.path.isfile(dir / layouts.Workspace.BEAD_META)))
 
     @property
-    def meta_path(self):
-        return self.directory / layouts.Workspace.BEAD_META
-
-    @property
     def meta(self):
-        with open(self.meta_path) as f:
-            return persistence.load(f)
+        return self._meta.load()
 
     @meta.setter
     def meta(self, meta):
-        with open(self.meta_path, 'wt') as f:
-            return persistence.dump(meta, f)
+        self._meta.dump(meta)
 
     # Bead properties
     @property
@@ -152,6 +186,19 @@ class Workspace(Bead):
         m = self.meta
         del m[meta.INPUTS][input_nick]
         self.meta = m
+
+    def get_branch(self, input_nick):
+        '''Returns the name on which update works.
+        '''
+        input_map = self.input_map.load()
+        return input_map.get(input_nick, input_nick)
+
+    def set_branch(self, input_nick, branch_name):
+        '''Sets the name to be used for updates in the future.
+        '''
+        input_map = self.input_map.load()
+        input_map[input_nick] = branch_name
+        self.input_map.dump(input_map)
 
     def load(self, input_nick, bead):
         '''
