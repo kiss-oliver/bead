@@ -10,6 +10,7 @@ from testtools.matchers import FileContains
 from bead.workspace import Workspace
 from bead import layouts
 from bead import tech
+from bead.archive import Archive
 from .test_robot import Robot
 
 
@@ -51,7 +52,7 @@ class RobotAndBeads(object):
         box = self.box(robot)
         with robot.environment:
             TRACELOG('store', robot.cwd, TS1, 'to', box.location)
-            beads[bead_name] = box.store(Workspace('.'), TS1)
+            beads[bead_name] = Archive(box.store(Workspace('.'), TS1))
         robot.cd('..')
         robot.cli('nuke', bead_name)
         return bead_name
