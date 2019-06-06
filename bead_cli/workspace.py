@@ -110,8 +110,8 @@ class CmdSave(Command):
             box = env.get_box(box_name)
             if box is None:
                 die(f'Unknown box: {box_name}')
-        box.store(workspace, timestamp())
-        print('Successfully stored bead.')
+        location = box.store(workspace, timestamp())
+        print(f'Successfully stored bead at {location}.')
 
 
 DERIVE_FROM_BEAD_NAME = DefaultArgSentinel('derive one from bead name')

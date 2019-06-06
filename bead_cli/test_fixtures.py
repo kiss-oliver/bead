@@ -5,6 +5,8 @@ import os
 import warnings
 import zipfile
 
+from testtools.matchers import FileContains
+
 from bead.workspace import Workspace
 from bead import layouts
 from bead import tech
@@ -103,9 +105,23 @@ class RobotAndBeads(object):
         return bead_name
 
     def bead_with_history(self, robot, box):
+        """
+        NOTE: these beads are not added to `beads`, as they share the same name.
+        """
         return self._bead_with_history(
             robot, box, 'bead_with_history', 'KIND:bead_with_history')
 
     def bead_with_inputs(self, robot, beads, bead_a, bead_b):
         inputs = dict(input_a=bead_a, input_b=bead_b)
         return self._new_bead(robot, beads, 'bead_with_inputs', inputs)
+
+    def assert_loaded(self, robot, input_nick, readme_content):
+        """
+        Fail if an incorrect bead was loaded.
+
+        Test beads are assumed to have different README-s, so the test goes by the expected value
+        of the README.
+        """
+        self.assertThat(
+            robot.cwd / 'input' / input_nick / 'README',
+            FileContains(readme_content))

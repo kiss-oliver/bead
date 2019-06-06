@@ -1,5 +1,5 @@
 from bead.test import TestCase
-from testtools.matchers import FileContains, Not, Contains
+from testtools.matchers import Not, Contains
 
 import os
 from bead.workspace import Workspace
@@ -7,11 +7,6 @@ from . import test_fixtures as fixtures
 
 
 class Test_input_commands(TestCase, fixtures.RobotAndBeads):
-
-    def assert_loaded(self, robot, input_nick, bead_name):
-        self.assertThat(
-            robot.cwd / 'input' / input_nick / 'README',
-            FileContains(bead_name))
 
     # tests
     def test_basic_usage(self, robot, bead_with_history):
@@ -127,9 +122,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cd(bead_a)
         robot.cli('input', 'add', 'intelligence', bead_a)
         robot.cli('input', 'update', 'intelligence', hacked_bead)
-        self.assertThat(
-            robot.cwd / 'input/intelligence/README',
-            FileContains(bead_a))
+        self.assert_loaded(robot, 'intelligence', bead_a)
         self.assertThat(robot.stderr, Contains('WARNING'))
 
     def test_update_to_next_version(self, robot, bead_with_history):

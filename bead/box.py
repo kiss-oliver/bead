@@ -153,7 +153,7 @@ class Box(object):
         zipfilename = (
             self.directory / f'{workspace.name}_{timestamp}.zip')
         workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
-        return Archive(zipfilename)
+        return zipfilename
 
     def find_names(self, kind, content_id, timestamp):
         '''
