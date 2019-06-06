@@ -20,52 +20,12 @@ fs = tech.fs
 META_VERSION = 'aaa947a6-1f7a-11e6-ba3a-0021cc73492e'
 
 
-class PersistentVariable:
-    """
-    Persistence support for variables.
-    """
-
-    def __init__(self, path, ignore_errors=False):
-        self.path = path
-        self.ignore_errors = ignore_errors
-
-    def load(self):
-        try:
-            with open(self.path) as f:
-                return persistence.load(f)
-        except (OSError, persistence.ReadError):
-            if self.ignore_errors:
-                return {}
-            raise
-
-    def dump(self, value):
-        try:
-            with open(self.path, 'wt') as f:
-                persistence.dump(value, f)
-        except OSError:
-            if not self.ignore_errors:
-                raise
-
-    def delete(self):
-        try:
-            os.remove(self.path)
-        except OSError:
-            if not self.ignore_errors:
-                raise
-
-
 class Workspace(Bead):
 
     directory = None
 
     def __init__(self, directory):
         self.directory = fs.Path(os.path.abspath(directory))
-        self.input_map = PersistentVariable(
-            self.directory / layouts.Workspace.INPUT_MAP,
-            ignore_errors=True)
-        self._meta = PersistentVariable(
-            self.directory / layouts.Workspace.BEAD_META,
-            ignore_errors=False)
 
     @property
     def is_valid(self):
@@ -78,12 +38,16 @@ class Workspace(Bead):
                 os.path.isfile(dir / layouts.Workspace.BEAD_META)))
 
     @property
+    def _meta_filename(self):
+        return self.directory / layouts.Workspace.BEAD_META
+
+    @property
     def meta(self):
-        return self._meta.load()
+        return persistence.file_load(self._meta_filename)
 
     @meta.setter
     def meta(self, meta):
-        self._meta.dump(meta)
+        persistence.file_dump(meta, self._meta_filename)
 
     # Bead properties
     @property
@@ -187,18 +151,30 @@ class Workspace(Bead):
         del m[meta.INPUTS][input_nick]
         self.meta = m
 
+    @property
+    def _input_map_filename(self):
+        return self.directory / layouts.Workspace.INPUT_MAP
+
+    @property
+    def input_map(self):
+        try:
+            return persistence.file_load(self._input_map_filename)
+        except:
+            return {}
+
     def get_branch(self, input_nick):
-        '''Returns the name on which update works.
         '''
-        input_map = self.input_map.load()
-        return input_map.get(input_nick, input_nick)
+        Returns the name on which update works.
+        '''
+        return self.input_map.get(input_nick, input_nick)
 
     def set_branch(self, input_nick, branch_name):
-        '''Sets the name to be used for updates in the future.
         '''
-        input_map = self.input_map.load()
+        Sets the name to be used for updates in the future.
+        '''
+        input_map = self.input_map
         input_map[input_nick] = branch_name
-        self.input_map.dump(input_map)
+        persistence.file_dump(input_map, self._input_map_filename)
 
     def load(self, input_nick, bead):
         '''
@@ -335,9 +311,6 @@ class _ZipCreator(object):
                 for input in workspace.inputs},
             meta.FREEZE_NAME: workspace.name}
 
-        self.add_string_content(
-            layouts.Archive.BEAD_META,
-            persistence.dumps(bead_meta))
-        self.add_string_content(
-            layouts.Archive.MANIFEST,
-            persistence.dumps(self.hashes))
+        self.add_string_content(layouts.Archive.BEAD_META, persistence.dumps(bead_meta))
+        self.add_string_content(layouts.Archive.MANIFEST, persistence.dumps(self.hashes))
+        persistence.zip_dump(workspace.input_map, self.zipfile, layouts.Archive.INPUT_MAP)

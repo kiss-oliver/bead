@@ -1,6 +1,5 @@
 from copy import deepcopy
 import functools
-import io
 import os
 import re
 import shutil
@@ -140,8 +139,7 @@ class Archive(UnpackableBead):
     @property
     @__zipfile_user
     def manifest(self):
-        with self.zipfile.open(layouts.Archive.MANIFEST) as f:
-            return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
+        return persistence.zip_load(self.zipfile, layouts.Archive.MANIFEST)
 
     @property
     def content_id(self):
@@ -173,6 +171,14 @@ class Archive(UnpackableBead):
         return deepcopy(self._meta)
 
     @property
+    @__zipfile_user
+    def input_map(self):
+        try:
+            return persistence.zip_load(self.zipfile, layouts.Archive.INPUT_MAP)
+        except:
+            return {}
+
+    @property
     def inputs(self):
         return tuple(meta.parse_inputs(self.meta))
 
@@ -180,11 +186,7 @@ class Archive(UnpackableBead):
     @__zipfile_user
     def _load_meta(self):
         try:
-            with self.zipfile.open(layouts.Archive.BEAD_META) as f:
-                try:
-                    return persistence.load(io.TextIOWrapper(f, encoding='utf-8'))
-                except persistence.ReadError:
-                    raise InvalidArchive(self.archive_filename)
+            return persistence.zip_load(self.zipfile, layouts.Archive.BEAD_META)
         except:
             raise InvalidArchive(self.archive_filename)
 
