@@ -162,6 +162,10 @@ class Workspace(Bead):
         except:
             return {}
 
+    @input_map.setter
+    def input_map(self, input_map):
+        persistence.file_dump(input_map, self._input_map_filename)
+
     def get_branch(self, input_nick):
         '''
         Returns the name on which update works.
@@ -174,7 +178,7 @@ class Workspace(Bead):
         '''
         input_map = self.input_map
         input_map[input_nick] = branch_name
-        persistence.file_dump(input_map, self._input_map_filename)
+        self.input_map = input_map
 
     def load(self, input_nick, bead):
         '''
