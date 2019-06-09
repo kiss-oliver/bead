@@ -217,6 +217,7 @@ def _load(env, workspace, input):
 def _check_load_with_feedback(workspace, input_nick, bead):
     is_valid = verify_with_feedback(bead)
     if is_valid:
+        workspace.set_branch(input_nick, bead.name)
         if workspace.is_loaded(input_nick):
             print(f'Removing current data from {input_nick}')
             workspace.unload(input_nick)
