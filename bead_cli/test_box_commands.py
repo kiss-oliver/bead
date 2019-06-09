@@ -43,8 +43,8 @@ class Test_shared_box(TestCase):
         bob.cli('input', 'add', 'alicebead1', bead)
         bob.cli('input', 'add', 'alicebead2', bead)
 
-        alice.cli('develop', bead, 'alicebead')
-        alice.cd('alicebead')
+        alice.cli('develop', bead)
+        alice.cd('bead')
         alice.write_file('output/datafile', '''Alice's new data''')
         alice.cli('save')
 

@@ -47,7 +47,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         robot.cli('status')
 
         self.assertThat(robot.stdout, Contains(bead_with_inputs))
-        self.assertThat(robot.stdout, Not(Contains(bead_a)))
+        self.assertThat(robot.stdout, Contains('!!! Not found !!!'))
 
         bead_a = beads[bead_a]
         self.assertThat(robot.stdout, Contains(bead_with_inputs))
@@ -63,7 +63,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         robot.cli('status', '--verbose')
 
         self.assertThat(robot.stdout, Contains(bead_with_inputs))
-        self.assertThat(robot.stdout, Not(Contains(bead_a)))
+        self.assertThat(robot.stdout, Contains('!!! Not found !!!'))
 
         bead_a = beads[bead_a]
         bead_with_inputs = beads[bead_with_inputs]
