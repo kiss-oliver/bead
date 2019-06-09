@@ -10,7 +10,7 @@ from . import test_fixtures as fixtures
 class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
 
     # tests
-    def test(self, robot, bead_a, bead_with_history, box):
+    def test_basic_support(self, robot, bead_a, bead_with_history, box):
         """
         update by name not by kind
         """
@@ -63,7 +63,7 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         # `update` also sets the branch name
         copy(fixtures.TS1, branch3)
         cli('input', 'update', 'input2', branch3)
-        self.assert_loaded(robot, 'input1', fixtures.TS1)
+        self.assert_loaded(robot, 'input2', fixtures.TS1)
         copy(fixtures.TS4, branch3)
         cli('input', 'update', 'input2')
         self.assert_loaded(robot, 'input1', fixtures.TS4)
