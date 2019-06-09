@@ -230,3 +230,4 @@ class Archive(UnpackableBead):
 
     def unpack_meta_to(self, workspace):
         workspace.meta = self.meta
+        workspace.input_map = self.input_map
