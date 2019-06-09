@@ -103,64 +103,72 @@ class CmdUpdate(Command):
         arg(OPTIONAL_ENV)
 
     def run(self, args):
+        if args.input_nick is ALL_INPUTS:
+            self.update_all_inputs(args)
+        else:
+            self.update_one_input(args)
+
+    def update_all_inputs(self, args):
+        assert args.bead_ref_base is SAME_BEAD_NEWEST_VERSION
+        assert not args.bead_offset, "--next, --prev can not be specified when updating all inputs"
+        workspace = args.workspace
+        env = args.get_env()
+        unionbox = UnionBox(env.get_boxes())
+        for input in workspace.inputs:
+            branch_name = workspace.get_branch(input.name)
+            try:
+                bead = unionbox.get_at(
+                    check_type=bead_spec.BEAD_NAME,
+                    check_param=branch_name,
+                    time=args.bead_time)
+            except LookupError:
+                if workspace.is_loaded(input.name):
+                    print(
+                        f'Skipping update of {input.name}:'
+                        + f' no other candidate found ({branch_name}@{input.timestamp})')
+                else:
+                    warning(f'Could not find bead for {input.name} with name {branch_name}')
+            else:
+                _update_input(workspace, input, bead)
+        print('All inputs are up to date.')
+
+    def update_one_input(self, args):
         input_nick = args.input_nick
         bead_ref_base = args.bead_ref_base
         workspace = args.workspace
         env = args.get_env()
-        if input_nick is ALL_INPUTS:
-            # TODO: update: assert there is no other argument
-            unionbox = UnionBox(env.get_boxes())
-            for input in workspace.inputs:
-                try:
-                    bead = unionbox.get_at(
-                        check_type=bead_spec.BEAD_NAME,
-                        check_param=workspace.get_branch(input.name),
-                        time=args.bead_time)
-                except LookupError:
-                    if workspace.is_loaded(input.name):
-                        print(
-                            f'Skipping update of {input.name}:'
-                            + f' no other candidate found ({input.timestamp})')
-                    else:
-                        warning(f'Can not find bead for {input.name}')
-                else:
-                    _update_input(workspace, input, bead)
-            print('All inputs are up to date.')
-        else:
-            input = workspace.get_input(input_nick)
-            if bead_ref_base is SAME_BEAD_NEWEST_VERSION:
+        input = workspace.get_input(input_nick)
+        if bead_ref_base is SAME_BEAD_NEWEST_VERSION:
+            def get_context(time):
                 unionbox = UnionBox(env.get_boxes())
                 branch_name = workspace.get_branch(input.name)
-                if args.bead_offset:
-                    # handle --prev --next --time
-                    assert args.bead_time == TIME_LATEST
-                    try:
-                        context = unionbox.get_context(
-                            check_type=bead_spec.BEAD_NAME,
-                            check_param=branch_name,
-                            time=input.timestamp)
-                    except LookupError:
-                        die(f'Could not find bead for {input.name} with {branch_name}')
-                    if args.bead_offset == 1:
-                        bead = context.next
-                    else:
-                        bead = context.prev
+                try:
+                    return unionbox.get_context(
+                        check_type=bead_spec.BEAD_NAME,
+                        check_param=branch_name,
+                        time=time)
+                except LookupError:
+                    die(f'Could not find bead for {input.name} with name {branch_name}')
+
+            if args.bead_offset:
+                # handle --prev --next
+                assert args.bead_time == TIME_LATEST
+                context = get_context(input.timestamp)
+                if args.bead_offset == 1:
+                    bead = context.next
                 else:
-                    try:
-                        bead = unionbox.get_at(
-                            check_type=bead_spec.BEAD_NAME,
-                            check_param=branch_name,
-                            time=args.bead_time)
-                    except LookupError:
-                        die(f'Could not find bead for {input.name} with {branch_name}')
+                    bead = context.prev
             else:
-                # normal path - same as input add, develop
-                assert args.bead_offset == 0
-                bead = resolve_bead(env, bead_ref_base, args.bead_time)
-            if bead:
-                _update_input(workspace, input, bead)
-            else:
-                die('Can not find matching bead')
+                # --time
+                bead = get_context(args.bead_time).best
+        else:
+            # path or new bead by name - same as input add, develop
+            assert args.bead_offset == 0
+            bead = resolve_bead(env, bead_ref_base, args.bead_time)
+        if bead:
+            _update_input(workspace, input, bead)
+        else:
+            die('Can not find matching bead')
 
 
 def _update_input(workspace, input, bead):
