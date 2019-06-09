@@ -125,7 +125,7 @@ def resolve_bead(env, bead_ref_base, time):
     # not a file - try box search
     unionbox = bead_box.UnionBox(env.get_boxes())
 
-    return unionbox.get_at(bead_spec.BEAD_NAME_GLOB, bead_ref_base, time)
+    return unionbox.get_at(bead_spec.BEAD_NAME, bead_ref_base, time)
 
 
 def verify_with_feedback(archive):

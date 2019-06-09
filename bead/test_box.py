@@ -52,7 +52,7 @@ class Test_box_with_beads(TestCase):
         self.assertSequenceEqual((), names)
 
     def test_find_with_uppercase_name(self, box, timestamp):
-        matches = box.get_context(bead_spec.BEAD_NAME_GLOB, 'BEAD3', timestamp)
+        matches = box.get_context(bead_spec.BEAD_NAME, 'BEAD3', timestamp)
         self.assertEquals('BEAD3', matches.best.name)
 
 

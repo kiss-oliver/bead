@@ -37,7 +37,7 @@ def INPUT_NICK(parser):
 
 
 # bead_ref
-SAME_KIND_NEWEST_VERSION = DefaultArgSentinel('same bead, newest version')
+SAME_BEAD_NEWEST_VERSION = DefaultArgSentinel('same bead, newest version')
 USE_INPUT_NICK = DefaultArgSentinel(f'use {arg_metavar.INPUT_NICK}')
 
 
@@ -96,7 +96,7 @@ class CmdUpdate(Command):
 
     def declare(self, arg):
         arg(OPTIONAL_INPUT_NICK)
-        arg(BEAD_REF_BASE_defaulting_to(SAME_KIND_NEWEST_VERSION))
+        arg(BEAD_REF_BASE_defaulting_to(SAME_BEAD_NEWEST_VERSION))
         arg(BEAD_TIME)
         arg(BEAD_OFFSET)
         arg(OPTIONAL_WORKSPACE)
@@ -112,7 +112,10 @@ class CmdUpdate(Command):
             unionbox = UnionBox(env.get_boxes())
             for input in workspace.inputs:
                 try:
-                    bead = unionbox.get_at(bead_spec.KIND, input.kind, args.bead_time)
+                    bead = unionbox.get_at(
+                        check_type=bead_spec.BEAD_NAME,
+                        check_param=workspace.get_branch(input.name),
+                        time=args.bead_time)
                 except LookupError:
                     if workspace.is_loaded(input.name):
                         print(
@@ -125,18 +128,31 @@ class CmdUpdate(Command):
             print('All inputs are up to date.')
         else:
             input = workspace.get_input(input_nick)
-            if bead_ref_base is SAME_KIND_NEWEST_VERSION:
-                # handle --prev --next --time
+            if bead_ref_base is SAME_BEAD_NEWEST_VERSION:
                 unionbox = UnionBox(env.get_boxes())
+                branch_name = workspace.get_branch(input.name)
                 if args.bead_offset:
+                    # handle --prev --next --time
                     assert args.bead_time == TIME_LATEST
-                    context = unionbox.get_context(bead_spec.KIND, input.kind, input.timestamp)
+                    try:
+                        context = unionbox.get_context(
+                            check_type=bead_spec.BEAD_NAME,
+                            check_param=branch_name,
+                            time=input.timestamp)
+                    except LookupError:
+                        die(f'Could not find bead for {input.name} with {branch_name}')
                     if args.bead_offset == 1:
                         bead = context.next
                     else:
                         bead = context.prev
                 else:
-                    bead = unionbox.get_at(bead_spec.KIND, input.kind, args.bead_time)
+                    try:
+                        bead = unionbox.get_at(
+                            check_type=bead_spec.BEAD_NAME,
+                            check_param=branch_name,
+                            time=args.bead_time)
+                    except LookupError:
+                        die(f'Could not find bead for {input.name} with {branch_name}')
             else:
                 # normal path - same as input add, develop
                 assert args.bead_offset == 0
@@ -155,6 +171,7 @@ def _update_input(workspace, input, bead):
             f'Skipping update of {input.name}:'
             + f' it is already at requested version ({input.timestamp})')
     else:
+        # XXX: refuse to work/notify user if kind changes
         _check_load_with_feedback(workspace, input.name, bead)
 
 

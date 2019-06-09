@@ -2,9 +2,8 @@
 We are responsible to store (and retrieve) beads.
 '''
 
-from fnmatch import fnmatch
 from datetime import datetime, timedelta
-from glob import iglob
+from glob import iglob, escape as glob_escape
 import os
 
 from .archive import Archive, InvalidArchive
@@ -15,14 +14,14 @@ Path = tech.fs.Path
 
 
 # private and specific to Box implementation, when Box gains more power,
-# it should change how it handles queries (e.g. using BEAD_NAME_GLOB, KIND,
+# it should change how it handles queries (e.g. using BEAD_NAME, KIND,
 # or CONTENT_ID directly through an index)
 
 
 def _make_checkers():
-    def has_name_glob(nameglob):
+    def has_name(name):
         def filter(bead):
-            return fnmatch(bead.name, nameglob)
+            return bead.name == name
         return filter
 
     def has_kind(kind):
@@ -36,9 +35,9 @@ def _make_checkers():
         return filter
 
     return {
-        bead_spec.BEAD_NAME_GLOB: has_name_glob,
-        bead_spec.KIND:           has_kind,
-        bead_spec.CONTENT_ID:     has_content_prefix,
+        bead_spec.BEAD_NAME:  has_name,
+        bead_spec.KIND:       has_kind,
+        bead_spec.CONTENT_ID: has_content_prefix,
     }
 
 
@@ -121,19 +120,16 @@ class Box(object):
         '''
         match = compile_conditions(conditions)
 
-        # FUTURE IMPLEMENTATIONS: check for kind & content_id
-        # they are good candidates for indexing
-        bead_name_globs = [
+        bead_names = [
             value
             for tag, value in conditions
-            if tag == bead_spec.BEAD_NAME_GLOB]
-        if bead_name_globs:
-            glob = bead_name_globs[0] + '*'
+            if tag == bead_spec.BEAD_NAME]
+        if bead_names:
+            glob = bead_names[0] + '*'
         else:
             glob = '*'
 
-        # XXX: directory itself might be a pattern - is it OK?
-        paths = iglob(self.directory / glob)
+        paths = iglob(Path(glob_escape(self.directory)) / glob)
         beads = self._archives_from(paths)
         candidates = (bead for bead in beads if match(bead))
         return candidates
