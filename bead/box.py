@@ -102,6 +102,7 @@ class Box(object):
         '''
         return Path(self.location)
 
+    # FIXME: eliminate / make it more generic under a new name (find_beads)
     def get_bead(self, kind, content_id):
         query = ((bead_spec.KIND, kind), (bead_spec.CONTENT_ID, content_id))
         for bead in self._beads(query):

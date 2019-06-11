@@ -212,6 +212,8 @@ def _load(env, workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
         try:
+            # FIXME: use workspace.get_branch(input.name) as first parameter
+            # - should speed up load significantly in general cases
             bead = env.get_bead(input.kind, input.content_id)
         except LookupError:
             warning(

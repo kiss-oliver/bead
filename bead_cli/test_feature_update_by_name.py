@@ -1,4 +1,4 @@
-from bead.test import TestCase
+from bead.test import TestCase, skip
 
 from testtools.matchers import Contains
 
@@ -68,6 +68,18 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         cli('input', 'update', 'input2')
         self.assert_loaded(robot, 'input1', fixtures.TS4)
         self.assert_loaded(robot, 'input2', fixtures.TS4)
+
+    @skip('unimplemented')
+    def test_load_does_not_find_renamed_bead(self):
+        # reason: speed
+        # reason: implementation simplicity
+        pass
+
+    @skip('unimplemented')
+    def test_locate(self):
+        # new command, that finds renamed beads by kind or by content_id
+        #  - to be used for fixing branch names
+        pass
 
 
 def _copy(box, bead_name, bead_timestamp, new_name):

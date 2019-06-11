@@ -71,7 +71,7 @@ class Environment:
     def is_known_box(self, name):
         return self.get_box(name) is not None
 
-    def get_bead(self, kind, content_id):
+    def get_bead(self, kind, content_id):  # FIXME: eliminate
         for box in self.get_boxes():
             try:
                 return box.get_bead(kind, content_id)
