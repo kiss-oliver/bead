@@ -88,7 +88,6 @@ Thank you for your interest!
 
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-by-name/ci)), text in this section and afterwards will be overwritten
 
-- [def get_bead(self, kind, content_id):  # FIXME: eliminate](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/environment.py#L74)
 - [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L67)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L53)
 - [FIXME: eliminate / make it more generic under a new name (find_beads)](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L105)

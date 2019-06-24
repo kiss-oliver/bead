@@ -214,7 +214,14 @@ def _load(env, workspace, input):
         try:
             # FIXME: use workspace.get_branch(input.name) as first parameter
             # - should speed up load significantly in general cases
-            bead = env.get_bead(input.kind, input.content_id)
+            def get_bead(kind, content_id):
+                for box in env.get_boxes():
+                    try:
+                        return box.get_bead(kind, content_id)
+                    except LookupError:
+                        pass
+                raise LookupError(f'Bead {kind}/{content_id} not found')
+            bead = get_bead(input.kind, input.content_id)
         except LookupError:
             warning(
                 f'Could not find archive for {input.name} - not loaded!')
