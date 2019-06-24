@@ -87,6 +87,9 @@ There {is,will be,was} more info about BEADs at
 
 
 class Box(object):
+    """
+    Store Beads.
+    """
     # TODO: Box: support user maintained directory hierarchy
 
     def __init__(self, name=None, location=None):
@@ -102,12 +105,10 @@ class Box(object):
         '''
         return Path(self.location)
 
-    # FIXME: eliminate / make it more generic under a new name (find_beads)
-    def get_bead(self, kind, content_id):
-        query = ((bead_spec.KIND, kind), (bead_spec.CONTENT_ID, content_id))
+    def find_bead(self, name, content_id):
+        query = ((bead_spec.BEAD_NAME, name), (bead_spec.CONTENT_ID, content_id))
         for bead in self._beads(query):
             return bead
-        raise LookupError(f'Bead {kind}/{content_id} not found')
 
     def all_beads(self):
         '''
@@ -121,12 +122,16 @@ class Box(object):
         '''
         match = compile_conditions(conditions)
 
-        bead_names = [
+        bead_names = set(
             value
             for tag, value in conditions
-            if tag == bead_spec.BEAD_NAME]
+            if tag == bead_spec.BEAD_NAME)
         if bead_names:
-            glob = bead_names[0] + '*'
+            if len(bead_names) > 1:
+                # easy path: names disagree
+                return []
+            # beadname_20170615T075813302092+0200.zip
+            glob = bead_names.pop() + '_????????T????????????[-+]????.zip'
         else:
             glob = '*'
 

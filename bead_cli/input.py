@@ -211,22 +211,17 @@ class CmdLoad(Command):
 def _load(env, workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
-        try:
-            # FIXME: use workspace.get_branch(input.name) as first parameter
-            # - should speed up load significantly in general cases
-            def get_bead(kind, content_id):
-                for box in env.get_boxes():
-                    try:
-                        return box.get_bead(kind, content_id)
-                    except LookupError:
-                        pass
-                raise LookupError(f'Bead {kind}/{content_id} not found')
-            bead = get_bead(input.kind, input.content_id)
-        except LookupError:
-            warning(
-                f'Could not find archive for {input.name} - not loaded!')
-        else:
-            _check_load_with_feedback(workspace, input.name, bead)
+        name = workspace.get_branch(input.name)
+        content_id = input.content_id
+        bead = None
+        for box in env.get_boxes():
+            bead = box.find_bead(name, content_id)
+            if bead:
+                break
+        if bead is None:
+            warning(f'Could not find archive named {name} for input {input.name} - not loaded!')
+            return
+        _check_load_with_feedback(workspace, input.name, bead)
     else:
         print(f'Skipping {input.name} (already loaded)')
 
