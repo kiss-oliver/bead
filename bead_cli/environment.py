@@ -15,7 +15,7 @@ class Environment:
     """
     I am responsible for storing/retrieving user specific data.
 
-    This is currently includes just the list of boxes and their definitions.
+    Currently includes just the list of boxes and their definitions.
     """
 
     def __init__(self, filename):
