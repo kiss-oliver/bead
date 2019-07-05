@@ -102,6 +102,5 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [XXX: cli parsing: revisit when python 2.x no longer supported](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/cmdparse.py#L80)
 - [XXX: introspect parameter names, default values, annotations?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/cmdparse.py#L115)
 - [XXX: list command: use tabulate?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/box.py#L51)
-- [XXX: refuse to work/notify user if kind changes](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/input.py#L182)
 - [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L160)
 - [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L90)

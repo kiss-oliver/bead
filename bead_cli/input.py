@@ -179,7 +179,8 @@ def _update_input(workspace, input, bead):
             f'Skipping update of {input.name}:'
             + f' it is already at requested version ({input.timestamp})')
     else:
-        # XXX: refuse to work/notify user if kind changes
+        if input.kind != bead.kind:
+            warning(f'Updating input "{input.name}" with a bead of different kind')
         _check_load_with_feedback(workspace, input.name, bead)
 
 
