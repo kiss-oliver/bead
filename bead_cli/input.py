@@ -124,10 +124,10 @@ class CmdUpdate(Command):
             except LookupError:
                 if workspace.is_loaded(input.name):
                     print(
-                        f'Skipping update of {input.name}:'
+                        f'Skipping update of "{input.name}":'
                         + f' no other candidate found ({branch_name}@{input.timestamp})')
                 else:
-                    warning(f'Could not find bead for {input.name} with name {branch_name}')
+                    warning(f'Could not find bead for "{input.name}" with name "{branch_name}"')
             else:
                 _update_input(workspace, input, bead)
         print('All inputs are up to date.')
@@ -148,7 +148,7 @@ class CmdUpdate(Command):
                         check_param=branch_name,
                         time=time)
                 except LookupError:
-                    die(f'Could not find bead for {input.name} with name {branch_name}')
+                    die(f'Could not find bead for "{input.name}" with name "{branch_name}"')
 
             if args.bead_offset:
                 # handle --prev --next
