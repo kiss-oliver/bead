@@ -18,32 +18,32 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
 
         cd = robot.cd
         cli = robot.cli
-        branch1 = 'branch1'
-        branch2 = 'branch2'
-        branch3 = 'branch3'
+        bead1 = 'bead1'
+        bead2 = 'bead2'
+        bead3 = 'bead3'
 
         def copy(timestamp, new_name):
             _copy(box, bead_with_history, timestamp, new_name)
 
         # verify, that `add`, `save`, `develop`, `update`, and `status` all work with input_map
 
-        copy(fixtures.TS1, branch1)
-        copy(fixtures.TS2, branch2)
+        copy(fixtures.TS1, bead1)
+        copy(fixtures.TS2, bead2)
 
         # setup - bead_a with 2 inputs
         cli('develop', bead_a)
         cd(bead_a)
-        cli('input', 'add', 'input1', branch1)
-        cli('input', 'add', 'input2', branch2)
+        cli('input', 'add', 'input1', bead1)
+        cli('input', 'add', 'input2', bead2)
         self.assert_loaded(robot, 'input1', fixtures.TS1)
         self.assert_loaded(robot, 'input2', fixtures.TS2)
 
         cli('status')
-        self.assertThat(robot.stdout, Contains(f'Branch name: {branch1}'))
-        self.assertThat(robot.stdout, Contains(f'Branch name: {branch2}'))
+        self.assertThat(robot.stdout, Contains(f'Bead name: {bead1}'))
+        self.assertThat(robot.stdout, Contains(f'Bead name: {bead2}'))
 
         # `update` works by name, not by kind
-        copy(fixtures.TS3, branch1)
+        copy(fixtures.TS3, bead1)
         cli('input', 'update')
         self.assert_loaded(robot, 'input1', fixtures.TS3)
         self.assert_loaded(robot, 'input2', fixtures.TS2)
@@ -54,17 +54,17 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         cli('nuke', bead_a)
         cli('develop', bead_a)
         cd(bead_a)
-        copy(fixtures.TS4, branch1)
-        copy(fixtures.TS3, branch2)
+        copy(fixtures.TS4, bead1)
+        copy(fixtures.TS3, bead2)
         cli('input', 'update')
         self.assert_loaded(robot, 'input1', fixtures.TS4)
         self.assert_loaded(robot, 'input2', fixtures.TS3)
 
-        # `update` also sets the branch name
-        copy(fixtures.TS1, branch3)
-        cli('input', 'update', 'input2', branch3)
+        # `update` also sets the bead name for input
+        copy(fixtures.TS1, bead3)
+        cli('input', 'update', 'input2', bead3)
         self.assert_loaded(robot, 'input2', fixtures.TS1)
-        copy(fixtures.TS4, branch3)
+        copy(fixtures.TS4, bead3)
         cli('input', 'update', 'input2')
         self.assert_loaded(robot, 'input1', fixtures.TS4)
         self.assert_loaded(robot, 'input2', fixtures.TS4)
@@ -78,7 +78,7 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
     @skip('unimplemented')
     def test_locate(self):
         # new command, that finds renamed beads by kind or by content_id
-        #  - to be used for fixing branch names
+        #  - to be used for fixing bead names in the input map
         pass
 
 

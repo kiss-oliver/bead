@@ -115,19 +115,19 @@ class CmdUpdate(Command):
         env = args.get_env()
         unionbox = UnionBox(env.get_boxes())
         for input in workspace.inputs:
-            branch_name = workspace.get_branch(input.name)
+            bead_name = workspace.get_bead_name(input.name)
             try:
                 bead = unionbox.get_at(
                     check_type=bead_spec.BEAD_NAME,
-                    check_param=branch_name,
+                    check_param=bead_name,
                     time=args.bead_time)
             except LookupError:
                 if workspace.is_loaded(input.name):
                     print(
                         f'Skipping update of "{input.name}":'
-                        + f' no other candidate found ({branch_name}@{input.timestamp})')
+                        + f' no other candidate found ({bead_name}@{input.timestamp})')
                 else:
-                    warning(f'Could not find bead for "{input.name}" with name "{branch_name}"')
+                    warning(f'Could not find bead for "{input.name}" with name "{bead_name}"')
             else:
                 _update_input(workspace, input, bead)
         print('All inputs are up to date.')
@@ -141,14 +141,14 @@ class CmdUpdate(Command):
         if bead_ref_base is SAME_BEAD_NEWEST_VERSION:
             def get_context(time):
                 unionbox = UnionBox(env.get_boxes())
-                branch_name = workspace.get_branch(input.name)
+                bead_name = workspace.get_bead_name(input.name)
                 try:
                     return unionbox.get_context(
                         check_type=bead_spec.BEAD_NAME,
-                        check_param=branch_name,
+                        check_param=bead_name,
                         time=time)
                 except LookupError:
-                    die(f'Could not find bead for "{input.name}" with name "{branch_name}"')
+                    die(f'Could not find bead for "{input.name}" with name "{bead_name}"')
 
             if args.bead_offset:
                 # handle --prev --next
@@ -212,7 +212,7 @@ class CmdLoad(Command):
 def _load(env, workspace, input):
     assert input is not None
     if not workspace.is_loaded(input.name):
-        name = workspace.get_branch(input.name)
+        name = workspace.get_bead_name(input.name)
         content_id = input.content_id
         bead = None
         for box in env.get_boxes():
@@ -230,7 +230,7 @@ def _load(env, workspace, input):
 def _check_load_with_feedback(workspace, input_nick, bead):
     is_valid = verify_with_feedback(bead)
     if is_valid:
-        workspace.set_branch(input_nick, bead.name)
+        workspace.set_bead_name(input_nick, bead.name)
         if workspace.is_loaded(input_nick):
             print(f'Removing current data from {input_nick}')
             workspace.unload(input_nick)

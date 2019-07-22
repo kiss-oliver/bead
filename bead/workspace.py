@@ -157,6 +157,9 @@ class Workspace(Bead):
 
     @property
     def input_map(self):
+        """
+        Map from local (bead specific) input nicks to real (more widely recognised) bead names
+        """
         try:
             return persistence.file_load(self._input_map_filename)
         except:
@@ -166,18 +169,18 @@ class Workspace(Bead):
     def input_map(self, input_map):
         persistence.file_dump(input_map, self._input_map_filename)
 
-    def get_branch(self, input_nick):
+    def get_bead_name(self, input_nick):
         '''
         Returns the name on which update works.
         '''
         return self.input_map.get(input_nick, input_nick)
 
-    def set_branch(self, input_nick, branch_name):
+    def set_bead_name(self, input_nick, bead_name):
         '''
         Sets the name to be used for updates in the future.
         '''
         input_map = self.input_map
-        input_map[input_nick] = branch_name
+        input_map[input_nick] = bead_name
         self.input_map = input_map
 
     def load(self, input_nick, bead):

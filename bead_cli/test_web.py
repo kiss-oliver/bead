@@ -18,27 +18,44 @@ id_ood3,phantom,kind_ood2,id_phantom,20140321T191922693711+0100
 """
 
 BEAD_CSV = """\
-name,kind,content_id,freeze_time
+box,name,kind,content_id,freeze_time
 
-ood2,kind_ood2,id_ood2,20190321T191922693711+0100
+box,ood2,kind_ood2,id_ood2,20190321T191922693711+0100
 
-ood1,kind_ood1,id_ood1,20190321T191922693711+0100
+box,ood1,kind_ood1,id_ood1,20190321T191922693711+0100
 
-root2,kind_root_2,id_root2_utd,20190321T191922693711+0100
+,root2,kind_root_2,id_root2_utd,20190321T191922693711+0100
 
-root1,kind_root_1,id_root1_utd,20190321T191922693711+0100
-root1,kind_root_1,id_root1_ood,20180321T191922693711+0100
+,root1,kind_root_1,id_root1_utd,20190321T191922693711+0100
+,root1,kind_root_1,id_root1_ood,20180321T191922693711+0100
 
-ood3,kind_ood3,id_ood3,20190321T191922693711+0100
+,ood3,kind_ood3,id_ood3,20190321T191922693711+0100
 """
+
+INPUT_MAPS_CSV = """\
+box,name,content_id,input,bead_name
+
+box,ood2,id_ood2,root2,root2
+box,ood2,id_ood2,ood1,ood1
+
+box,ood1,id_ood1,root,root1
+"""
+
+
+def test_beads():
+    return m.read_beads(
+        io.StringIO(BEAD_CSV),
+        io.StringIO(INPUT_CSV),
+        io.StringIO(INPUT_MAPS_CSV))
 
 
 class Test_bead_csv_io(TestCase):
     def test_written_data_is_unchanged(self):
-        beads = m.read_beads(io.StringIO(BEAD_CSV), io.StringIO(INPUT_CSV))
+        beads = test_beads()
         beads_csv_stream = io.StringIO()
         inputs_csv_stream = io.StringIO()
-        m.write_beads(beads, beads_csv_stream, inputs_csv_stream)
+        input_maps_csv_stream = io.StringIO()
+        m.write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream)
 
         def read_sorted(text_csv, fields):
             def sort_key(record):
@@ -55,12 +72,17 @@ class Test_bead_csv_io(TestCase):
         self.assertEqual(
             read_sorted(INPUT_CSV, sort_fields),
             read_sorted(inputs_csv_stream.getvalue(), sort_fields))
+        # written input_maps remain the same
+        sort_fields = ['box', 'name', 'content_id', 'input']
+        self.assertEqual(
+            read_sorted(INPUT_MAPS_CSV, sort_fields),
+            read_sorted(input_maps_csv_stream.getvalue(), sort_fields))
 
 
 class Test_Weaver(TestCase):
 
     def beads(self):
-        return m.read_beads(io.StringIO(BEAD_CSV), io.StringIO(INPUT_CSV))
+        return test_beads()
 
     def weaver(self, beads):
         return m.Weaver(beads)

@@ -25,30 +25,46 @@ def _read_inputs(csv_stream):
     return dict(inputs_by_owner)
 
 
-def read_beads(beads_csv_stream, inputs_csv_stream):
+def _read_input_maps(csv_stream):
+    # (box, name, content_id) -> [(input-nick, bead_name)]
+    input_maps_by_owner = defaultdict(dict)
+    for row in _read_csv(csv_stream):
+        owner = (row['box'], row['name'], row['content_id'])
+        input_maps_by_owner[owner][row['input']] = row['bead_name']
+    return input_maps_by_owner
+
+
+def read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     inputs_by_owner = _read_inputs(inputs_csv_stream)
+    input_maps_by_owner = _read_input_maps(input_maps_csv_stream)
     beads = [
         Bead(
             kind=rb['kind'],
             timestamp_str=rb['freeze_time'],
             content_id=rb['content_id'],
             inputs=inputs_by_owner.get(rb['content_id'], ()),
-            name=rb['name'])
+            input_map=input_maps_by_owner.get((rb['box'], rb['name'], rb['content_id'])),
+            name=rb['name'],
+            box_name=rb['box'])
         for rb in _read_csv(beads_csv_stream)]
     return beads
 
 
-def write_beads(beads, beads_csv_stream, inputs_csv_stream, write_headers=True):
+def write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     bead_writer = (
-        csv.DictWriter(beads_csv_stream, 'name kind content_id freeze_time'.split()))
+        csv.DictWriter(beads_csv_stream, 'box name kind content_id freeze_time'.split()))
     inputs_writer = (
         csv.DictWriter(inputs_csv_stream, 'owner name kind content_id freeze_time'.split()))
-    if write_headers:
-        bead_writer.writeheader()
-        inputs_writer.writeheader()
+    input_maps_writer = (
+        csv.DictWriter(input_maps_csv_stream, 'box name content_id input bead_name'.split()))
+
+    bead_writer.writeheader()
+    inputs_writer.writeheader()
+    input_maps_writer.writeheader()
     for bead in beads:
         bead_writer.writerow(
             {
+                'box': bead.box_name,
                 'name': bead.name,
                 'kind': bead.kind,
                 'content_id': bead.content_id,
@@ -62,6 +78,16 @@ def write_beads(beads, beads_csv_stream, inputs_csv_stream, write_headers=True):
                     'kind': input.kind,
                     'content_id': input.content_id,
                     'freeze_time': input.timestamp_str
+                })
+        input_map = bead.input_map
+        for input_nick in input_map:
+            input_maps_writer.writerow(
+                {
+                    'box': bead.box_name,
+                    'name': bead.name,
+                    'content_id': bead.content_id,
+                    'input': input_nick,
+                    'bead_name': input_map.get(input_nick)
                 })
 
 
@@ -84,9 +110,11 @@ class Bead:
     """
     def __init__(self, kind, timestamp_str, content_id,
                  inputs=(),
+                 input_map=None,
                  box_name=None,
                  name="UNKNOWN"):
         self.inputs = inputs
+        self.input_map = input_map if input_map else {}
         self.content_id = content_id
         self.box_name = box_name
         self.name = name
@@ -99,6 +127,7 @@ class Bead:
     def from_bead(cls, bead):
         return cls(
             inputs=tuple(bead.inputs),
+            input_map=bead.input_map,
             content_id=bead.content_id,
             kind=bead.kind,
             name=bead.name,
@@ -106,7 +135,7 @@ class Bead:
             box_name=bead.box_name)
 
     @classmethod
-    def from_input(cls, inputspec):
+    def from_input(cls, name, inputspec):
         """
         Create phantom beads from inputs.
 
@@ -114,7 +143,7 @@ class Bead:
         but we do not have access to it.
         """
         phantom = cls(
-            name=inputspec.name,
+            name=name,
             content_id=inputspec.content_id,
             kind=inputspec.kind,
             timestamp_str=inputspec.timestamp_str)
@@ -132,6 +161,18 @@ class Bead:
         content_id = self.content_id[:8]
         inputs = repr(self.inputs)
         return f"{cls}:{self.name}:{kind}:{content_id}:{self.state}:{inputs}"
+
+    def get_bead_name(self, input_nick):
+        '''
+        Returns the bead name on which update works.
+        '''
+        return self.input_map.get(input_nick, input_nick)
+
+    def set_bead_name(self, input_nick, bead_name):
+        '''
+        Sets the bead name to be used for updates in the future.
+        '''
+        self.input_map[input_nick] = bead_name
 
 
 def toposort(content_id_to_bead):
@@ -204,8 +245,8 @@ class Weaver:
     """
     def __init__(self, beads):
         self.all_beads = list(beads)
-        # NOTE: this needs further work if proper branch-references are needed
-        # especially if same bead is present under different names,
+        # NOTE: this needs further work.
+        # E.g. if same bead is present under different names,
         # content_id_to_bead would not be enough
         self.content_id_to_bead = {
             bead.content_id: Bead.from_bead(bead)
@@ -244,8 +285,10 @@ class Weaver:
         """
         for bead in self.all_beads.copy():
             for input in bead.inputs:
+                # FIXME: verify presence by mapped input name and content_id
                 if input.content_id not in self.content_id_to_bead:
-                    phantom = Bead.from_input(input)
+                    # FIXME: use mapped input name as phantom.name
+                    phantom = Bead.from_input(input.name, input)
                     self.content_id_to_bead[phantom.content_id] = phantom
                     self.all_beads.append(phantom)
 

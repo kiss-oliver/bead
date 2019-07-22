@@ -177,8 +177,8 @@ def print_inputs(env, workspace, verbose):
         print('Inputs:')
         for input in inputs:
             print('input/' + input.name)
-            branch = workspace.get_branch(input.name)
-            print(f'\tBranch name: {branch}')
+            input_bead_name = workspace.get_bead_name(input.name)
+            print(f'\tBead name: {input_bead_name}')
             print(f'\tFreeze time: {input.timestamp_str}')
             print('\tName[s]:')
             has_name = False
