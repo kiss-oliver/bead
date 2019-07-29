@@ -1,5 +1,17 @@
 '''
 We are responsible to store (and retrieve) beads.
+
+We are a convenience feature, as beads can be stored and used directly as files.
+It is assumed, that boxes store disjunct sets of data.
+This implies, that when beads are branched (a copy is made), the copy process should
+- rename all the beads and update their input-maps
+- copy the beads to a new box, that will never be active at the same time, as the original
+
+Boxes can be used to:
+- share computations (beads) (when the box is on a shared drive (e.g. NFS or sshfs mounted))
+- store separate computation branches (e.g. versions, that are released to the public)
+- hide sensitive computations by splitting up storage according to access level
+  (this is naive access control, but could work)
 '''
 
 from datetime import datetime, timedelta
