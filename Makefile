@@ -4,7 +4,7 @@ test: clean
 	tox
 
 executables: clean
-	python build.py
+	python3 build.py
 
 clean:
 	git clean -fXd

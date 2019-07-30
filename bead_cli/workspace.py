@@ -295,7 +295,11 @@ class CmdWeb(Command):
         if args.from_csv:
             with open(f'{args.from_csv}_beads.csv') as beads_csv_stream:
                 with open(f'{args.from_csv}_inputs.csv') as inputs_csv_stream:
-                    all_beads = web.read_beads(beads_csv_stream, inputs_csv_stream)
+                    with open(f'{base_file}_input_maps.csv') as input_maps_csv_stream:
+                        all_beads = web.read_beads(
+                            beads_csv_stream,
+                            inputs_csv_stream,
+                            input_maps_csv_stream)
         else:
             env = args.get_env()
             all_beads = load_all_beads(env.get_boxes())
@@ -304,7 +308,12 @@ class CmdWeb(Command):
         if args.to_csv:
             with open(f'{base_file}_beads.csv', 'w') as beads_csv_stream:
                 with open(f'{base_file}_inputs.csv', 'w') as inputs_csv_stream:
-                    web.write_beads(all_beads, beads_csv_stream, inputs_csv_stream)
+                    with open(f'{base_file}_input_maps.csv', 'w') as input_maps_csv_stream:
+                        web.write_beads(
+                            all_beads,
+                            beads_csv_stream,
+                            inputs_csv_stream,
+                            input_maps_csv_stream)
 
         dot_weaver = web.Weaver(all_beads)
         if args.names:

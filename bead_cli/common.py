@@ -5,6 +5,7 @@ from bead.workspace import Workspace
 from bead import spec as bead_spec
 from bead.archive import Archive
 from bead import box as bead_box
+from bead.tech.fs import Path
 from . import arg_help
 from . import arg_metavar
 from bead.tech.timestamp import time_from_user, parse_iso8601
@@ -48,7 +49,7 @@ class get_env:
     '''
 
     def __init__(self, config_dir):
-        self.config_dir = config_dir
+        self.config_dir = Path(config_dir)
 
     def __call__(self):
         config_dir = self.config_dir
