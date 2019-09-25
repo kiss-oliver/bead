@@ -2,7 +2,7 @@ import contextlib
 
 import testtools
 import fixtures
-from unittest import skip, skipIf
+from unittest import skip, skipIf, skipUnless
 
 from . import tech
 import os
@@ -22,7 +22,7 @@ def chdir(directory):
         os.chdir(cwd)
 
 
-skip, skipIf  # reexport
+skip, skipIf, skipUnless  # reexport
 
 TestCase = arglinker.add_test_linker(testtools.TestCase)
 

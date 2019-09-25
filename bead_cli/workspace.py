@@ -284,8 +284,8 @@ class CmdWeb(Command):
             help="Call GraphViz's `dot` to create an <OUTPUT_BASE>.png file as well")
         arg('--view', default=False, action='store_true',
             help="Open web browser with the generated SVG file (implies --svg)")
-        arg('--drop-edges', default=False, action='store_true',
-            help="Show only edges for the most recent beads for each kind")
+        arg('--heads-only', default=False, action='store_true',
+            help="Show only input edges for the most recent beads for each bead-group")
         arg('names', metavar='NAME', nargs='*',
             help="Restrict output graph to these names and their inputs (default: all beads)")
 
@@ -295,7 +295,7 @@ class CmdWeb(Command):
         if args.from_csv:
             with open(f'{args.from_csv}_beads.csv') as beads_csv_stream:
                 with open(f'{args.from_csv}_inputs.csv') as inputs_csv_stream:
-                    with open(f'{base_file}_input_maps.csv') as input_maps_csv_stream:
+                    with open(f'{args.from_csv}_input_maps.csv') as input_maps_csv_stream:
                         all_beads = web.read_beads(
                             beads_csv_stream,
                             inputs_csv_stream,
@@ -315,15 +315,17 @@ class CmdWeb(Command):
                             inputs_csv_stream,
                             input_maps_csv_stream)
 
-        dot_weaver = web.Weaver(all_beads)
+        bead_web = web.BeadWeb.from_beads(all_beads)
         if args.names:
             beads_to_plot = {
                 bead.content_id
-                for bead in dot_weaver.all_beads
+                for bead in bead_web.all_beads
                 if bead.name in args.names}
-            dot_weaver.restrict_to(beads_to_plot)
-        do_all_edges = not args.drop_edges
-        dot_str = dot_weaver.weave(do_all_edges)
+            bead_web.restrict_to(beads_to_plot)
+        if args.heads_only:
+            bead_web = bead_web.heads()
+        bead_web.color_beads()
+        dot_str = bead_web.as_dot()
 
         dot_file = f'{base_file}.dot'
         print(f"Creating {dot_file}")

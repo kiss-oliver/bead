@@ -5,3 +5,5 @@
 test-env
 build
 executables/
+.mypy_cache/
+.vscode/

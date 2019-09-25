@@ -1,13 +1,13 @@
 import csv
-from dataclasses import dataclass
+import attr
+import itertools
 import html
-from typing import Hashable
+from typing import Iterable, Dict, List, Set, Iterator, TypeVar, Generic
 
 from collections import defaultdict
 from enum import Enum
-import itertools
 
-from bead.tech.timestamp import time_from_timestamp
+from bead.tech.timestamp import time_from_timestamp, EPOCH_STR
 from bead.meta import InputSpec
 
 
@@ -60,12 +60,14 @@ def write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_strea
     """
     Persist MetaBeads (or Beads) to csv streams.
     """
+    def header(csv_header):
+        return csv_header.split(',')
     bead_writer = (
-        csv.DictWriter(beads_csv_stream, 'box name kind content_id freeze_time'.split()))
+        csv.DictWriter(beads_csv_stream, header('box,name,kind,content_id,freeze_time')))
     inputs_writer = (
-        csv.DictWriter(inputs_csv_stream, 'owner name kind content_id freeze_time'.split()))
+        csv.DictWriter(inputs_csv_stream, header('owner,name,kind,content_id,freeze_time')))
     input_maps_writer = (
-        csv.DictWriter(input_maps_csv_stream, 'box name content_id input bead_name'.split()))
+        csv.DictWriter(input_maps_csv_stream, header('box,name,content_id,input,bead_name')))
 
     bead_writer.writeheader()
     inputs_writer.writeheader()
@@ -111,7 +113,7 @@ class BeadState(Enum):
     # (yellow) latest in cluster, but needs updating, because of newer input version
 
 
-@dataclass(order=True, frozen=True)
+@attr.s(frozen=True, slots=True, auto_attribs=True)
 class BeadID:
     """
     Unique identifier for loaded beads.
@@ -124,7 +126,6 @@ class BeadID:
     This potential non-unique-ness can be mitigated by having `update` search for updates
     in the same box, the workspace was developed from.
     """
-    __slots__ = ('name', 'content_id')
     name: str
     content_id: str
 
@@ -206,21 +207,36 @@ class MetaBead:
         self.input_map[input_nick] = bead_name
 
 
-def is_phantom(bead):
-    return bead.state == BeadState.PHANTOM
+def is_not_phantom(bead):
+    return bead.state != BeadState.PHANTOM
 
 
 class Cluster:
     """
     Versions of beads having the same name.
+
+    .head: Latest bead, that is not phantom, or the first phantom bead, if all are phantoms.
     """
     def __init__(self, name):
         self.name = name
         self.beads_by_content_id = {}
 
+        # use a phantom bead instead of None for default value
+        phantom_head = MetaBead(
+            name=name, timestamp_str=EPOCH_STR,
+            content_id=None, kind='EMPTY CLUSTER')
+        phantom_head.set_state(BeadState.PHANTOM)
+        self.head = phantom_head
+
     def add(self, bead):
         assert bead.content_id not in self.beads_by_content_id
         self.beads_by_content_id[bead.content_id] = bead
+
+        def head_order(bead):
+            return (is_not_phantom(bead), bead.timestamp)
+
+        if head_order(bead) >= head_order(self.head):
+            self.head = bead
 
     def beads(self):
         """
@@ -235,13 +251,8 @@ class Cluster:
     def has(self, content_id):
         return content_id in self.beads_by_content_id
 
-    def get_head(self):
-        """
-        Latest bead, that is not phantom, or the first phantom bead, if all are phantoms.
-        """
-        beads = iter(self.beads())
-        head = next(beads)
-        return next(itertools.dropwhile(is_phantom, beads), head)
+    def get(self, content_id):
+        return self.beads_by_content_id[content_id]
 
     @property
     def as_dot(self):
@@ -275,46 +286,48 @@ class Cluster:
         return ''.join(fragments())
 
 
-@dataclass
-class Edge:
-    src: Hashable
-    dest: Hashable
-    label: str
+NodeRef = TypeVar('NodeRef', BeadID, str)
+
+
+@attr.s(auto_attribs=True)
+class Edge(Generic[NodeRef]):
+    src: NodeRef
+    dest: NodeRef
+    label: str  # FIXME: make label an InputSpec (could make phantoms from edges!)
 
     def reversed(self):
         return Edge(self.dest, self.src, self.label)
 
 
-def generate_input_edges(bead):
+def generate_input_edges(bead) -> Iterator[Edge[BeadID]]:
     """
     Generate all the 'Edge's leading from the bead to its inputs.
 
-    An edge is a triple of (src, dest, label)
-    where both 'src' and 'dest' are BeadID-s.
+    An edge is a triple of (src, dest, label), where both 'src' and 'dest' are BeadID-s.
     """
-    src = BeadID(bead.name, bead.content_id)
+    dest = BeadID(bead.name, bead.content_id)
     for input in bead.inputs:
-        dest = BeadID(bead.get_bead_name(input.name), input.content_id)
+        src = BeadID(bead.get_bead_name(input.name), input.content_id)
         yield Edge(src, dest, label=input.name)
 
 
-def group_by_src(edges):
+def group_by_src(edges) -> Dict[NodeRef, List[Edge]]:
     """
     Make a dictionary of 'Edge's, which maps a src node to a list of 'Edge's rooted there.
     """
-    edges_by_src = defaultdict(list)
+    edges_by_src: Dict[NodeRef, List[Edge[NodeRef]]] = defaultdict(list)
     for edge in edges:
         edges_by_src[edges.src].append(edge)
     return edges_by_src
 
 
-def closure(root, edges_by_src):
+def closure(roots: List[NodeRef], edges_by_src: Dict[NodeRef, List[Edge]]):
     """
     Return the set of reachable nodes from roots.
-    edges_by_src is a dictionary of {src: [Edge]}, where `src` is a node equal to `edge.src`.
+    edges_by_src is edges grouped by their `src`.
     """
-    reachable = {}
-    todo = set(root)
+    reachable = set()
+    todo: Set[NodeRef] = set(roots)
     while todo:
         src = todo.pop()
         reachable.add(src)
@@ -324,100 +337,96 @@ def closure(root, edges_by_src):
     return reachable
 
 
-def reverse(edges):
+def reverse(edges: Iterable[Edge]):
     """
     Generate reversed edges.
     """
     return (edge.reversed() for edge in edges)
 
 
-class Weaver:
+def _has_bead(cluster_by_name, name, content_id):
+    return name in cluster_by_name and cluster_by_name[name].has(content_id)
+
+
+def _add_bead(cluster_by_name, bead):
+    try:
+        cluster = cluster_by_name[bead.name]
+    except KeyError:
+        cluster = cluster_by_name[bead.name] = Cluster(bead.name)
+
+    cluster.add(bead)
+
+
+def _add_phantom_beads(cluster_by_name, beads):
     """
-    Visualize the web of beads with GraphViz.
-
-    Calculation status is color coded.
-
-    - display connections between beads and their up-to-dateness.
+    Add missing input beads as PhantomBeads
     """
-    def __init__(self, beads):
-        self.cluster_by_name = {}
-        self.set_beads(beads)
+    for bead in beads:
+        for input in bead.inputs:
+            input_bead_name = bead.get_bead_name(input.name)
+            if not _has_bead(cluster_by_name, input_bead_name, input.content_id):
+                phantom = MetaBead.phantom_from_input(input_bead_name, input)
+                _add_bead(cluster_by_name, phantom)
 
-    def set_beads(self, beads):
-        for bead in beads:
-            self._add_bead(MetaBead.from_bead(bead))
 
-        # assign colors based on bead's up-to-date status
-        self._add_phantom_beads()
-        self._color_beads()
+class BeadWeb:
+    """
+    A consistent graph of beads and input links between them.
+    """
 
-    @property
-    def clusters(self):
-        return self.cluster_by_name.values()
+    def __init__(self, clusters: List[Cluster], edges: List[Edge]):
+        self.clusters = clusters
+        self.cluster_by_name = {c.name: c for c in clusters}
 
-    def _add_bead(self, bead):
-        try:
-            cluster = self.cluster_by_name[bead.name]
-        except KeyError:
-            cluster = self.cluster_by_name[bead.name] = Cluster(bead.name)
+        # all edges are expected to refer to links between existing beads in the clusters
+        def has(bead_id):
+            return _has_bead(self.cluster_by_name, bead_id.name, bead_id.content_id)
 
-        cluster.add(bead)
+        bad_edges = [e for e in edges if not has(e.src) or not has(e.dest)]
+        assert bad_edges == [], bad_edges
+        self.edges = edges
 
-    def has_bead(self, name, content_id):
-        return name in self.cluster_by_name and self.cluster_by_name.has(content_id)
+    def get_bead(self, bead_id: BeadID) -> MetaBead:
+        cluster = self.cluster_by_name[bead_id.name]
+        return cluster.get(bead_id.content_id)
 
-    def generate_beads(self):
-        for cluster in self.clusters:
-            for bead in cluster.beads:
-                yield bead
-
-    def restrict_to(self, bead_names):
+    def as_dot(self):
         """
-        Restrict output to closure of bead content_ids on inputs from root set.
+        Generate GraphViz .dot file content, which describe the connections between beads
+        and their up-to-date status.
         """
-        self.content_ids_to_plot = set()
-        unprocessed_content_ids = set(root_content_ids)
-        while unprocessed_content_ids:
-            content_id = unprocessed_content_ids.pop()
-            self.content_ids_to_plot.add(content_id)
-            # add all not yet visited inputs to unprocessed_content_ids
-            bead = self.content_id_to_bead.get(content_id)
-            if bead is not None:
-                unprocessed_content_ids.update(
-                    input.content_id
-                    for input in bead.inputs
-                    if input.content_id not in self.content_ids_to_plot)
+        formatted_bead_clusters = '  \n'.join(c.as_dot for c in self.clusters)
 
-    def _add_phantom_beads(self):
-        """
-        Add missing input beads as PhantomBeads
-        """
-        for cluster in list(self.clusters):
-            for bead in cluster.beads:
-                for input in bead.inputs:
-                    input_bead_name = bead.get_bead_name(input.name)
-                    if not self.has_bead(input_bead_name, input.content_id):
-                        phantom = MetaBead.phantom_from_input(input_bead_name, input)
-                        self._add_bead(phantom)
+        def format_inputs():
+            def edges_as_dot():
+                for edge in self.edges:
+                    bead = self.get_bead(edge.dest)
+                    input_bead = self.get_bead(edge.src)
+                    label = edge.label
+                    is_auxiliary_edge = (
+                        bead.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE))
 
-    def generate_edges(self):
-        """
-        Generate all the edges between all the beads in the clusters
-        as defined by their inputs.
-        """
-        for bead in self.generate_beads():
-            yield from generate_input_edges(bead)
+                    yield dot_edge(input_bead, bead, label, is_auxiliary_edge)
+            return '\n'.join(edges_as_dot())
 
-    def generate_head_edges(self):
-        for cluster in self.clusters:
-            head_bead = cluster.get_head()
-            yield from generate_input_edges(head_bead)
+        return DOT_GRAPH_TEMPLATE.format(
+            bead_clusters=formatted_bead_clusters,
+            bead_inputs=format_inputs())
 
-    def _color_beads(self):
+    def beads(self):
+        return itertools.chain.from_iterable(cluster.beads() for cluster in self.clusters)
+
+    def reset_colors(self):
+        for bead in self.beads():
+            bead.set_state(BeadState.SUPERSEDED)
+
+    def color_beads(self):
         """
         Assign states to beads.
         """
-        cluster_heads = [cluster.get_head() for cluster in self.clusters]
+        self.reset_colors()
+
+        cluster_heads = [cluster.head for cluster in self.clusters]
         cluster_head_by_name = {bead.name: bead for bead in cluster_heads}
 
         # assign UP_TO_DATE for latest members of each cluster
@@ -425,54 +434,97 @@ class Weaver:
             head.set_state(BeadState.UP_TO_DATE)
 
         # downgrade latest members of each cluster, if out of date
-        processed = {}
+        processed = set()
         todo = set(cluster_head_by_name)
 
         def dfs_paint(bead):
             for input in bead.inputs:
                 input_bead_name = bead.get_bead_name(input.name)
+                if input_bead_name not in cluster_head_by_name:
+                    # XXX: when an input edge has been eliminated, it will have no effect on the
+                    # coloring - this is controversial, as that input might be out of date/missing,
+                    # so it can result in different coloring, than looking at the full picture
+                    continue
                 input_bead = cluster_head_by_name[input_bead_name]
                 if input_bead_name not in processed:
                     dfs_paint(input_bead)
                 if ((input_bead.state != BeadState.UP_TO_DATE)
-                    or (input_bead.content_id != bead.content_id)):
-                        bead.set_state(BeadState.OUT_OF_DATE)
-                        break
+                        or (input_bead.content_id != input.content_id)):
+                    bead.set_state(BeadState.OUT_OF_DATE)
+                    break
             processed.add(bead.name)
             todo.remove(bead.name)
 
         while todo:
-            dfs_paint(next(iter(todo)))
+            bead = cluster_head_by_name[next(iter(todo))]
+            dfs_paint(bead)
 
-    @property
-    def beads_to_plot(self):
-        for content_id in self.content_ids_to_plot:
-            yield self.content_id_to_bead[content_id]
-
-    def weave(self, do_all_edges):
+    # constructors
+    @classmethod
+    def from_beads(cls, beads) -> 'BeadWeb':
         """
-        Generate GraphViz .dot file describing the connections between beads
-        and their up-to-dateness.
+        Create a BeadWeb from the given beads, using their inputs as edge definitions.
+
+        Also creates phantom beads to make all edges valid.
         """
-        return DOT_GRAPH_TEMPLATE.format(
-            bead_clusters=self.format_bead_clusters(),
-            bead_inputs=self.format_inputs(do_all_edges))
+        cluster_by_name: Dict[str, Cluster] = {}
+        metabeads = []
+        for bead in beads:
+            bead = MetaBead.from_bead(bead)
+            metabeads.append(bead)
+            _add_bead(cluster_by_name, bead)
 
-    def format_bead_clusters(self):
-        return '  \n'.join(cluster.as_dot for cluster in self.clusters)
+        _add_phantom_beads(cluster_by_name, metabeads)
+        edges = itertools.chain.from_iterable(generate_input_edges(bead) for bead in metabeads)
+        return cls(list(cluster_by_name.values()), list(edges))
 
-    def format_inputs(self, do_all_edges):
-        def edges_to_plot():
-            for bead in self.beads_to_plot:
-                is_auxiliary_edge = bead.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE)
-                if is_auxiliary_edge and not do_all_edges:
-                    continue
+    def simplify(self) -> 'BeadWeb':
+        """
+        Remove unreferenced clusters and beads.
 
-                for input in bead.inputs:
-                    if input.content_id in self.content_ids_to_plot:
-                        input_bead = self.content_id_to_bead[input.content_id]
-                        yield dot_edge(input_bead, bead, input.name, is_auxiliary_edge)
-        return '\n'.join(edges_to_plot())
+        Makes a new instance
+        """
+        raise NotImplementedError
+
+    def heads(self) -> 'BeadWeb':
+        """
+        Keep only cluster heads and their inputs.
+
+        Makes a new instance
+        """
+        raise NotImplementedError
+
+    def set_sources(self, cluster_names: List[str]) -> 'BeadWeb':
+        """
+        Drop all clusters, that are not reachable from the named clusters.
+
+        Makes a new instance
+        """
+        raise NotImplementedError
+
+    def set_sinks(self, cluster_names: List[str]) -> 'BeadWeb':
+        """
+        Drop all clusters, that do not lead to any of the named clusters.
+
+        Makes a new instance
+        """
+        raise NotImplementedError
+
+    def drop_before(self, timestamp) -> 'BeadWeb':
+        """
+        Keep only beads, that are after the given timestamp.
+
+        Makes a new instance
+        """
+        raise NotImplementedError
+
+    def drop_after(self, timestamp) -> 'BeadWeb':
+        """
+        Keep only beads, that are before the timestamp.
+
+        Makes a new instance
+        """
+        raise NotImplementedError
 
 
 DOT_GRAPH_TEMPLATE = """\
@@ -538,7 +590,7 @@ def dot_edge(bead_src, bead_dest, name, is_auxiliary_edge):
     because GraphViz's output is unreadable for DAGs with several parallel paths:
     edges are overlapped, producing a messy graph.
     To amend this a conceptual edge is implemented with
-    a series extra nodes and edges between them.
+    a series of extra nodes and edges between them.
     """
     src = f'{node_cluster(bead_src)}:{port(bead_src, "out")}:e'
     dest = f'{node_cluster(bead_dest)}:{port(bead_dest, "in")}:w'

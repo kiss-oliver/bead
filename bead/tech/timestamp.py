@@ -208,6 +208,11 @@ def time_from_timestamp(timestamp_str):
     return parsed
 
 
+# The earliest time, beads could be created (actually it could be 10+ years later)
+EPOCH_STR = '20000101T000000000000+0000'
+assert time_from_timestamp(EPOCH_STR) == datetime(2000, 1, 1, 0, 0, 0, 0, FixedOffset(0, 'epoch'))
+
+
 def time_from_user(timeish):
     '''
         Parse a datetime from user entered string - multiple formats
