@@ -41,7 +41,7 @@ def generate_input_edges(bead) -> Iterator[Edge[BeadID]]:
     """
     dest = BeadID(bead.name, bead.content_id)
     for input in bead.inputs:
-        src = BeadID(bead.get_bead_name(input.name), input.content_id)
+        src = BeadID(bead.get_input_bead_name(input.name), input.content_id)
         yield Edge(src, dest, label=input.name)
 
 

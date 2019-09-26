@@ -78,7 +78,7 @@ class BeadWeb:
 
         def dfs_paint(bead):
             for input in bead.inputs:
-                input_bead_name = bead.get_bead_name(input.name)
+                input_bead_name = bead.get_input_bead_name(input.name)
                 if input_bead_name not in cluster_head_by_name:
                     # XXX: when an input edge has been eliminated, it will have no effect on the
                     # coloring - this is controversial, as that input might be out of date/missing,
@@ -187,7 +187,7 @@ class Clusters:
         """
         for bead in beads:
             for input in bead.inputs:
-                input_bead_name = bead.get_bead_name(input.name)
+                input_bead_name = bead.get_input_bead_name(input.name)
                 if not self.has_bead(input_bead_name, input.content_id):
                     phantom = MetaBead.phantom_from_input(input_bead_name, input)
                     self.add_bead(phantom)

@@ -273,27 +273,31 @@ class Test_load(TestCase):
 class Test_input_map(TestCase):
 
     def test_default_value(self, workspace_with_input, input_nick):
-        self.assertEquals(input_nick, workspace_with_input.get_bead_name(input_nick))
+        self.assertEquals(input_nick, workspace_with_input.get_input_bead_name(input_nick))
 
     def test_define(self, workspace_with_input, input_nick):
         bead_name = f'{input_nick}2'
-        workspace_with_input.set_bead_name(input_nick, bead_name)
-        self.assertEquals(bead_name, workspace_with_input.get_bead_name(input_nick))
+        workspace_with_input.set_input_bead_name(input_nick, bead_name)
+        self.assertEquals(bead_name, workspace_with_input.get_input_bead_name(input_nick))
 
     def test_update(self, workspace_with_input, input_nick):
-        workspace_with_input.set_bead_name(input_nick, f'{input_nick}2')
+        workspace_with_input.set_input_bead_name(input_nick, f'{input_nick}2')
         bead_name = f'{input_nick}42'
-        workspace_with_input.set_bead_name(input_nick, bead_name)
-        self.assertEquals(bead_name, workspace_with_input.get_bead_name(input_nick))
+        workspace_with_input.set_input_bead_name(input_nick, bead_name)
+        self.assertEquals(bead_name, workspace_with_input.get_input_bead_name(input_nick))
 
     def test_independent_update(self, workspace_with_input, input_nick):
         input_nick2 = f'{input_nick}2'
         self.add_input(workspace_with_input, input_nick2)
 
-        workspace_with_input.set_bead_name(input_nick, f'{input_nick}1111')
-        workspace_with_input.set_bead_name(input_nick2, f'{input_nick2}222')
-        self.assertEquals(f'{input_nick}1111', workspace_with_input.get_bead_name(input_nick))
-        self.assertEquals(f'{input_nick2}222', workspace_with_input.get_bead_name(input_nick2))
+        workspace_with_input.set_input_bead_name(input_nick, f'{input_nick}1111')
+        workspace_with_input.set_input_bead_name(input_nick2, f'{input_nick2}222')
+        self.assertEquals(
+            f'{input_nick}1111',
+            workspace_with_input.get_input_bead_name(input_nick))
+        self.assertEquals(
+            f'{input_nick2}222',
+            workspace_with_input.get_input_bead_name(input_nick2))
 
     # implementation
 

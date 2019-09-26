@@ -169,13 +169,13 @@ class Workspace(Bead):
     def input_map(self, input_map):
         persistence.file_dump(input_map, self._input_map_filename)
 
-    def get_bead_name(self, input_nick):
+    def get_input_bead_name(self, input_nick):
         '''
         Returns the name on which update works.
         '''
         return self.input_map.get(input_nick, input_nick)
 
-    def set_bead_name(self, input_nick, bead_name):
+    def set_input_bead_name(self, input_nick, bead_name):
         '''
         Sets the name to be used for updates in the future.
         '''
