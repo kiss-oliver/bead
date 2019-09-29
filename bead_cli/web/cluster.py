@@ -1,4 +1,4 @@
-import html
+from typing import Dict, Iterable
 
 from bead.tech.timestamp import EPOCH_STR
 
@@ -25,6 +25,7 @@ class Cluster:
         self.head = phantom_head
 
     def add(self, bead):
+        assert bead.name == self.name
         assert bead.content_id not in self.beads_by_content_id
         self.beads_by_content_id[bead.content_id] = bead
 
@@ -52,31 +53,13 @@ class Cluster:
 
     @property
     def as_dot(self):
-        # beads are sorted in descending order by timestamp
-        beads = self.beads()
-        assert beads
-        names = {bead.name for bead in beads}
-        assert len(names) == 1
-        assert names == {self.name}
+        return ''.join(graphviz.dot_cluster_as_fragments(self.beads()))
 
-        def fragments():
-            yield graphviz.node_cluster(beads[0])
-            yield '[shape="plaintext" color="grey" '
-            yield 'label=<<TABLE CELLBORDER="1">\n'
-            yield '    <TR>'
-            yield '<TD BORDER="0"></TD>'
-            yield '<TD BORDER="0">'
-            yield f'<B><I>{html.escape(beads[0].name)}</I></B>'
-            yield '</TD>'
-            yield '</TR>\n'
-            for bead in beads:
-                color = f'BGCOLOR="{graphviz.bead_color(bead)}:none" style="radial"'
-                yield '    <TR>'
-                yield f'<TD PORT="{graphviz.port(bead, "in")}" {color}></TD>'
-                yield f'<TD PORT="{graphviz.port(bead, "out")}" {color}>'
-                yield f'{bead.timestamp}'
-                yield '</TD>'
-                yield '</TR>\n'
-            yield '</TABLE>>'
-            yield ']'
-        return ''.join(fragments())
+
+def create_cluster_index(beads: Iterable[MetaBead]) -> Dict[str, Cluster]:
+    cluster_by_name: Dict[str, Cluster] = {}
+    for bead in beads:
+        if bead.name not in cluster_by_name:
+            cluster_by_name[bead.name] = Cluster(bead.name)
+        cluster_by_name[bead.name].add(bead)
+    return cluster_by_name

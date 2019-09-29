@@ -1,6 +1,13 @@
 from collections import defaultdict
-from typing import Iterable, Dict, List, Set, Iterator, TypeVar, Generic
+from typing import Iterable, Dict, List, Set, Iterator, TypeVar
+
 import attr
+
+from bead.meta import InputSpec
+from .metabead import MetaBead
+
+
+Bead = TypeVar('Bead')
 
 
 @attr.s(frozen=True, slots=True, auto_attribs=True)
@@ -19,21 +26,39 @@ class BeadID:
     name: str
     content_id: str
 
+    @classmethod
+    def from_bead(cls, bead) -> 'BeadID':
+        return BeadID(bead.name, bead.content_id)
 
-NodeRef = TypeVar('NodeRef', BeadID, str)
+    @classmethod
+    def index_for(cls, beads: Iterable[Bead]) -> Dict['BeadID', Bead]:
+        bead_by_id = {}
+        for bead in beads:
+            bead_by_id[cls.from_bead(bead)] = bead
+        return bead_by_id
+
+
+NodeRef = BeadID
 
 
 @attr.s(auto_attribs=True)
-class Edge(Generic[NodeRef]):
+class Edge:
     src: NodeRef
     dest: NodeRef
-    label: str  # FIXME: make label an InputSpec (could make phantoms from edges!)
+    input: InputSpec
+
+    @property
+    def label(self):
+        return input.name
 
     def reversed(self):
-        return Edge(self.dest, self.src, self.label)
+        return Edge(self.dest, self.src, self.input)
+
+    def create_phantom_source(self):
+        return MetaBead.phantom_from_input(self.src.name, self.input)
 
 
-def generate_input_edges(bead) -> Iterator[Edge[BeadID]]:
+def generate_input_edges(bead) -> Iterator[Edge]:
     """
     Generate all the 'Edge's leading from the bead to its inputs.
 
@@ -42,17 +67,27 @@ def generate_input_edges(bead) -> Iterator[Edge[BeadID]]:
     dest = BeadID(bead.name, bead.content_id)
     for input in bead.inputs:
         src = BeadID(bead.get_input_bead_name(input.name), input.content_id)
-        yield Edge(src, dest, label=input.name)
+        yield Edge(src, dest, input)
 
 
 def group_by_src(edges) -> Dict[NodeRef, List[Edge]]:
     """
     Make a dictionary of 'Edge's, which maps a src node to a list of 'Edge's rooted there.
     """
-    edges_by_src: Dict[NodeRef, List[Edge[NodeRef]]] = defaultdict(list)
+    edges_by_src: Dict[NodeRef, List[Edge]] = defaultdict(list)
     for edge in edges:
         edges_by_src[edges.src].append(edge)
     return edges_by_src
+
+
+def group_by_dest(edges) -> Dict[NodeRef, List[Edge]]:
+    """
+    Make a dictionary of 'Edge's, which maps a node to a list of 'Edge's going there.
+    """
+    edges_by_dest: Dict[NodeRef, List[Edge]] = defaultdict(list)
+    for edge in edges:
+        edges_by_dest[edges.dest].append(edge)
+    return edges_by_dest
 
 
 def closure(roots: List[NodeRef], edges_by_src: Dict[NodeRef, List[Edge]]):

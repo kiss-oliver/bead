@@ -1,3 +1,4 @@
+from bead.meta import InputSpec
 from bead.tech.timestamp import time_from_timestamp
 from .bead_state import BeadState
 
@@ -35,7 +36,7 @@ class MetaBead:
             box_name=bead.box_name)
 
     @classmethod
-    def phantom_from_input(cls, name, inputspec):
+    def phantom_from_input(cls, name, inputspec: InputSpec):
         """
         Create phantom beads from inputs.
 
@@ -55,12 +56,9 @@ class MetaBead:
         if self.state != BeadState.PHANTOM:
             self.state = state
 
-    def __repr__(self):
-        cls = self.__class__.__name__
-        kind = self.kind[:8]
-        content_id = self.content_id[:8]
-        inputs = repr(self.inputs)
-        return f"{cls}:{self.name}:{kind}:{content_id}:{self.state}:{inputs}"
+    @property
+    def is_not_phantom(self):
+        return self.state != BeadState.PHANTOM
 
     def get_input_bead_name(self, input_nick):
         '''
@@ -74,6 +72,9 @@ class MetaBead:
         '''
         self.input_map[input_nick] = bead_name
 
-    @property
-    def is_not_phantom(self):
-        return self.state != BeadState.PHANTOM
+    def __repr__(self):
+        cls = self.__class__.__name__
+        kind = self.kind[:8]
+        content_id = self.content_id[:8]
+        inputs = repr(self.inputs)
+        return f"{cls}:{self.name}:{kind}:{content_id}:{self.state}:{inputs}"

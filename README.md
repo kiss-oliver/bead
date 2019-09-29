@@ -94,7 +94,6 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L21)
 - [FIXME: test_archive.given_a_bead is fragile and yields an invalid BEAD](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/test_archive.py#L41)
 - [FIXME: this test helper uses private implementation information](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_feature_update_by_name.py#L89)
-- [label: str  # FIXME: make label an InputSpec (could make phantoms from edges!)](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/web/graph.py#L30)
 - [TODO: add tests for timestamps, parse_iso8601, parse_timedelta](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/tech/timestamp.py#L234)
 - [TODO: ask the user to report the exception?!](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/main.py#L107)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L105)
@@ -107,4 +106,4 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [XXX: test as_dot() / web command](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/web/test_web.py#L206)
 - [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L160)
 - [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L90)
-- [XXX: when an input edge has been eliminated, it will have no effect on the](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/web/web.py#L83)
+- [XXX: when an input edge has been eliminated, it will have no effect on the](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/web/web.py#L151)
