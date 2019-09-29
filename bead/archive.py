@@ -65,8 +65,8 @@ class Archive(UnpackableBead):
 
     # -
     # FIXME: Archive.is_valid is too costly for a property
-    # in fact it is so costly in some cases, that it the user is worth
-    # notifying that it is happening, see verify_with_feedback(archive)
+    # in fact it is so costly in some cases, that the user is worth
+    # notifying that processing is happening, see verify_with_feedback(archive)
     @property
     @__zipfile_user
     def is_valid(self):
