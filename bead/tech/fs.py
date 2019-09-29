@@ -6,7 +6,7 @@ import shutil
 import tempfile
 
 
-class Path(''.__class__):
+class Path(str):
 
     def __new__(cls, path):
         assert os.path.sep == '\\' or '\\' not in path, (
