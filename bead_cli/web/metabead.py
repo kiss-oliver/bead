@@ -1,3 +1,5 @@
+from typing import List, Iterable
+
 from bead.meta import InputSpec
 from bead.tech.timestamp import time_from_timestamp
 from .bead_state import BeadState
@@ -10,11 +12,11 @@ class MetaBead:
     Also has metadata for coloring (state).
     """
     def __init__(self, kind, timestamp_str, content_id,
-                 inputs=(),
+                 inputs: Iterable[InputSpec] = (),
                  input_map=None,
                  box_name=None,
                  name="UNKNOWN"):
-        self.inputs = inputs
+        self.inputs: List[InputSpec] = list(inputs)
         self.input_map = input_map if input_map else {}
         self.content_id = content_id
         self.box_name = box_name
@@ -27,7 +29,7 @@ class MetaBead:
     @classmethod
     def from_bead(cls, bead):
         return cls(
-            inputs=tuple(bead.inputs),
+            inputs=bead.inputs,
             input_map=bead.input_map,
             content_id=bead.content_id,
             kind=bead.kind,

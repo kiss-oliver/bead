@@ -18,11 +18,12 @@ class BeadWeb:
 
     @classmethod
     def from_beads(cls, metabeads: Tuple[MetaBead, ...]):
+        bead_index = BeadID.index_for(metabeads)
         edges = tuple(
             itertools.chain.from_iterable(
-                generate_input_edges(bead)
+                generate_input_edges(bead_index, bead)
                 for bead in metabeads))
-        return cls(metabeads, edges)
+        return cls(tuple(bead_index.values()), edges)
 
     def create_cluster_index(self) -> Dict[str, Cluster]:
         return create_cluster_index(self.beads)
@@ -85,38 +86,21 @@ def drop_after(web: BeadWeb, timestamp) -> BeadWeb:
     raise NotImplementedError
 
 
-def add_phantom_beads(web: BeadWeb) -> BeadWeb:
-    """
-    Extend bead index with fake beads, that are referenced as input, but not defined.
-    """
-    bead_by_id = web.create_bead_index()
-    for edge in web.edges:
-        assert edge.dest in bead_by_id
-        if edge.src not in bead_by_id:
-            bead_by_id[edge.src] = edge.create_phantom_source()
-
-    return BeadWeb(tuple(bead_by_id.values()), web.edges)
-
-
 def plot_clusters_as_dot(web: BeadWeb):
     """
     Generate GraphViz .dot file content, which describe the connections between beads
     and their up-to-date status.
     """
-    bead_by_id: Dict[BeadID, MetaBead] = web.create_bead_index()
-
     clusters = web.create_cluster_index().values()
     formatted_bead_clusters = '  \n'.join(c.as_dot for c in clusters)
 
     def format_inputs():
         def edges_as_dot():
             for edge in web.edges:
-                bead = bead_by_id[edge.dest]
-                input_bead = bead_by_id[edge.src]
                 is_auxiliary_edge = (
-                    bead.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE))
+                    edge.dest.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE))
 
-                yield graphviz.dot_edge(input_bead, bead, edge.label, is_auxiliary_edge)
+                yield graphviz.dot_edge(edge.src, edge.dest, edge.label, is_auxiliary_edge)
         return '\n'.join(edges_as_dot())
 
     return graphviz.DOT_GRAPH_TEMPLATE.format(
