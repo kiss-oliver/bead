@@ -51,12 +51,12 @@ class Beads:
         assert proto_name.islower()
         assert proto_version.isdigit()
         bead = MetaBead(
-            name=name,
+            name=name.rstrip(string.digits),
             kind=kind,
             content_id=f"id_{proto}",
             timestamp_str=datetime.datetime(
-                year=2000,
-                month=string.ascii_lowercase.index(proto_name) + 1,
+                year=2000 + string.ascii_lowercase.index(proto_name),
+                month=1,
                 day=int(proto_version),
                 tzinfo=datetime.timezone.utc,
             ).strftime('%Y%m%dT%H%M%S%f%z'),
@@ -92,6 +92,7 @@ beads = Beads()
 beads.define('a1 a2', kind='kind1', box_name='secret')
 beads.define('b2', kind='kind2')
 beads.define('c4', kind='kind3')
+beads.define('z9', kind='KK')
 # beads.phantom('a1 a2')
 beads.compile(
     """
@@ -99,8 +100,9 @@ beads.compile(
     a2 -:newer:-> b2
     """
 )
-beads.clone('b2', 'clone', 'clone-box')
-beads.map_input('clone', 'newer', 'axon')
+beads.clone('b2', 'clone123', 'clone-box')
+beads.map_input('clone123', 'newer', 'axon')
+beads.map_input('clone123', 'older', 'neuron')
 
 from pprint import pprint
 pprint(list(beads))
