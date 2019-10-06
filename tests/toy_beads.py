@@ -3,10 +3,20 @@ import string
 from typing import Dict
 
 from bead.meta import InputSpec
-from .metabead import MetaBead
+from bead_cli.web.metabead import MetaBead
 
 
-class Beads:
+TS_BASE = datetime.datetime(
+    year=2000, month=1, day=1, tzinfo=datetime.timezone.utc
+)
+
+
+class ToyBeads:
+    """
+    Factory of fake, but properly connected MetaBead-s.
+
+    For use in test fixtures and to create coherent bead web graphs for docs.
+    """
     def __init__(self):
         self._by_name: Dict[str, MetaBead] = {}
         self._phantoms = set()
@@ -14,14 +24,13 @@ class Beads:
     def define(self, protos: str, kind='*', box_name='main'):
         # 'a1 a2 b3 c4'
         for proto in protos.split():
-            name = proto[0]
-            bead = self._proto_clone(proto, name, kind, box_name, inputs=[])
+            bead = self._create(proto, proto, kind, box_name, inputs=[])
             self._by_name[proto] = bead
 
     def clone(self, proto, name, box_name):
         assert name not in self._by_name
         proto_bead = self._by_name[proto]
-        bead = self._proto_clone(proto, name, proto_bead.kind, box_name, proto_bead.inputs)
+        bead = self._create(proto, name, proto_bead.kind, box_name, proto_bead.inputs)
         self._by_name[name] = bead
 
     def map_input(self, bead_name, input_name, input_bead_name):
@@ -45,21 +54,21 @@ class Beads:
     def phantom(self, name_versions: str):
         self._phantoms.update(set(name_versions.split()))
 
-    def _proto_clone(self, proto, name, kind, box_name, inputs):
+    def _create(self, proto, name, kind, box_name, inputs):
         # proto ~ [a-z][0-9]
         proto_name, proto_version = proto
         assert proto_name.islower()
         assert proto_version.isdigit()
+        delta_from_name = (
+            datetime.timedelta(
+                days=string.ascii_lowercase.index(proto_name)))
+        delta_from_version = datetime.timedelta(hours=int(proto_version))
+        timestamp = TS_BASE + delta_from_name + delta_from_version
         bead = MetaBead(
             name=name.rstrip(string.digits),
             kind=kind,
-            content_id=f"id_{proto}",
-            timestamp_str=datetime.datetime(
-                year=2000 + string.ascii_lowercase.index(proto_name),
-                month=1,
-                day=int(proto_version),
-                tzinfo=datetime.timezone.utc,
-            ).strftime('%Y%m%dT%H%M%S%f%z'),
+            content_id=f"content_id_{proto}",
+            timestamp_str=timestamp.strftime('%Y%m%dT%H%M%S%f%z'),
             box_name=box_name,
         )
         # ensure, that we are using the given inputs
@@ -88,22 +97,23 @@ class Beads:
                 yield bead
 
 
-beads = Beads()
-beads.define('a1 a2', kind='kind1', box_name='secret')
-beads.define('b2', kind='kind2')
-beads.define('c4', kind='kind3')
-beads.define('z9', kind='KK')
-# beads.phantom('a1 a2')
-beads.compile(
-    """
-    a1 -:older:-> b2 -> c4
-    a2 -:newer:-> b2
-    """
-)
-beads.clone('b2', 'clone123', 'clone-box')
-beads.map_input('clone123', 'newer', 'axon')
-beads.map_input('clone123', 'older', 'neuron')
+if __name__ == '__main__':
+    beads = ToyBeads()
+    beads.define('a1 a2', kind='kind1', box_name='secret')
+    beads.define('b2', kind='kind2')
+    beads.define('c4', kind='kind3')
+    beads.define('z9', kind='KK')
+    # beads.phantom('a1 a2')
+    beads.compile(
+        """
+        a1 -:older:-> b2 -> c4
+        a2 -:newer:-> b2
+        """
+    )
+    beads.clone('b2', 'clone123', 'clone-box')
+    beads.map_input('clone123', 'newer', 'axon')
+    beads.map_input('clone123', 'older', 'neuron')
 
-from pprint import pprint
-pprint(list(beads))
-pprint([o.__dict__ for o in beads])
+    from pprint import pprint
+    pprint(list(beads))
+    pprint([o.__dict__ for o in beads])

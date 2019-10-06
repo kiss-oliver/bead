@@ -31,6 +31,12 @@ class BeadWeb:
     def create_bead_index(self) -> Dict[BeadID, MetaBead]:
         return BeadID.index_for(self.beads)
 
+    def color_beads(self):
+        color_beads(self)
+
+    def as_dot(self):
+        return plot_clusters_as_dot(self)
+
 
 def simplify(web: BeadWeb) -> BeadWeb:
     """
@@ -140,7 +146,7 @@ def color_beads(web: BeadWeb):
             if input_bead_name not in processed:
                 dfs_paint(input_bead)
             if ((input_bead.state != BeadState.UP_TO_DATE)
-                    or (input_bead.content_id != input.content_id)):
+                    or (input_bead.content_id != input_edge.src.content_id)):
                 bead.set_state(BeadState.OUT_OF_DATE)
                 break
         processed.add(bead.name)

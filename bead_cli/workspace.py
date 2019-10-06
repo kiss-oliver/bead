@@ -18,7 +18,9 @@ from .common import BEAD_REF_BASE, BEAD_TIME, resolve_bead
 from .common import verify_with_feedback
 from . import arg_metavar
 from . import arg_help
-from . import web
+from .web.csv import BeadReader, BeadWriter
+from .web.web import BeadWeb
+from .web.metabead import MetaBead
 
 timestamp = tech.timestamp.timestamp
 
@@ -293,29 +295,18 @@ class CmdWeb(Command):
         base_file = args.output_base
 
         if args.from_csv:
-            with open(f'{args.from_csv}_beads.csv') as beads_csv_stream:
-                with open(f'{args.from_csv}_inputs.csv') as inputs_csv_stream:
-                    with open(f'{args.from_csv}_input_maps.csv') as input_maps_csv_stream:
-                        all_beads = web.read_beads(
-                            beads_csv_stream,
-                            inputs_csv_stream,
-                            input_maps_csv_stream)
+            with BeadReader().open(args.from_csv) as reader:
+                all_beads = reader.read_beads()
         else:
             env = args.get_env()
-            all_beads = load_all_beads(env.get_boxes())
+            all_beads = [MetaBead.from_bead(b) for b in load_all_beads(env.get_boxes())]
         print(f"Loaded {len(all_beads)} beads")
 
         if args.to_csv:
-            with open(f'{base_file}_beads.csv', 'w') as beads_csv_stream:
-                with open(f'{base_file}_inputs.csv', 'w') as inputs_csv_stream:
-                    with open(f'{base_file}_input_maps.csv', 'w') as input_maps_csv_stream:
-                        web.write_beads(
-                            all_beads,
-                            beads_csv_stream,
-                            inputs_csv_stream,
-                            input_maps_csv_stream)
+            with BeadWriter().open(base_file) as writer:
+                writer.write_beads(all_beads)
 
-        bead_web = web.BeadWeb.from_beads(all_beads)
+        bead_web = BeadWeb.from_beads(all_beads)
         if args.names:
             beads_to_plot = {
                 bead.content_id

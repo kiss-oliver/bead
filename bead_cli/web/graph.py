@@ -60,8 +60,8 @@ def generate_input_edges(bead_index: Dict[BeadID, MetaBead], bead) -> Iterator[E
         src_bead_id = BeadID(src_bead_name, input.content_id)
         try:
             src = bead_index[src_bead_id]
-        except IndexError:
-            src = bead_index[src_bead_id] = MetaBead.phantom_from_input(bead, input)
+        except LookupError:
+            src = bead_index[src_bead_id] = MetaBead.phantom_from_input(src_bead_name, input)
 
         yield Edge(src, bead, input.name)
 
@@ -72,7 +72,7 @@ def group_by_src(edges) -> Dict[BeadID, List[Edge]]:
     """
     edges_by_src: Dict[BeadID, List[Edge]] = defaultdict(list)
     for edge in edges:
-        edges_by_src[BeadID.from_bead(edges.src)].append(edge)
+        edges_by_src[BeadID.from_bead(edge.src)].append(edge)
     return edges_by_src
 
 
@@ -82,7 +82,7 @@ def group_by_dest(edges) -> Dict[BeadID, List[Edge]]:
     """
     edges_by_dest: Dict[BeadID, List[Edge]] = defaultdict(list)
     for edge in edges:
-        edges_by_dest[BeadID.from_bead(edges.dest)].append(edge)
+        edges_by_dest[BeadID.from_bead(edge.dest)].append(edge)
     return edges_by_dest
 
 

@@ -3,8 +3,14 @@ import io
 import shutil
 import subprocess
 
+from bead.tech.timestamp import EPOCH_STR
 from bead.test import TestCase, skipUnless
-from . import web as m
+from bead_cli.web.csv import read_beads, write_beads
+from bead_cli.web.web import BeadWeb
+from bead_cli.web.graph import BeadID
+from bead_cli.web.bead_state import BeadState
+from bead_cli.web.cluster import Cluster
+from bead_cli.web.metabead import MetaBead
 
 
 # TODO: move to test_graphviz.py
@@ -69,7 +75,7 @@ box,ood1,id_ood1,root,root1
 
 
 def test_beads():
-    return m.read_beads(
+    return read_beads(
         io.StringIO(BEAD_CSV),
         io.StringIO(INPUT_CSV),
         io.StringIO(INPUT_MAPS_CSV))
@@ -81,7 +87,7 @@ class Test_bead_csv_io(TestCase):
         beads_csv_stream = io.StringIO()
         inputs_csv_stream = io.StringIO()
         input_maps_csv_stream = io.StringIO()
-        m.write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream)
+        write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream)
 
         def read_sorted(text_csv, fields):
             def sort_key(record):
@@ -106,28 +112,28 @@ class Test_bead_csv_io(TestCase):
 
 
 def ts(n):
-    return f'{int(m.EPOCH_STR[:4]) + n}{m.EPOCH_STR[4:]}'
+    return f'{int(EPOCH_STR[:4]) + n}{EPOCH_STR[4:]}'
 
 
 class Test_Cluster(TestCase):
 
     def test_empty_cluster(self):
-        c = m.Cluster('empty')
+        c = Cluster('empty')
 
         self.assertEqual('empty', c.name)
         self.assertEqual(0, len(c.beads()))
 
     def bead(self, timestamp_str, is_phantom=False):
-        bead = m.MetaBead(
+        bead = MetaBead(
             timestamp_str=timestamp_str,
             kind='test',
             content_id=f'test {timestamp_str}')
         if is_phantom:
-            bead.set_state(m.BeadState.PHANTOM)
+            bead.set_state(BeadState.PHANTOM)
         return bead
 
     def test_add_updates_head(self):
-        c = m.Cluster('empty')
+        c = Cluster('empty')
 
         p1 = self.bead(ts(1), is_phantom=True)
         p2 = self.bead(ts(2), is_phantom=True)
@@ -164,11 +170,11 @@ class Test_BeadWeb(TestCase):
         return test_beads()
 
     def bead_web(self, beads):
-        return m.BeadWeb.from_beads(beads)
+        return BeadWeb.from_beads(beads)
 
     def test_phantom_beads_are_created(self, bead_web):
         # print('\n'.join(f'{c.name}: {c.beads()}' for c in bead_web.clusters))
-        phantom = bead_web.get_bead(m.BeadID('real_name_of_phantom', 'id_phantom'))
+        phantom = bead_web.get_bead(BeadID('real_name_of_phantom', 'id_phantom'))
         self.assertEqual('kind_ood2', phantom.kind)
         self.assertEqual('real_name_of_phantom', phantom.name)
 
@@ -176,15 +182,15 @@ class Test_BeadWeb(TestCase):
         bead_web.color_beads()
 
         def assert_state(name, content_id, state):
-            self.assertEqual(state, bead_web.get_bead(m.BeadID(name, content_id)).state)
+            self.assertEqual(state, bead_web.get_bead(BeadID(name, content_id)).state)
 
-        assert_state('root1', 'id_root1_ood', m.BeadState.SUPERSEDED)
-        assert_state('root1', 'id_root1_utd', m.BeadState.UP_TO_DATE)
-        assert_state('root2', 'id_root2_utd', m.BeadState.UP_TO_DATE)
-        assert_state('real_name_of_phantom', 'id_phantom', m.BeadState.PHANTOM)
-        assert_state('ood1', 'id_ood1', m.BeadState.OUT_OF_DATE)
-        assert_state('ood2', 'id_ood2', m.BeadState.OUT_OF_DATE)
-        assert_state('ood3', 'id_ood3', m.BeadState.OUT_OF_DATE)
+        assert_state('root1', 'id_root1_ood', BeadState.SUPERSEDED)
+        assert_state('root1', 'id_root1_utd', BeadState.UP_TO_DATE)
+        assert_state('root2', 'id_root2_utd', BeadState.UP_TO_DATE)
+        assert_state('real_name_of_phantom', 'id_phantom', BeadState.PHANTOM)
+        assert_state('ood1', 'id_ood1', BeadState.OUT_OF_DATE)
+        assert_state('ood2', 'id_ood2', BeadState.OUT_OF_DATE)
+        assert_state('ood3', 'id_ood3', BeadState.OUT_OF_DATE)
 
     def test_restrict_to(self, bead_web):
         # after creation time, we have the whole bead set to plot
@@ -206,20 +212,3 @@ class Test_BeadWeb(TestCase):
         # XXX: test as_dot() / web command
         bead_web.color_beads()
         assert False
-
-    # helper - in context of bead_web
-    def test_cluster_beads(self, bead_web):
-        bead_clusters = m.cluster_beads(bead_web.all_beads)
-        names = {'root1', 'root2', 'ood1', 'ood2', 'ood3', 'phantom'}
-        self.assertEqual(names, set(bead_clusters))
-
-        def content_ids_by_name(name):
-            return [bead.content_id for bead in bead_clusters[name]]
-
-        self.assertEqual(
-            ["id_root1_utd", "id_root1_ood"],
-            content_ids_by_name("root1"))
-
-        self.assertEqual(["id_ood1"], content_ids_by_name("ood1"))
-
-        self.assertEqual(["id_ood2"], content_ids_by_name("ood2"))

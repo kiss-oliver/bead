@@ -38,7 +38,7 @@ class MetaBead:
             box_name=bead.box_name)
 
     @classmethod
-    def phantom_from_input(cls, name, inputspec: InputSpec):
+    def phantom_from_input(cls, name: str, inputspec: InputSpec):
         """
         Create phantom beads from inputs.
 
@@ -79,4 +79,4 @@ class MetaBead:
         kind = self.kind[:8]
         content_id = self.content_id[:8]
         inputs = repr(self.inputs)
-        return f"{cls}:{self.name}:{kind}:{content_id}:{self.state}:{inputs}"
+        return f"{cls}:{self.name}:{kind}:{content_id}:{self.state}:{inputs}:{self.input_map}"

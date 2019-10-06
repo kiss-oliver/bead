@@ -1,5 +1,6 @@
 import csv
 from collections import defaultdict
+from contextlib import ExitStack
 
 from bead.meta import InputSpec
 from .metabead import MetaBead
@@ -94,3 +95,44 @@ def write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_strea
                     'input': input_nick,
                     'bead_name': input_map.get(input_nick)
                 })
+
+
+class FileOpener:
+    OPEN_MODE = 'r'
+
+    def __init__(self):
+        self.beads = None
+        self.inputs = None
+        self.input_maps = None
+        self.exit_stack = ExitStack()
+        self.exit_stack.callback(self.__init__)
+
+    def open(self, base_file):
+        def o(suffix):
+            return self.exit_stack.enter_context(open(f'{base_file}{suffix}', self.OPEN_MODE))
+        try:
+            self.beads = o('_beads.csv')
+            self.inputs = o('_inputs.csv')
+            self.input_maps = o('_input_maps.csv')
+        except:
+            self.exit_stack.close()
+            raise
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.exit_stack.close()
+
+
+class BeadReader(FileOpener):
+    def read_beads(self):
+        return read_beads(self.beads, self.inputs, self.input_maps)
+
+
+class BeadWriter(FileOpener):
+    OPEN_MODE = 'w'
+
+    def write_beads(self, beads):
+        write_beads(beads, self.beads, self.inputs, self.input_maps)
