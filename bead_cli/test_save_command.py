@@ -18,7 +18,7 @@ class Test(TestCase, fixtures.RobotAndBeads):
         robot.cli('new', 'bead')
         robot.cd('bead')
         robot.cli('save')
-        self.assertNotEquals(
+        self.assertNotEqual(
             robot.stdout, '', 'Expected some feedback, but got none :(')
 
     @skipIf(not hasattr(os, 'symlink'), 'missing os.symlink')

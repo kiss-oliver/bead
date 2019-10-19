@@ -2,6 +2,8 @@ import csv
 import io
 from bead_cli.web.csv import read_beads, write_beads
 
+from bead.test import TestCase
+
 
 INPUT_CSV = """\
 owner,name,kind,content_id,freeze_time
