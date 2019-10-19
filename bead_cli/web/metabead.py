@@ -20,6 +20,7 @@ class MetaBead:
         self.input_map = input_map if input_map else {}
         self.content_id = content_id
         self.box_name = box_name
+        assert isinstance(name, str)
         self.name = name
         self.kind = kind
         self.timestamp_str = timestamp_str
