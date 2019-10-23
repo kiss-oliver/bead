@@ -1,6 +1,6 @@
 import datetime
 import string
-from typing import Dict
+from typing import Dict, Optional
 
 from bead.meta import InputSpec
 from bead_cli.web.metabead import MetaBead
@@ -40,7 +40,7 @@ class ToyBeads:
     def compile(self, dag: str):
         # 'a1 -a-> b2 -> c4 a2 -another-a-> b2'
         label = None
-        src: MetaBead = None
+        src: Optional[MetaBead] = None
         for fragment in dag.split():
             if fragment.startswith("-"):
                 label = fragment.rstrip(">").strip("-").strip(":")

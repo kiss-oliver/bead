@@ -97,8 +97,9 @@ def closure(roots: List[BeadID], edges_by_src: Dict[BeadID, List[Edge]]):
         src = todo.pop()
         reachable.add(src)
         for edge in edges_by_src[src]:
-            if edge.dest not in reachable:
-                todo.add(edge.dest)
+            dest_id = BeadID.from_bead(edge.dest)
+            if dest_id not in reachable:
+                todo.add(dest_id)
     return reachable
 
 
