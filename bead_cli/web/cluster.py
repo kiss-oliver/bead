@@ -18,9 +18,12 @@ class Cluster:
         self.beads_by_content_id = {}
 
         # use a phantom bead instead of None for default value
-        phantom_head = MetaBead(
-            name=name, timestamp_str=EPOCH_STR,
-            content_id=None, kind='EMPTY CLUSTER')
+        phantom_head = (
+            MetaBead(
+                name=name,
+                timestamp_str=EPOCH_STR,
+                content_id=None,
+                kind='EMPTY CLUSTER'))
         phantom_head.set_state(BeadState.PHANTOM)
         self.head = phantom_head
 
