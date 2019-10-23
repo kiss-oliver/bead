@@ -1,6 +1,6 @@
 import csv
 import io
-from bead_cli.web.csv import read_beads, write_beads
+from bead_cli.web.csv import read_beads, write_beads, BeadMetaCsvStreams
 
 from bead.test import TestCase
 
@@ -45,19 +45,24 @@ box,ood1,id_ood1,root,root1
 
 
 def test_beads():
-    return read_beads(
-        io.StringIO(BEAD_CSV),
-        io.StringIO(INPUT_CSV),
-        io.StringIO(INPUT_MAPS_CSV))
+    streams = (
+        BeadMetaCsvStreams(
+            beads=io.StringIO(BEAD_CSV),
+            inputs=io.StringIO(INPUT_CSV),
+            input_maps=io.StringIO(INPUT_MAPS_CSV)))
+    return streams.read_beads()
 
 
 class Test_bead_csv_io(TestCase):
     def test_written_data_is_unchanged(self):
         beads = test_beads()
-        beads_csv_stream = io.StringIO()
-        inputs_csv_stream = io.StringIO()
-        input_maps_csv_stream = io.StringIO()
-        write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream)
+        streams = (
+            BeadMetaCsvStreams(
+                beads=io.StringIO(),
+                inputs=io.StringIO(),
+                input_maps=io.StringIO()))
+
+        streams.write_beads(beads)
 
         def read_sorted(text_csv, fields):
             def sort_key(record):
@@ -68,14 +73,23 @@ class Test_bead_csv_io(TestCase):
         sort_fields = ['content_id']
         self.assertEqual(
             read_sorted(BEAD_CSV, sort_fields),
-            read_sorted(beads_csv_stream.getvalue(), sort_fields))
+            read_sorted(streams.beads.getvalue(), sort_fields))
         # written inputs remain the same
         sort_fields = ['owner', 'content_id']
         self.assertEqual(
             read_sorted(INPUT_CSV, sort_fields),
-            read_sorted(inputs_csv_stream.getvalue(), sort_fields))
+            read_sorted(streams.inputs.getvalue(), sort_fields))
         # written input_maps remain the same
         sort_fields = ['box', 'name', 'content_id', 'input']
         self.assertEqual(
             read_sorted(INPUT_MAPS_CSV, sort_fields),
-            read_sorted(input_maps_csv_stream.getvalue(), sort_fields))
+            read_sorted(streams.input_maps.getvalue(), sort_fields))
+
+    def test_files(self):
+        dir = self.new_temp_dir()
+        file_base = dir / 'test_'
+
+        beads = test_beads()
+        write_beads(file_base, beads)
+        beads_read_back = read_beads(file_base)
+        assert beads == beads_read_back

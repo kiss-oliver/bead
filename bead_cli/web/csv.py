@@ -1,9 +1,74 @@
 import csv
 from collections import defaultdict
 from contextlib import ExitStack
+import io
+from typing import Callable, Dict, List
+
+import attr
 
 from bead.meta import InputSpec
 from .metabead import MetaBead
+
+
+def write_beads(file_base, beads: List[MetaBead]):
+    with BeadMetaCsvStreams.for_writing(file_base) as streams:
+        streams.write_beads(beads)
+
+
+def read_beads(file_base) -> List[MetaBead]:
+    with BeadMetaCsvStreams.for_reading(file_base) as streams:
+        return streams.read_beads()
+
+
+@attr.s
+class BeadMetaCsvStreams:
+    beads: io.TextIOBase = attr.ib()
+    inputs: io.TextIOBase = attr.ib()
+    input_maps: io.TextIOBase = attr.ib()
+    close: Callable[[], None] = attr.ib(default=(lambda: None))
+
+    @classmethod
+    def for_reading(cls, base):
+        return cls.open_all(base, mode='r')
+
+    @classmethod
+    def for_writing(cls, base):
+        return cls.open_all(base, mode='w')
+
+    @classmethod
+    def open_all(cls, base, mode):
+        field_to_file_name = cls.get_file_names_by_fields(base)
+        assert 'close' not in field_to_file_name
+        assert set(field_to_file_name) - set(attr.fields_dict(cls)) == set()
+        exit_stack = ExitStack()
+        attrs = {}
+        for field, file_name in field_to_file_name.items():
+            try:
+                attrs[field] = exit_stack.enter_context(open(file_name, mode))
+            except:
+                exit_stack.close()
+                raise
+        return cls(**attrs, close=exit_stack.pop_all().close)
+
+    @classmethod
+    def get_file_names_by_fields(cls, base) -> Dict[str, str]:
+        return {
+            'beads': f'{base}_beads.csv',
+            'inputs': f'{base}_inputs.csv',
+            'input_maps': f'{base}_input_maps.csv',
+        }
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def read_beads(self):
+        return _read_beads(self.beads, self.inputs, self.input_maps)
+
+    def write_beads(self, beads):
+        _write_beads(beads, self.beads, self.inputs, self.input_maps)
 
 
 def _read_csv(csv_stream):
@@ -32,7 +97,7 @@ def _read_input_maps(csv_stream):
     return input_maps_by_owner
 
 
-def read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
+def _read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     """
     Read back persisted MetaBead-s.
     """
@@ -51,7 +116,7 @@ def read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     return beads
 
 
-def write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
+def _write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     """
     Persist MetaBeads (or Beads) to csv streams.
     """
@@ -95,44 +160,3 @@ def write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_strea
                     'input': input_nick,
                     'bead_name': input_map.get(input_nick)
                 })
-
-
-class FileOpener:
-    OPEN_MODE = 'r'
-
-    def __init__(self):
-        self.beads = None
-        self.inputs = None
-        self.input_maps = None
-        self.exit_stack = ExitStack()
-        self.exit_stack.callback(self.__init__)
-
-    def open(self, base_file):
-        def o(suffix):
-            return self.exit_stack.enter_context(open(f'{base_file}{suffix}', self.OPEN_MODE))
-        try:
-            self.beads = o('_beads.csv')
-            self.inputs = o('_inputs.csv')
-            self.input_maps = o('_input_maps.csv')
-        except:
-            self.exit_stack.close()
-            raise
-        return self
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.exit_stack.close()
-
-
-class BeadReader(FileOpener):
-    def read_beads(self):
-        return read_beads(self.beads, self.inputs, self.input_maps)
-
-
-class BeadWriter(FileOpener):
-    OPEN_MODE = 'w'
-
-    def write_beads(self, beads):
-        write_beads(beads, self.beads, self.inputs, self.input_maps)

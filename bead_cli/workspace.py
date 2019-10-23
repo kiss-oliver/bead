@@ -18,7 +18,7 @@ from .common import BEAD_REF_BASE, BEAD_TIME, resolve_bead
 from .common import verify_with_feedback
 from . import arg_metavar
 from . import arg_help
-from .web.csv import BeadReader, BeadWriter
+from .web.csv import read_beads, write_beads
 from .web.web import BeadWeb
 from .web.metabead import MetaBead
 
@@ -292,19 +292,17 @@ class CmdWeb(Command):
             help="Restrict output graph to these names and their inputs (default: all beads)")
 
     def run(self, args):
-        base_file = args.output_base
+        output_file_base = args.output_base
 
         if args.from_csv:
-            with BeadReader().open(args.from_csv) as reader:
-                all_beads = reader.read_beads()
+            all_beads = read_beads(args.from_csv)
         else:
             env = args.get_env()
             all_beads = [MetaBead.from_bead(b) for b in load_all_beads(env.get_boxes())]
         print(f"Loaded {len(all_beads)} beads")
 
         if args.to_csv:
-            with BeadWriter().open(base_file) as writer:
-                writer.write_beads(all_beads)
+            write_beads(output_file_base, all_beads)
 
         bead_web = BeadWeb.from_beads(all_beads)
         if args.names:
@@ -318,17 +316,17 @@ class CmdWeb(Command):
         bead_web.color_beads()
         dot_str = bead_web.as_dot()
 
-        dot_file = f'{base_file}.dot'
+        dot_file = f'{output_file_base}.dot'
         print(f"Creating {dot_file}")
         tech.fs.write_file(dot_file, dot_str)
 
         if args.png:
-            png_file = f'{base_file}.png'
+            png_file = f'{output_file_base}.png'
             print(f"Creating {png_file}")
             graphviz_dot(dot_file, png_file)
 
         if args.svg or args.view:
-            svg_file = f'{base_file}.svg'
+            svg_file = f'{output_file_base}.svg'
             print(f"Creating {svg_file}")
             graphviz_dot(dot_file, svg_file)
             if args.view:
