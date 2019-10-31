@@ -16,24 +16,25 @@ class ToyBeads:
     Factory of fake, but properly connected MetaBead-s.
 
     For use in test fixtures and to create coherent bead web graphs for docs.
+    a1 is older than a2, a9 is older than b1
     """
     def __init__(self):
         self._by_name: Dict[str, MetaBead] = {}
         self._phantoms = set()
 
-    def define(self, protos: str, kind='*', box_name='main'):
+    def define(self, protos: str, kind: str = '*', box_name: str = 'main'):
         # 'a1 a2 b3 c4'
         for proto in protos.split():
             bead = self._create(proto, proto, kind, box_name, inputs=[])
             self._by_name[proto] = bead
 
-    def clone(self, proto, name, box_name):
+    def clone(self, proto: str, name: str, box_name: str):
         assert name not in self._by_name
         proto_bead = self._by_name[proto]
         bead = self._create(proto, name, proto_bead.kind, box_name, proto_bead.inputs)
         self._by_name[name] = bead
 
-    def map_input(self, bead_name, input_name, input_bead_name):
+    def map_input(self, bead_name: str, input_name: str, input_bead_name: str):
         bead = self._by_name[bead_name]
         self._map_input(bead, input_name, input_bead_name)
 

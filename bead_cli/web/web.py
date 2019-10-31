@@ -133,8 +133,12 @@ def color_beads(web: BeadWeb):
     # downgrade latest members of each cluster, if out of date
     processed: Set[str] = set()
     todo = set(cluster_by_name)
+    path: Set[str] = set()
 
     def dfs_paint(bead):
+        if bead.name in path:
+            raise ValueError('Loop detected between connections!', bead)
+        path.add(bead.name)
         for input_edge in edges_by_dest[BeadID.from_bead(bead)]:
             input_bead_name = input_edge.src.name
             if input_bead_name not in cluster_by_name:
@@ -151,6 +155,7 @@ def color_beads(web: BeadWeb):
                 break
         processed.add(bead.name)
         todo.remove(bead.name)
+        path.remove(bead.name)
 
     while todo:
         bead = cluster_by_name[next(iter(todo))].head
