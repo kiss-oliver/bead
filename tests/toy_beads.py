@@ -90,7 +90,7 @@ class ToyBeads:
 
     def _map_input(self, bead, input_name, input_bead_name):
         assert input_name in [i.name for i in bead.inputs]
-        bead.input_map[input_name] = input_bead_name
+        bead.set_input_bead_name(input_name, input_bead_name)
 
     def __iter__(self):
         for name, bead in self._by_name.items():
