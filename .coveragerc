@@ -4,6 +4,7 @@ omit =
     ./build.py
     ./tracelog.py
     ./__main__.py
+    .tox/*
 
 [report]
 precision = 2
