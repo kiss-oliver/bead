@@ -7,8 +7,10 @@ digraph {{
   layout=dot
   rankdir="LR"
   pad="1"
-  pack="true"
-  packmode="node"
+  // pack/packmode removes edge labels, see https://gitlab.com/graphviz/graphviz/issues/1616
+  // re-enable for possibly prettier output if the above issue is solved
+  // pack="true"
+  // packmode="node"
 
   // clustered node definitions
 {bead_clusters}
