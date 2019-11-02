@@ -5,8 +5,6 @@ import pytest
 
 from bead_cli.web.csv import read_beads, write_beads, BeadMetaCsvStreams
 
-from bead.test import TestCase
-
 
 INPUT_CSV = """\
 owner,name,kind,content_id,freeze_time
