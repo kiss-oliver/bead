@@ -19,11 +19,14 @@ install:
     - if defined RUN_TESTS         pip install -r requirements.txt -r test_requirements.txt
 
 test_script:
-    - "if defined DUMP_CI_VM_INFO dir C:\\Python*"
-    - if defined DUMP_CI_VM_INFO   set
-    - if defined RUN_TESTS         pip freeze
-    - if defined RUN_TESTS         pytest --cov=. --cov-report=term-missing
-    - if defined CHECK_SOURCE_CODE flake8 %SOURCE_DIRS%
+    - cmd: "if defined DUMP_CI_VM_INFO dir C:\\Python*"
+    - cmd: if defined DUMP_CI_VM_INFO   set
+    - cmd: if defined RUN_TESTS         pip freeze
+    - cmd: if defined RUN_TESTS         pytest --cov=. --cov-report=term-missing
+    - cmd: if defined CHECK_SOURCE_CODE flake8 %SOURCE_DIRS%
 
 platform:
     - AnyCPU
+
+matrix:
+    fast_finish: true
