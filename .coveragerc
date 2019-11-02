@@ -5,6 +5,7 @@ omit =
     ./tracelog.py
     ./__main__.py
     .tox/*
+    ./*env/*
 
 [report]
 precision = 2
