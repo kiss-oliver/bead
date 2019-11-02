@@ -81,6 +81,10 @@ def test_time_from_user():
 
 def test_timestamp():
     with freeze_time('2000-01-01T00:00:00.000000+0000'):
-        assert time_from_timestamp(timestamp()) == time_from_timestamp('20000101T000000000000+0000')
+        assert (
+            time_from_timestamp(timestamp())
+            == time_from_timestamp('20000101T000000000000+0000'))
     with freeze_time('2019-11-01T01:02:03.000004+0500'):
-        assert time_from_timestamp(timestamp()) == time_from_timestamp('20191101T010203000004+0500')
+        assert (
+            time_from_timestamp(timestamp())
+            == time_from_timestamp('20191101T010203000004+0500'))
