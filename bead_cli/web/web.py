@@ -98,7 +98,7 @@ def plot_clusters_as_dot(web: BeadWeb):
     and their up-to-date status.
     """
     clusters = web.create_cluster_index().values()
-    formatted_bead_clusters = '  \n'.join(c.as_dot for c in clusters)
+    formatted_bead_clusters = '\n\n'.join(c.as_dot for c in clusters)
 
     def format_inputs():
         def edges_as_dot():

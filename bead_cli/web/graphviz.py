@@ -18,6 +18,7 @@ digraph {{
   // edge [weight="100"]
   // edge [labelfloat="true"]
   edge [decorate="true"]
+
 {bead_inputs}
 }}
 """
@@ -47,7 +48,7 @@ class Port:
         self.output = f"out_{content_id}"
 
 
-def dot_edge(bead_src, bead_dest, name, is_auxiliary_edge):
+def dot_edge(bead_src, bead_dest, name, is_auxiliary_edge, indent='  '):
     """
     Create an edge with a label in the DOT language between two beads.
 
@@ -77,17 +78,22 @@ def dot_edge(bead_src, bead_dest, name, is_auxiliary_edge):
         return ''
 
     return ''.join(
-        [f' {node}[shape=plain label=""];' for node in silent_helper_nodes]
-        + [long_path(before_label)]
+        [indent]
+        + [f'{node}[shape=plain label=""];' for node in silent_helper_nodes]
+        + [indent, '\n']
+        + [indent, long_path(before_label)]
+        + [indent, '\n']
         + [
-            f'  {before_label[-1]} -> {after_label[0]} ',
+            indent,
+            f'{before_label[-1]} -> {after_label[0]} ',
             f'[fontcolor="{color}" color="{color}" fontsize="10" label="{label}" weight="100"]',
             ';'
         ]
-        + [long_path(after_label)])
+        + [indent, '\n']
+        + [indent, long_path(after_label)])
 
 
-def dot_cluster_as_fragments(beads):
+def dot_cluster_as_fragments(beads, indent='  '):
     assert beads
     # beads are sorted in descending order by timestamp
     timestamps = [b.timestamp for b in beads]
@@ -98,9 +104,11 @@ def dot_cluster_as_fragments(beads):
 
     label = html.escape(beads[0].name)
 
+    yield indent
     yield node_cluster(beads[0])
     yield '[shape="plaintext" color="grey" '
     yield 'label=<<TABLE CELLBORDER="1">\n'
+    yield indent
     yield '    <TR>'
     yield '<TD BORDER="0"></TD>'
     yield '<TD BORDER="0">'
@@ -109,12 +117,14 @@ def dot_cluster_as_fragments(beads):
     yield '</TR>\n'
     for bead in beads:
         color = f'BGCOLOR="{bead_color(bead)}:none" style="radial"'
+        yield indent
         yield '    <TR>'
         yield f'<TD PORT="{Port(bead).input}" {color}></TD>'
         yield f'<TD PORT="{Port(bead).output}" {color}>'
         yield f'{bead.timestamp}'
         yield '</TD>'
         yield '</TR>\n'
+    yield indent
     yield '</TABLE>>'
     yield ']'
 
