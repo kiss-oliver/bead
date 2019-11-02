@@ -163,7 +163,7 @@ _TIME_UNITS = {
     'S': 'seconds',
 }
 
-_DELTA = r'([+-]?\d+)([{units}])'.format(units=''.join(_TIME_UNITS.keys()))
+_DELTA = r'([+-]?\d+)([{units}])'.format(units='wdHMS')
 _DELTAS = '(?:{})*$'.format(_DELTA)
 
 
@@ -179,7 +179,9 @@ def parse_timedelta(delta_str):
         for amount, unit_abbrev in re.findall(_DELTA, delta_str):
             delta += timedelta(**{_TIME_UNITS[unit_abbrev]: int(amount)})
         return delta
-    raise ValueError('Invalid delta format', delta_str)
+    raise ValueError(
+        'Invalid delta format: expecting {AMOUNT}{UNIT}* where UNIT is one of w,d,H,M,S',
+        delta_str)
 
 
 def timestamp():
@@ -229,18 +231,3 @@ def time_from_user(timeish):
     except ValueError:
         raise ValueError(
             'Can not interpret string either as time or as delta', timeish)
-
-
-# TODO: add tests for timestamps, parse_iso8601, parse_timedelta
-# ts = timestamp()
-# print(ts, time_from_timestamp(ts))
-# print(ts, parse_iso8601(ts))
-# print(parse_iso8601('2012'))
-# print(parse_iso8601('201211'))
-# print(parse_iso8601('2012-11'))
-# print(parse_iso8601('20121129'))
-# print(parse_iso8601('2012-11-29'))
-# print(parse_iso8601('2012-11-30T23:59:47-0100'))
-# print(parse_iso8601('20121130T235947-0100'))
-# print(parse_iso8601('20121120T090000-0100'), parse_iso8601('20121120T120000+0200'))
-assert parse_iso8601('20121120T090000-0100') == parse_iso8601('20121120T120000+0200')

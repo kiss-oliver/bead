@@ -11,7 +11,8 @@ mypy = "*"
 flake8 = "*"
 vulture = "*"
 black = "*"
-pytest-cov = "*"
+pytest-cov = "==2.8.1"
+freezegun = "==0.3.12"
 
 [packages]
 appdirs = "==1.4.0"
