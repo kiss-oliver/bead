@@ -7,3 +7,4 @@ build
 executables/
 .vscode/
 .*_cache/
+*,cover
