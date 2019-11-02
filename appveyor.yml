@@ -4,7 +4,7 @@ build: false
 
 environment:
     global:
-        SOURCE_DIRS: bead bead_cli
+        SOURCE_DIRS: bead bead_cli tests
     matrix:
         - PYTHON: "C:/Python36"
           CHECK_SOURCE_CODE: TRUE
@@ -22,7 +22,7 @@ test_script:
     - "if defined DUMP_CI_VM_INFO dir C:\\Python*"
     - if defined DUMP_CI_VM_INFO   set
     - if defined RUN_TESTS         pip freeze
-    - if defined RUN_TESTS         green -vvv --run-coverage --processes 1 -t %SOURCE_DIRS%
+    - if defined RUN_TESTS         pytest --cov=. --cov-report=term-missing
     - if defined CHECK_SOURCE_CODE flake8 %SOURCE_DIRS%
 
 platform:
