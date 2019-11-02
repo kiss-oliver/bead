@@ -48,12 +48,6 @@ class Cluster:
                 key=(lambda bead: bead.timestamp),
                 reverse=True))
 
-    def has(self, content_id):
-        return content_id in self.beads_by_content_id
-
-    def get(self, content_id):
-        return self.beads_by_content_id[content_id]
-
     @property
     def as_dot(self):
         return ''.join(graphviz.dot_cluster_as_fragments(self.beads()))
