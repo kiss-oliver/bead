@@ -4,6 +4,7 @@ from typing import Dict, Optional
 
 from bead.meta import InputSpec
 from bead_cli.web.metabead import MetaBead
+from bead_cli.web.graph import BeadID
 
 
 TS_BASE = datetime.datetime(
@@ -21,6 +22,9 @@ class ToyBeads:
     def __init__(self):
         self._by_name: Dict[str, MetaBead] = {}
         self._phantoms = set()
+
+    def __getitem__(self, name):
+        return self._by_name[name]
 
     def define(self, protos: str, kind: str = '*', box_name: str = 'main'):
         # 'a1 a2 b3 c4'
@@ -54,6 +58,10 @@ class ToyBeads:
 
     def phantom(self, name_versions: str):
         self._phantoms.update(set(name_versions.split()))
+
+    def id_for(self, *names):
+        for name in names:
+            yield BeadID.from_bead(self._by_name[name])
 
     def _create(self, proto, name, kind, box_name, inputs):
         # proto ~ [a-z][0-9]
