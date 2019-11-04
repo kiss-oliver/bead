@@ -45,6 +45,20 @@ def test_forked_path():
     assert reachable == set(toy_beads.id_for('c1', 'd1', 'e1', 'd2', 'e2'))
 
 
+def test_loop():
+    # it is an impossible bead config,
+    # but in general loops should not cause problems to closure calculation
+    toy_beads = ToyBeads()
+    toy_beads.define('a1 b1 c1')
+    toy_beads.compile('a1 -> b1 -> c1 -> a1')
+    web = BeadWeb.from_beads(tuple(toy_beads))
+    edges_by_src = group_by_src(web.edges)
+
+    reachable = closure(list(toy_beads.id_for('b1')), edges_by_src)
+
+    assert reachable == set(toy_beads.id_for('a1', 'b1', 'c1'))
+
+
 def test_reverse():
     toy_beads = ToyBeads()
     toy_beads.define('a1 b1 c1 d1 e1')
