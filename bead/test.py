@@ -6,7 +6,6 @@ from unittest import skip, skipIf, skipUnless
 
 from . import tech
 import os
-import tempfile
 
 import arglinker
 from tracelog import TRACELOG
@@ -40,16 +39,6 @@ class TestCase(TestCase):
     def new_temp_dir(self):
         return self.useFixture(TempDir()).path
 
-    def new_temp_home_dir(self):
-        return self.useFixture(TempHomeDir()).path
-
-    def new_temp_filename(self):
-        fd, name = tempfile.mkstemp()
-        os.close(fd)
-        os.unlink(name)
-        self.addCleanup(os.unlink, name)
-        return name
-
 ###
 # commonly used fixtures
 
@@ -59,15 +48,6 @@ class TempDir(fixtures.Fixture):
     def setUp(self):
         super(TempDir, self).setUp()
         self.path = tech.fs.Path(self.useFixture(fixtures.TempDir()).path)
-        # we need our own rmtree, that can remove read only files as well
-        self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
-
-
-class TempHomeDir(fixtures.Fixture):
-
-    def setUp(self):
-        super(TempHomeDir, self).setUp()
-        self.path = tech.fs.Path(self.useFixture(fixtures.TempHomeDir()).path)
         # we need our own rmtree, that can remove read only files as well
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
