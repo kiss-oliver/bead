@@ -19,7 +19,7 @@ from .common import verify_with_feedback
 from . import arg_metavar
 from . import arg_help
 from .web.csv import read_beads, write_beads
-from .web.web import BeadWeb
+from .web.sketch import Sketch
 from .web.sketchbead import SketchBead
 
 timestamp = tech.timestamp.timestamp
@@ -304,7 +304,7 @@ class CmdWeb(Command):
         if args.to_csv:
             write_beads(output_file_base, all_beads)
 
-        bead_web = BeadWeb.from_beads(all_beads)
+        bead_web = Sketch.from_beads(all_beads)
         if args.names:
             beads_to_plot = {
                 bead.content_id

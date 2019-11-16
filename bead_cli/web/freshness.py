@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class BeadState(Enum):
+class Freshness(Enum):
     PHANTOM = 0,
     # (red) unknown bead
     SUPERSEDED = 1,

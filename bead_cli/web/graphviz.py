@@ -1,5 +1,5 @@
 import html
-from .bead_state import BeadState
+from .freshness import Freshness
 
 
 DOT_GRAPH_TEMPLATE = """\
@@ -32,15 +32,15 @@ def node_cluster(bead):
 
 
 BEAD_COLOR = {
-    BeadState.PHANTOM: "red",
-    BeadState.SUPERSEDED: "grey",
-    BeadState.UP_TO_DATE: "green",
-    BeadState.OUT_OF_DATE: "orange",
+    Freshness.PHANTOM: "red",
+    Freshness.SUPERSEDED: "grey",
+    Freshness.UP_TO_DATE: "green",
+    Freshness.OUT_OF_DATE: "orange",
 }
 
 
 def bead_color(bead):
-    return BEAD_COLOR[bead.state]
+    return BEAD_COLOR[bead.freshness]
 
 
 class Port:

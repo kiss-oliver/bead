@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple, Set
 
 import attr
 
-from .bead_state import BeadState
+from .freshness import Freshness
 from .sketchbead import SketchBead
 from .cluster import Cluster, create_cluster_index
 from . import graphviz
@@ -12,7 +12,7 @@ from .graph import Edge, BeadID, generate_input_edges, group_by_dest
 
 
 @attr.s(frozen=True, slots=True, auto_attribs=True)
-class BeadWeb:
+class Sketch:
     beads: Tuple[SketchBead, ...]
     edges: Tuple[Edge, ...]
 
@@ -38,7 +38,7 @@ class BeadWeb:
         return plot_clusters_as_dot(self)
 
 
-def simplify(web: BeadWeb) -> BeadWeb:
+def simplify(sketch: Sketch) -> Sketch:
     """
     Remove unreferenced clusters and beads.
 
@@ -47,7 +47,7 @@ def simplify(web: BeadWeb) -> BeadWeb:
     raise NotImplementedError
 
 
-def heads(web: BeadWeb) -> BeadWeb:
+def heads(sketch: Sketch) -> Sketch:
     """
     Keep only cluster heads and their inputs.
 
@@ -56,7 +56,7 @@ def heads(web: BeadWeb) -> BeadWeb:
     raise NotImplementedError
 
 
-def set_sources(web: BeadWeb, cluster_names: List[str]) -> BeadWeb:
+def set_sources(sketch: Sketch, cluster_names: List[str]) -> Sketch:
     """
     Drop all clusters, that are not reachable from the named clusters.
 
@@ -65,7 +65,7 @@ def set_sources(web: BeadWeb, cluster_names: List[str]) -> BeadWeb:
     raise NotImplementedError
 
 
-def set_sinks(web: BeadWeb, cluster_names: List[str]) -> BeadWeb:
+def set_sinks(sketch: Sketch, cluster_names: List[str]) -> Sketch:
     """
     Drop all clusters, that do not lead to any of the named clusters.
 
@@ -74,7 +74,7 @@ def set_sinks(web: BeadWeb, cluster_names: List[str]) -> BeadWeb:
     raise NotImplementedError
 
 
-def drop_before(web: BeadWeb, timestamp) -> BeadWeb:
+def drop_before(sketch: Sketch, timestamp) -> Sketch:
     """
     Keep only beads, that are after the given timestamp.
 
@@ -83,7 +83,7 @@ def drop_before(web: BeadWeb, timestamp) -> BeadWeb:
     raise NotImplementedError
 
 
-def drop_after(web: BeadWeb, timestamp) -> BeadWeb:
+def drop_after(sketch: Sketch, timestamp) -> Sketch:
     """
     Keep only beads, that are before the timestamp.
 
@@ -92,19 +92,19 @@ def drop_after(web: BeadWeb, timestamp) -> BeadWeb:
     raise NotImplementedError
 
 
-def plot_clusters_as_dot(web: BeadWeb):
+def plot_clusters_as_dot(sketch: Sketch):
     """
     Generate GraphViz .dot file content, which describe the connections between beads
     and their up-to-date status.
     """
-    clusters = web.create_cluster_index().values()
+    clusters = sketch.create_cluster_index().values()
     formatted_bead_clusters = '\n\n'.join(c.as_dot for c in clusters)
 
     def format_inputs():
         def edges_as_dot():
-            for edge in web.edges:
+            for edge in sketch.edges:
                 is_auxiliary_edge = (
-                    edge.dest.state not in (BeadState.OUT_OF_DATE, BeadState.UP_TO_DATE))
+                    edge.dest.freshness not in (Freshness.OUT_OF_DATE, Freshness.UP_TO_DATE))
 
                 yield graphviz.dot_edge(edge.src, edge.dest, edge.label, is_auxiliary_edge)
         return '\n'.join(edges_as_dot())
@@ -114,21 +114,21 @@ def plot_clusters_as_dot(web: BeadWeb):
         bead_inputs=format_inputs())
 
 
-def color_beads(web: BeadWeb):
+def color_beads(sketch: Sketch):
     """
-    Assign up-to-date states to beads.
+    Assign up-to-dateness status (freshness) to beads.
     """
-    cluster_by_name = web.create_cluster_index()
-    edges_by_dest = group_by_dest(web.edges)
+    cluster_by_name = sketch.create_cluster_index()
+    edges_by_dest = group_by_dest(sketch.edges)
 
     # reset colors
-    for bead in web.beads:
-        bead.set_state(BeadState.SUPERSEDED)
+    for bead in sketch.beads:
+        bead.set_freshness(Freshness.SUPERSEDED)
 
     # assign UP_TO_DATE for latest members of each cluster
-    # (phantom states are not overwritten)
+    # (phantom freshnesss are not overwritten)
     for cluster in cluster_by_name.values():
-        cluster.head.set_state(BeadState.UP_TO_DATE)
+        cluster.head.set_freshness(Freshness.UP_TO_DATE)
 
     # downgrade latest members of each cluster, if out of date
     processed: Set[str] = set()
@@ -149,9 +149,9 @@ def color_beads(web: BeadWeb):
             input_bead = cluster_by_name[input_bead_name].head
             if input_bead_name not in processed:
                 dfs_paint(input_bead)
-            if ((input_bead.state != BeadState.UP_TO_DATE)
+            if ((input_bead.freshness != Freshness.UP_TO_DATE)
                     or (input_bead.content_id != input_edge.src.content_id)):
-                bead.set_state(BeadState.OUT_OF_DATE)
+                bead.set_freshness(Freshness.OUT_OF_DATE)
                 break
         processed.add(bead.name)
         todo.remove(bead.name)

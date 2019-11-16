@@ -4,7 +4,7 @@ import attr
 
 from bead.meta import InputSpec
 from bead.tech.timestamp import time_from_timestamp
-from .bead_state import BeadState
+from .freshness import Freshness
 
 
 def none_to_empty_dict(v):
@@ -19,7 +19,7 @@ class SketchBead:
     """
     A bead.Bead look-alike when looking only at the metadata.
 
-    Also has metadata for coloring (state).
+    Also has metadata for coloring (freshness).
     """
 
     content_id: str = attr.ib(kw_only=True)
@@ -28,7 +28,7 @@ class SketchBead:
     timestamp_str: str = attr.ib(kw_only=True)
     name: str = attr.ib(kw_only=True, default="UNKNOWN")
     input_map: Dict[str, str] = attr.ib(kw_only=True, factory=dict, converter=none_to_empty_dict)
-    state: BeadState = attr.ib(kw_only=True, default=BeadState.SUPERSEDED)
+    freshness: Freshness = attr.ib(kw_only=True, default=Freshness.SUPERSEDED)
     box_name: Optional[str] = attr.ib(kw_only=True, default=None)
 
     @property
@@ -60,17 +60,17 @@ class SketchBead:
                 content_id=inputspec.content_id,
                 kind=inputspec.kind,
                 timestamp_str=inputspec.timestamp_str))
-        phantom.state = BeadState.PHANTOM
+        phantom.freshness = Freshness.PHANTOM
         return phantom
 
-    def set_state(self, state):
-        # phantom beads do not change state
-        if self.state != BeadState.PHANTOM:
-            self.state = state
+    def set_freshness(self, freshness):
+        # phantom beads do not change freshness
+        if self.freshness != Freshness.PHANTOM:
+            self.freshness = freshness
 
     @property
     def is_not_phantom(self):
-        return self.state != BeadState.PHANTOM
+        return self.freshness != Freshness.PHANTOM
 
     def get_input_bead_name(self, input_nick):
         '''
@@ -89,4 +89,4 @@ class SketchBead:
         kind = self.kind[:8]
         content_id = self.content_id[:8]
         inputs = repr(self.inputs)
-        return f"{cls}:{self.name}:{kind}:{content_id}:{self.state}:{inputs}:{self.input_map}"
+        return f"{cls}:{self.name}:{kind}:{content_id}:{self.freshness}:{inputs}:{self.input_map}"

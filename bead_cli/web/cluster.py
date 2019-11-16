@@ -3,7 +3,7 @@ from typing import Dict, Iterable
 from bead.tech.timestamp import EPOCH_STR
 
 from .sketchbead import SketchBead
-from .bead_state import BeadState
+from .freshness import Freshness
 from . import graphviz
 
 
@@ -24,7 +24,7 @@ class Cluster:
                 timestamp_str=EPOCH_STR,
                 content_id=None,
                 kind='EMPTY CLUSTER'))
-        phantom_head.set_state(BeadState.PHANTOM)
+        phantom_head.set_freshness(Freshness.PHANTOM)
         self.head = phantom_head
 
     def add(self, bead):
