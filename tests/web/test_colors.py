@@ -1,31 +1,31 @@
 import pytest
 
-from tests.toy_beads import ToyBeads
+from tests.sketcher import Sketcher
 from bead_cli.web.web import BeadWeb, BeadState
 
 
 def test_new_version_marks_older_superseded():
-    beads = ToyBeads()
-    beads.define('a1')
+    sketcher = Sketcher()
+    sketcher.define('a1')
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.UP_TO_DATE
 
-    beads = ToyBeads()
-    beads.define('a1 a2')
+    sketcher = Sketcher()
+    sketcher.define('a1 a2')
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.SUPERSEDED
     assert bead(web, 'a2').state == BeadState.UP_TO_DATE
 
-    beads = ToyBeads()
-    beads.define('a1 a2 a3')
+    sketcher = Sketcher()
+    sketcher.define('a1 a2 a3')
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.SUPERSEDED
@@ -34,10 +34,10 @@ def test_new_version_marks_older_superseded():
 
 
 def test_unconnected():
-    beads = ToyBeads()
-    beads.define('a1 a2 b1 c2')
+    sketcher = Sketcher()
+    sketcher.define('a1 a2 b1 c2')
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.SUPERSEDED
@@ -47,29 +47,29 @@ def test_unconnected():
 
 
 def test_up_to_date_input():
-    beads = ToyBeads()
-    beads.define('a1 b1')
-    beads.compile(
+    sketcher = Sketcher()
+    sketcher.define('a1 b1')
+    sketcher.compile(
         """
         a1 -> b1
         """
     )
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.UP_TO_DATE
     assert bead(web, 'b1').state == BeadState.UP_TO_DATE
 
-    beads = ToyBeads()
-    beads.define('a1 a2 b1')
-    beads.compile(
+    sketcher = Sketcher()
+    sketcher.define('a1 a2 b1')
+    sketcher.compile(
         """
         a2 -> b1
         """
     )
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.SUPERSEDED
@@ -79,15 +79,15 @@ def test_up_to_date_input():
 
 
 def test_out_of_date_input():
-    beads = ToyBeads()
-    beads.define('a1 a2 b1')
-    beads.compile(
+    sketcher = Sketcher()
+    sketcher.define('a1 a2 b1')
+    sketcher.compile(
         """
         a1 -> b1
         """
     )
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.SUPERSEDED
@@ -95,20 +95,20 @@ def test_out_of_date_input():
 
 
 def test_phantom_input():
-    beads = ToyBeads()
-    beads.define('d1 e1')
-    beads.phantom('d1')
-    beads.compile(
+    sketcher = Sketcher()
+    sketcher.define('d1 e1')
+    sketcher.phantom('d1')
+    sketcher.compile(
         """
         d1 --> e1
         """
     )
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
-    assert {'e'} == {bead.name for bead in beads}
-    assert len(list(beads)) == 1
+    assert {'e'} == {bead.name for bead in sketcher.beads}
+    assert len(list(sketcher.beads)) == 1
     assert len(web.beads) == 2
 
     assert bead(web, 'd1').state == BeadState.PHANTOM
@@ -116,34 +116,34 @@ def test_phantom_input():
 
 
 def test_impossible_loop():
-    # beads are always forming a DAG, so this can not happen
-    beads = ToyBeads()
-    beads.define('a1 b1')
-    beads.compile(
+    # sketcher are always forming a DAG, so this can not happen
+    sketcher = Sketcher()
+    sketcher.define('a1 b1')
+    sketcher.compile(
         """
         a1 -> b1
         b1 -> a1
         """
     )
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     with pytest.raises(ValueError):
         web.color_beads()
 
 
 def test_coloring_is_transitive():
-    beads = ToyBeads()
-    beads.define('a1    c1 d1 e1')
-    beads.define('a2 b2 c2      ')
-    beads.phantom('c1')
-    beads.compile(
+    sketcher = Sketcher()
+    sketcher.define('a1    c1 d1 e1')
+    sketcher.define('a2 b2 c2      ')
+    sketcher.phantom('c1')
+    sketcher.compile(
         """
         a1          c1 -> d1 -> e1
         a2 -> b2 -> c2
         """
     )
 
-    web = BeadWeb.from_beads(tuple(beads))
+    web = BeadWeb.from_beads(tuple(sketcher.beads))
     web.color_beads()
 
     assert bead(web, 'a1').state == BeadState.SUPERSEDED
@@ -156,8 +156,8 @@ def test_coloring_is_transitive():
     assert bead(web, 'c2').state == BeadState.UP_TO_DATE
 
 
-def bead(web, toy_id):
+def bead(web, bead_id):
     for bead in web.beads:
-        if bead.content_id == f'content_id_{toy_id}':
+        if bead.content_id == f'content_id_{bead_id}':
             return bead
-    raise ValueError('Bead by toy id not found', toy_id)
+    raise ValueError('SketchBead by bead id not found', bead_id)

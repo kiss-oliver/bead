@@ -12,7 +12,7 @@ TS_BASE = datetime.datetime(
 )
 
 
-class ToyBeads:
+class Sketcher:
     """
     Factory of fake, but properly connected SketchBead-s.
 
@@ -100,29 +100,30 @@ class ToyBeads:
         assert input_name in [i.name for i in bead.inputs]
         bead.set_input_bead_name(input_name, input_bead_name)
 
-    def __iter__(self):
+    @property
+    def beads(self):
         for name, bead in self._by_name.items():
             if name not in self._phantoms:
                 yield bead
 
 
 if __name__ == '__main__':
-    beads = ToyBeads()
-    beads.define('a1 a2', kind='kind1', box_name='secret')
-    beads.define('b2', kind='kind2')
-    beads.define('c4', kind='kind3')
-    beads.define('z9', kind='KK')
-    # beads.phantom('a1 a2')
-    beads.compile(
+    sketcher = Sketcher()
+    sketcher.define('a1 a2', kind='kind1', box_name='secret')
+    sketcher.define('b2', kind='kind2')
+    sketcher.define('c4', kind='kind3')
+    sketcher.define('z9', kind='KK')
+    # sketcher.phantom('a1 a2')
+    sketcher.compile(
         """
         a1 -:older:-> b2 -> c4
         a2 -:newer:-> b2
         """
     )
-    beads.clone('b2', 'clone123', 'clone-box')
-    beads.map_input('clone123', 'newer', 'axon')
-    beads.map_input('clone123', 'older', 'neuron')
+    sketcher.clone('b2', 'clone123', 'clone-box')
+    sketcher.map_input('clone123', 'newer', 'axon')
+    sketcher.map_input('clone123', 'older', 'neuron')
 
     from pprint import pprint
-    pprint(list(beads))
-    pprint([o.__dict__ for o in beads])
+    pprint(list(sketcher.beads))
+    pprint([o.__dict__ for o in sketcher])
