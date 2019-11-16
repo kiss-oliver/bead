@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Set
 import attr
 
 from .bead_state import BeadState
-from .metabead import MetaBead
+from .sketchbead import SketchBead
 from .cluster import Cluster, create_cluster_index
 from . import graphviz
 from .graph import Edge, BeadID, generate_input_edges, group_by_dest
@@ -13,22 +13,22 @@ from .graph import Edge, BeadID, generate_input_edges, group_by_dest
 
 @attr.s(frozen=True, slots=True, auto_attribs=True)
 class BeadWeb:
-    beads: Tuple[MetaBead, ...]
+    beads: Tuple[SketchBead, ...]
     edges: Tuple[Edge, ...]
 
     @classmethod
-    def from_beads(cls, metabeads: Tuple[MetaBead, ...]):
-        bead_index = BeadID.index_for(metabeads)
+    def from_beads(cls, sketchbeads: Tuple[SketchBead, ...]):
+        bead_index = BeadID.index_for(sketchbeads)
         edges = tuple(
             itertools.chain.from_iterable(
                 generate_input_edges(bead_index, bead)
-                for bead in metabeads))
+                for bead in sketchbeads))
         return cls(tuple(bead_index.values()), edges)
 
     def create_cluster_index(self) -> Dict[str, Cluster]:
         return create_cluster_index(self.beads)
 
-    def create_bead_index(self) -> Dict[BeadID, MetaBead]:
+    def create_bead_index(self) -> Dict[BeadID, SketchBead]:
         return BeadID.index_for(self.beads)
 
     def color_beads(self):

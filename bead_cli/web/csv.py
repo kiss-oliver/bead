@@ -7,15 +7,15 @@ from typing import Callable, Dict, List
 import attr
 
 from bead.meta import InputSpec
-from .metabead import MetaBead
+from .sketchbead import SketchBead
 
 
-def write_beads(file_base, beads: List[MetaBead]):
+def write_beads(file_base, beads: List[SketchBead]):
     with BeadMetaCsvStreams.for_writing(file_base) as streams:
         streams.write_beads(beads)
 
 
-def read_beads(file_base) -> List[MetaBead]:
+def read_beads(file_base) -> List[SketchBead]:
     with BeadMetaCsvStreams.for_reading(file_base) as streams:
         return streams.read_beads()
 
@@ -99,12 +99,12 @@ def _read_input_maps(csv_stream):
 
 def _read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     """
-    Read back persisted MetaBead-s.
+    Read back persisted SketchBead-s.
     """
     inputs_by_owner = _read_inputs(inputs_csv_stream)
     input_maps_by_owner = _read_input_maps(input_maps_csv_stream)
     beads = [
-        MetaBead(
+        SketchBead(
             kind=rb['kind'],
             timestamp_str=rb['freeze_time'],
             content_id=rb['content_id'],
@@ -118,7 +118,7 @@ def _read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
 
 def _write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     """
-    Persist MetaBeads (or Beads) to csv streams.
+    Persist SketchBeads (or Beads) to csv streams.
     """
     def header(csv_header):
         return csv_header.split(',')

@@ -3,7 +3,7 @@ import string
 from typing import Dict, Optional
 
 from bead.meta import InputSpec
-from bead_cli.web.metabead import MetaBead
+from bead_cli.web.sketchbead import SketchBead
 from bead_cli.web.graph import BeadID
 
 
@@ -14,13 +14,13 @@ TS_BASE = datetime.datetime(
 
 class ToyBeads:
     """
-    Factory of fake, but properly connected MetaBead-s.
+    Factory of fake, but properly connected SketchBead-s.
 
     For use in test fixtures and to create coherent bead web graphs for docs.
     a1 is older than a2, a9 is older than b1
     """
     def __init__(self):
-        self._by_name: Dict[str, MetaBead] = {}
+        self._by_name: Dict[str, SketchBead] = {}
         self._phantoms = set()
 
     def __getitem__(self, name):
@@ -45,7 +45,7 @@ class ToyBeads:
     def compile(self, dag: str):
         # 'a1 -a-> b2 -> c4 a2 -another-a-> b2'
         label = None
-        src: Optional[MetaBead] = None
+        src: Optional[SketchBead] = None
         for fragment in dag.split():
             if fragment.startswith("-"):
                 label = fragment.rstrip(">").strip("-").strip(":")
@@ -73,7 +73,7 @@ class ToyBeads:
                 days=string.ascii_lowercase.index(proto_name)))
         delta_from_version = datetime.timedelta(hours=int(proto_version))
         timestamp = TS_BASE + delta_from_name + delta_from_version
-        bead = MetaBead(
+        bead = SketchBead(
             name=name.rstrip(string.digits),
             kind=kind,
             content_id=f"content_id_{proto}",

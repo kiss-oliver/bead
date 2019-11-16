@@ -5,6 +5,5 @@
 test-env
 build
 executables/
-.vscode/
 .*_cache/
 *,cover

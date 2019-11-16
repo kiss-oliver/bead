@@ -3,7 +3,7 @@ from typing import Iterable, Dict, List, Set, Iterator, TypeVar
 
 import attr
 
-from .metabead import MetaBead
+from .sketchbead import SketchBead
 
 
 Bead = TypeVar('Bead')
@@ -39,21 +39,21 @@ class BeadID:
 
 @attr.s(auto_attribs=True)
 class Edge:
-    src: MetaBead
-    dest: MetaBead
+    src: SketchBead
+    dest: SketchBead
     label: str
 
     def reversed(self):
         return Edge(self.dest, self.src, self.label)
 
 
-def generate_input_edges(bead_index: Dict[BeadID, MetaBead], bead) -> Iterator[Edge]:
+def generate_input_edges(bead_index: Dict[BeadID, SketchBead], bead) -> Iterator[Edge]:
     """
     Generate all the 'Edge's leading from the bead to its inputs.
 
     Modifies bead_index - adds referenced, but missing beads as phantom beads.
 
-    An edge is a triple of (src, dest, label), where both 'src' and 'dest' are MetaBead-s.
+    An edge is a triple of (src, dest, label), where both 'src' and 'dest' are SketchBead-s.
     """
     for input in bead.inputs:
         src_bead_name = bead.get_input_bead_name(input.name)
@@ -61,7 +61,7 @@ def generate_input_edges(bead_index: Dict[BeadID, MetaBead], bead) -> Iterator[E
         try:
             src = bead_index[src_bead_id]
         except LookupError:
-            src = bead_index[src_bead_id] = MetaBead.phantom_from_input(src_bead_name, input)
+            src = bead_index[src_bead_id] = SketchBead.phantom_from_input(src_bead_name, input)
 
         yield Edge(src, bead, input.name)
 
