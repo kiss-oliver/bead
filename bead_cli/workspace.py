@@ -20,7 +20,7 @@ from . import arg_metavar
 from . import arg_help
 from .web.csv import read_beads, write_beads
 from .web.sketch import Sketch
-from .web.sketchbead import SketchBead
+from .web.dummy import Dummy
 
 timestamp = tech.timestamp.timestamp
 
@@ -298,7 +298,7 @@ class CmdWeb(Command):
             all_beads = read_beads(args.from_csv)
         else:
             env = args.get_env()
-            all_beads = [SketchBead.from_bead(b) for b in load_all_beads(env.get_boxes())]
+            all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
         print(f"Loaded {len(all_beads)} beads")
 
         if args.to_csv:

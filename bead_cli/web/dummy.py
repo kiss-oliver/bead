@@ -15,7 +15,7 @@ def none_to_empty_dict(v):
 
 
 @attr.s
-class SketchBead:
+class Dummy:
     """
     A bead.Bead look-alike when looking only at the metadata.
 

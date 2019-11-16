@@ -2,7 +2,7 @@ from typing import Dict, Iterable
 
 from bead.tech.timestamp import EPOCH_STR
 
-from .sketchbead import SketchBead
+from .dummy import Dummy
 from .freshness import Freshness
 from . import graphviz
 
@@ -19,7 +19,7 @@ class Cluster:
 
         # use a phantom bead instead of None for default value
         phantom_head = (
-            SketchBead(
+            Dummy(
                 name=name,
                 timestamp_str=EPOCH_STR,
                 content_id=None,
@@ -53,7 +53,7 @@ class Cluster:
         return ''.join(graphviz.dot_cluster_as_fragments(self.beads()))
 
 
-def create_cluster_index(beads: Iterable[SketchBead]) -> Dict[str, Cluster]:
+def create_cluster_index(beads: Iterable[Dummy]) -> Dict[str, Cluster]:
     cluster_by_name: Dict[str, Cluster] = {}
     for bead in beads:
         if bead.name not in cluster_by_name:

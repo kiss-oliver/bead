@@ -160,4 +160,4 @@ def bead(sketch, bead_id):
     for bead in sketch.beads:
         if bead.content_id == f'content_id_{bead_id}':
             return bead
-    raise ValueError('SketchBead by bead id not found', bead_id)
+    raise ValueError('Dummy by bead id not found', bead_id)
