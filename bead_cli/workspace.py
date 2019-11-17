@@ -304,17 +304,17 @@ class CmdWeb(Command):
         if args.to_csv:
             write_beads(output_file_base, all_beads)
 
-        bead_web = Sketch.from_beads(all_beads)
+        sketch = Sketch.from_beads(all_beads)
         if args.names:
             beads_to_plot = {
                 bead.content_id
-                for bead in bead_web.all_beads
+                for bead in sketch.all_beads
                 if bead.name in args.names}
-            bead_web.restrict_to(beads_to_plot)
+            sketch.restrict_to(beads_to_plot)
         if args.heads_only:
-            bead_web = bead_web.heads()
-        bead_web.color_beads()
-        dot_str = bead_web.as_dot()
+            sketch = sketch.heads()
+        sketch.color_beads()
+        dot_str = sketch.as_dot()
 
         dot_file = f'{output_file_base}.dot'
         print(f"Creating {dot_file}")
