@@ -156,8 +156,8 @@ def test_coloring_is_transitive():
     assert bead(sketch, 'c2').freshness == Freshness.UP_TO_DATE
 
 
-def bead(sketch, bead_id):
+def bead(sketch, name_version):
     for bead in sketch.beads:
-        if bead.content_id == f'content_id_{bead_id}':
+        if bead.content_id == f'content_id_{name_version}':
             return bead
-    raise ValueError('Dummy by bead id not found', bead_id)
+    raise ValueError('Dummy by name-version not found', name_version)

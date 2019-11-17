@@ -8,7 +8,7 @@ from .freshness import Freshness
 from .dummy import Dummy
 from .cluster import Cluster, create_cluster_index
 from . import graphviz
-from .graph import Edge, BeadID, generate_input_edges, group_by_dest
+from .graph import Edge, Ref, generate_input_edges, group_by_dest
 
 
 @attr.s(frozen=True, slots=True, auto_attribs=True)
@@ -18,7 +18,7 @@ class Sketch:
 
     @classmethod
     def from_beads(cls, beads: Tuple[Dummy, ...]):
-        bead_index = BeadID.index_for(beads)
+        bead_index = Ref.index_for(beads)
         edges = tuple(
             itertools.chain.from_iterable(
                 generate_input_edges(bead_index, bead)
@@ -28,8 +28,8 @@ class Sketch:
     def create_cluster_index(self) -> Dict[str, Cluster]:
         return create_cluster_index(self.beads)
 
-    def create_bead_index(self) -> Dict[BeadID, Dummy]:
-        return BeadID.index_for(self.beads)
+    def create_bead_index(self) -> Dict[Ref, Dummy]:
+        return Ref.index_for(self.beads)
 
     def color_beads(self):
         color_beads(self)
@@ -139,7 +139,7 @@ def color_beads(sketch: Sketch):
         if bead.name in path:
             raise ValueError('Loop detected between connections!', bead)
         path.add(bead.name)
-        for input_edge in edges_by_dest[BeadID.from_bead(bead)]:
+        for input_edge in edges_by_dest[Ref.from_bead(bead)]:
             input_bead_name = input_edge.src.name
             if input_bead_name not in cluster_by_name:
                 # XXX: when an input edge has been eliminated, it will have no effect on the

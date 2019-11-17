@@ -1,5 +1,5 @@
 from bead_cli.web.sketch import Sketch
-from bead_cli.web.graph import BeadID, group_by_src, closure, reverse
+from bead_cli.web.graph import Ref, group_by_src, closure, reverse
 
 from tests.sketcher import Sketcher
 
@@ -11,9 +11,9 @@ def test_one_path():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     edges_by_src = group_by_src(sketch.edges)
 
-    reachable = closure([BeadID.from_bead(sketcher['c1'])], edges_by_src)
+    reachable = closure([Ref.from_bead(sketcher['c1'])], edges_by_src)
 
-    assert reachable == set(sketcher.id_for('c1', 'd1', 'e1'))
+    assert reachable == set(sketcher.ref_for('c1', 'd1', 'e1'))
 
 
 def test_two_paths():
@@ -25,9 +25,9 @@ def test_two_paths():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     edges_by_src = group_by_src(sketch.edges)
 
-    reachable = closure(list(sketcher.id_for('c1', 'c2')), edges_by_src)
+    reachable = closure(list(sketcher.ref_for('c1', 'c2')), edges_by_src)
 
-    assert reachable == set(sketcher.id_for('c1', 'd1', 'e1', 'c2', 'd2', 'e2'))
+    assert reachable == set(sketcher.ref_for('c1', 'd1', 'e1', 'c2', 'd2', 'e2'))
 
 
 def test_forked_path():
@@ -40,9 +40,9 @@ def test_forked_path():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     edges_by_src = group_by_src(sketch.edges)
 
-    reachable = closure(list(sketcher.id_for('c1')), edges_by_src)
+    reachable = closure(list(sketcher.ref_for('c1')), edges_by_src)
 
-    assert reachable == set(sketcher.id_for('c1', 'd1', 'e1', 'd2', 'e2'))
+    assert reachable == set(sketcher.ref_for('c1', 'd1', 'e1', 'd2', 'e2'))
 
 
 def test_loop():
@@ -54,9 +54,9 @@ def test_loop():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     edges_by_src = group_by_src(sketch.edges)
 
-    reachable = closure(list(sketcher.id_for('b1')), edges_by_src)
+    reachable = closure(list(sketcher.ref_for('b1')), edges_by_src)
 
-    assert reachable == set(sketcher.id_for('a1', 'b1', 'c1'))
+    assert reachable == set(sketcher.ref_for('a1', 'b1', 'c1'))
 
 
 def test_reverse():
@@ -66,6 +66,6 @@ def test_reverse():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     edges_by_src = group_by_src(reverse(sketch.edges))
 
-    reachable = closure([BeadID.from_bead(sketcher['c1'])], edges_by_src)
+    reachable = closure([Ref.from_bead(sketcher['c1'])], edges_by_src)
 
-    assert reachable == set(sketcher.id_for('a1', 'b1', 'c1'))
+    assert reachable == set(sketcher.ref_for('a1', 'b1', 'c1'))

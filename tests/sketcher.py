@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 from bead.meta import InputSpec
 from bead_cli.web.dummy import Dummy
-from bead_cli.web.graph import BeadID
+from bead_cli.web.graph import Ref
 
 
 TS_BASE = datetime.datetime(
@@ -59,9 +59,9 @@ class Sketcher:
     def phantom(self, name_versions: str):
         self._phantoms.update(set(name_versions.split()))
 
-    def id_for(self, *names):
+    def ref_for(self, *names):
         for name in names:
-            yield BeadID.from_bead(self._by_name[name])
+            yield Ref.from_bead(self._by_name[name])
 
     def _create(self, proto, name, kind, box_name, inputs):
         # proto ~ [a-z][0-9]
