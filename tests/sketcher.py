@@ -102,9 +102,11 @@ class Sketcher:
 
     @property
     def beads(self):
-        for name, bead in self._by_name.items():
-            if name not in self._phantoms:
-                yield bead
+        def bead_gen():
+            for name, bead in self._by_name.items():
+                if name not in self._phantoms:
+                    yield bead
+        return tuple(bead_gen())
 
 
 if __name__ == '__main__':
@@ -126,4 +128,4 @@ if __name__ == '__main__':
 
     from pprint import pprint
     pprint(list(sketcher.beads))
-    pprint([o.__dict__ for o in sketcher])
+    pprint([o.__dict__ for o in sketcher.beads])
