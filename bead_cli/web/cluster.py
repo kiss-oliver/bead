@@ -50,7 +50,7 @@ class Cluster:
 
     @property
     def as_dot(self):
-        return ''.join(graphviz.dot_cluster_as_fragments(self.beads()))
+        return ''.join(graphviz.dot_cluster_as_fragments(self.name, self.beads()))
 
 
 def create_cluster_index(beads: Iterable[Dummy]) -> Dict[str, Cluster]:

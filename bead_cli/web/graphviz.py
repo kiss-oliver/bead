@@ -95,16 +95,15 @@ def dot_edge(bead_src, bead_dest, name, is_auxiliary_edge, indent='  '):
         + [indent, long_path(after_label)])
 
 
-def dot_cluster_as_fragments(beads, indent='  '):
+def dot_cluster_as_fragments(cluster_name, beads, indent='  '):
     assert beads
     # beads are sorted in descending order by timestamp
     timestamps = [b.timestamp for b in beads]
     assert timestamps == sorted(timestamps, reverse=True)
     # they have the same name
-    names = {bead.name for bead in beads}
-    assert names == {beads[0].name}
+    assert {bead.name for bead in beads} == {cluster_name}
 
-    label = html.escape(beads[0].name)
+    label = html.escape(cluster_name)
 
     yield indent
     yield node_cluster(beads[0])
