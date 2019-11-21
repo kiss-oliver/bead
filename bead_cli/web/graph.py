@@ -88,3 +88,51 @@ def reverse(edges: Iterable[Edge]) -> Iterator[Edge]:
     Generate reversed edges.
     """
     return (edge.reversed() for edge in edges)
+
+
+def node_index_from_edges(edges: List[Edge]) -> Dict[Ref, Node]:
+    node_by_ref: Dict[Ref, Node] = {}
+
+    def register_map(ref, node):
+        value = node_by_ref.setdefault(ref, node)
+        assert node == value
+    for e in edges:
+        register_map(e.src_ref, e.src)
+        register_map(e.dest_ref, e.dest)
+
+    return node_by_ref
+
+
+bead_index_from_edges = node_index_from_edges
+
+
+def toposort(edges: List[Edge]) -> List[Node]:
+    """
+    Topological sort.
+    """
+    edges_by_dest = group_by_dest(edges)
+    node_by_ref = node_index_from_edges(edges)
+
+    todo = set(node_by_ref.keys())
+    path: Set[Ref] = set()
+    output: List[Node] = []
+
+    def dfs(ref: Ref):
+        node = node_by_ref[ref]
+        if ref in path:
+            raise ValueError('Loop detected!', node)
+
+        path.add(ref)
+        for input_edge in edges_by_dest[ref]:
+            input_node = input_edge.src
+            if input_node.ref in todo:
+                dfs(input_node.ref)
+        path.remove(ref)
+
+        todo.remove(ref)
+        output.append(node)
+
+    while todo:
+        dfs(todo.pop())
+
+    return output
