@@ -48,6 +48,15 @@ class Cluster:
                 key=(lambda bead: bead.timestamp),
                 reverse=True))
 
+    def reset_freshness(self):
+        beads = self.beads()
+
+        if beads and beads[0].is_not_phantom:
+            beads[0].set_freshness(Freshness.UP_TO_DATE)
+
+        for bead in beads[1:]:
+            bead.set_freshness(Freshness.SUPERSEDED)
+
     @property
     def as_dot(self):
         return ''.join(graphviz.dot_cluster_as_fragments(self.name, self.beads()))

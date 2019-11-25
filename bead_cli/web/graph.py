@@ -14,7 +14,7 @@ Node = Dummy
 class Edge:
     src: Node
     dest: Node
-    label: str
+    label: str = ''
 
     def reversed(self):
         return Edge(self.dest, self.src, self.label)
@@ -114,25 +114,24 @@ def toposort(edges: List[Edge]) -> List[Node]:
     node_by_ref = node_index_from_edges(edges)
 
     todo = set(node_by_ref.keys())
-    path: Set[Ref] = set()
+    path: List[Ref] = []
     output: List[Node] = []
 
     def dfs(ref: Ref):
-        node = node_by_ref[ref]
         if ref in path:
-            raise ValueError('Loop detected!', node)
+            raise ValueError('Loop detected!', path, ref)
 
-        path.add(ref)
+        path.append(ref)
         for input_edge in edges_by_dest[ref]:
             input_node = input_edge.src
             if input_node.ref in todo:
                 dfs(input_node.ref)
-        path.remove(ref)
+        path.pop()
 
         todo.remove(ref)
-        output.append(node)
+        output.append(node_by_ref[ref])
 
     while todo:
-        dfs(todo.pop())
+        dfs(next(iter(todo)))
 
     return output

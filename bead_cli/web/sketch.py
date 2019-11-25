@@ -1,17 +1,17 @@
 import itertools
-
 from typing import Dict, List, Tuple, Set
 
 import attr
+from cached_property import cached_property
 
 from .freshness import Freshness
 from .dummy import Dummy
 from .cluster import Cluster, create_cluster_index
 from . import graphviz
-from .graph import Edge, Ref, generate_input_edges, group_by_dest
+from .graph import Edge, Ref, generate_input_edges, group_by_dest, toposort
 
 
-@attr.s(frozen=True, slots=True, auto_attribs=True)
+@attr.s(frozen=True, auto_attribs=True)
 class Sketch:
     beads: Tuple[Dummy, ...]
     edges: Tuple[Edge, ...]
@@ -25,11 +25,13 @@ class Sketch:
                 for bead in beads))
         return cls(tuple(bead_index.values()), edges)
 
-    def create_cluster_index(self) -> Dict[str, Cluster]:
+    @cached_property
+    def cluster_by_name(self) -> Dict[str, Cluster]:
         return create_cluster_index(self.beads)
 
-    def create_bead_index(self) -> Dict[Ref, Dummy]:
-        return Ref.index_for(self.beads)
+    @cached_property
+    def clusters(self):
+        return tuple(self.cluster_by_name.values())
 
     def color_beads(self):
         color_beads(self)
@@ -97,8 +99,7 @@ def plot_clusters_as_dot(sketch: Sketch):
     Generate GraphViz .dot file content, which describe the connections between beads
     and their up-to-date status.
     """
-    clusters = sketch.create_cluster_index().values()
-    formatted_bead_clusters = '\n\n'.join(c.as_dot for c in clusters)
+    formatted_bead_clusters = '\n\n'.join(c.as_dot for c in sketch.clusters)
 
     def format_inputs():
         def edges_as_dot():
@@ -114,11 +115,11 @@ def plot_clusters_as_dot(sketch: Sketch):
         bead_inputs=format_inputs())
 
 
-def color_beads(sketch: Sketch):
+def _color_beads(sketch: Sketch):
     """
     Assign up-to-dateness status (freshness) to beads.
     """
-    cluster_by_name = sketch.create_cluster_index()
+    cluster_by_name = sketch.cluster_by_name
     edges_by_dest = group_by_dest(sketch.edges)
 
     # reset colors
@@ -127,7 +128,7 @@ def color_beads(sketch: Sketch):
 
     # assign UP_TO_DATE for latest members of each cluster
     # (phantom freshnesss are not overwritten)
-    for cluster in cluster_by_name.values():
+    for cluster in sketch.clusters:
         cluster.head.set_freshness(Freshness.UP_TO_DATE)
 
     # downgrade latest members of each cluster, if out of date
@@ -160,3 +161,39 @@ def color_beads(sketch: Sketch):
     while todo:
         bead = cluster_by_name[next(iter(todo))].head
         dfs_paint(bead)
+
+
+def color_beads(sketch: Sketch):
+    """
+    Assign up-to-dateness status (freshness) to beads.
+    """
+    for cluster in sketch.clusters:
+        cluster.reset_freshness()
+
+    head_by_ref = {c.head.ref: c.head for c in sketch.clusters}
+
+    root_name = '*' * (1 + max((len(name) for name in sketch.cluster_by_name.keys()), default=0))
+    root = Dummy(
+        name=root_name,
+        content_id=root_name,
+        kind=root_name,
+        timestamp_str='',
+        freshness=Freshness.UP_TO_DATE
+    )
+    edges = [e for e in sketch.edges if e.dest_ref in head_by_ref]
+    edges += [Edge(head, root) for head in head_by_ref.values()]
+
+    head_eval_order = toposort(edges)
+    assert head_eval_order[-1] == root
+
+    # downgrade UP_TO_DATE freshness if has a non UP_TO_DATE input
+    UP_TO_DATE = Freshness.UP_TO_DATE
+    OUT_OF_DATE = Freshness.OUT_OF_DATE
+
+    edges_by_dest = group_by_dest(edges)
+    for cluster_head in head_eval_order:
+        if cluster_head.freshness is UP_TO_DATE:
+            if {e.src.freshness for e in edges_by_dest[cluster_head.ref]} - {UP_TO_DATE}:
+                cluster_head.set_freshness(OUT_OF_DATE)
+
+    return root.freshness is UP_TO_DATE
