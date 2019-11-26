@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Sequence
 
 import attr
 from cached_property import cached_property
@@ -17,13 +17,20 @@ class Sketch:
     edges: Tuple[Edge, ...]
 
     @classmethod
-    def from_beads(cls, beads: Tuple[Dummy, ...]):
+    def from_beads(cls, beads: Sequence[Dummy]):
         bead_index = Ref.index_for(beads)
         edges = tuple(
             itertools.chain.from_iterable(
                 generate_input_edges(bead_index, bead)
                 for bead in beads))
         return cls(tuple(bead_index.values()), edges)
+
+    @classmethod
+    def from_edges(cls, edges: Sequence[Edge]):
+        src_by_ref = {e.src_ref: e.src for e in edges}
+        dest_by_ref = {e.dest_ref: e.dest for e in edges}
+        beads = {**src_by_ref, **dest_by_ref}.values()
+        return cls(tuple(beads), tuple(edges))
 
     @cached_property
     def cluster_by_name(self) -> Dict[str, Cluster]:

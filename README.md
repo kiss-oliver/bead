@@ -103,4 +103,3 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [XXX: list command: use tabulate?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/box.py#L51)
 - [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L162)
 - [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L92)
-- [XXX: when an input edge has been eliminated, it will have no effect on the](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/web/sketch.py#L146)
