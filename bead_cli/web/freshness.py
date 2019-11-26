@@ -10,3 +10,9 @@ class Freshness(Enum):
     # (green) latest and all its inputs are also referencing an UP_TO_DATE
     OUT_OF_DATE = 3,
     # (yellow) latest in cluster, but needs updating, because of newer input version
+
+
+UP_TO_DATE = Freshness.UP_TO_DATE
+OUT_OF_DATE = Freshness.OUT_OF_DATE
+SUPERSEDED = Freshness.SUPERSEDED
+PHANTOM = Freshness.PHANTOM

@@ -1,7 +1,8 @@
 import pytest
 
 from tests.sketcher import Sketcher
-from bead_cli.web.sketch import Sketch, Freshness
+from bead_cli.web.sketch import Sketch
+from bead_cli.web.freshness import UP_TO_DATE, OUT_OF_DATE, SUPERSEDED, PHANTOM
 
 
 def test_new_version_marks_older_superseded():
@@ -11,7 +12,7 @@ def test_new_version_marks_older_superseded():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.UP_TO_DATE
+    assert bead(sketch, 'a1').freshness == UP_TO_DATE
 
     sketcher = Sketcher()
     sketcher.define('a1 a2')
@@ -19,8 +20,8 @@ def test_new_version_marks_older_superseded():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.SUPERSEDED
-    assert bead(sketch, 'a2').freshness == Freshness.UP_TO_DATE
+    assert bead(sketch, 'a1').freshness == SUPERSEDED
+    assert bead(sketch, 'a2').freshness == UP_TO_DATE
 
     sketcher = Sketcher()
     sketcher.define('a1 a2 a3')
@@ -28,9 +29,9 @@ def test_new_version_marks_older_superseded():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.SUPERSEDED
-    assert bead(sketch, 'a2').freshness == Freshness.SUPERSEDED
-    assert bead(sketch, 'a3').freshness == Freshness.UP_TO_DATE
+    assert bead(sketch, 'a1').freshness == SUPERSEDED
+    assert bead(sketch, 'a2').freshness == SUPERSEDED
+    assert bead(sketch, 'a3').freshness == UP_TO_DATE
 
 
 def test_unconnected():
@@ -40,10 +41,10 @@ def test_unconnected():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.SUPERSEDED
-    assert bead(sketch, 'a2').freshness == Freshness.UP_TO_DATE
-    assert bead(sketch, 'b1').freshness == Freshness.UP_TO_DATE
-    assert bead(sketch, 'c2').freshness == Freshness.UP_TO_DATE
+    assert bead(sketch, 'a1').freshness == SUPERSEDED
+    assert bead(sketch, 'a2').freshness == UP_TO_DATE
+    assert bead(sketch, 'b1').freshness == UP_TO_DATE
+    assert bead(sketch, 'c2').freshness == UP_TO_DATE
 
 
 def test_up_to_date_input():
@@ -58,8 +59,8 @@ def test_up_to_date_input():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.UP_TO_DATE
-    assert bead(sketch, 'b1').freshness == Freshness.UP_TO_DATE
+    assert bead(sketch, 'a1').freshness == UP_TO_DATE
+    assert bead(sketch, 'b1').freshness == UP_TO_DATE
 
     sketcher = Sketcher()
     sketcher.define('a1 a2 b1')
@@ -72,10 +73,10 @@ def test_up_to_date_input():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.SUPERSEDED
+    assert bead(sketch, 'a1').freshness == SUPERSEDED
 
-    assert bead(sketch, 'a2').freshness == Freshness.UP_TO_DATE
-    assert bead(sketch, 'b1').freshness == Freshness.UP_TO_DATE
+    assert bead(sketch, 'a2').freshness == UP_TO_DATE
+    assert bead(sketch, 'b1').freshness == UP_TO_DATE
 
 
 def test_out_of_date_input():
@@ -90,8 +91,8 @@ def test_out_of_date_input():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.SUPERSEDED
-    assert bead(sketch, 'b1').freshness == Freshness.OUT_OF_DATE
+    assert bead(sketch, 'a1').freshness == SUPERSEDED
+    assert bead(sketch, 'b1').freshness == OUT_OF_DATE
 
 
 def test_phantom_input():
@@ -111,8 +112,8 @@ def test_phantom_input():
     assert len(list(sketcher.beads)) == 1
     assert len(sketch.beads) == 2
 
-    assert bead(sketch, 'd1').freshness == Freshness.PHANTOM
-    assert bead(sketch, 'e1').freshness == Freshness.OUT_OF_DATE
+    assert bead(sketch, 'd1').freshness == PHANTOM
+    assert bead(sketch, 'e1').freshness == OUT_OF_DATE
 
 
 def test_impossible_loop():
@@ -146,14 +147,14 @@ def test_coloring_is_transitive():
     sketch = Sketch.from_beads(tuple(sketcher.beads))
     sketch.color_beads()
 
-    assert bead(sketch, 'a1').freshness == Freshness.SUPERSEDED
-    assert bead(sketch, 'c1').freshness == Freshness.PHANTOM
-    assert bead(sketch, 'd1').freshness == Freshness.OUT_OF_DATE
-    assert bead(sketch, 'e1').freshness == Freshness.OUT_OF_DATE
+    assert bead(sketch, 'a1').freshness == SUPERSEDED
+    assert bead(sketch, 'c1').freshness == PHANTOM
+    assert bead(sketch, 'd1').freshness == OUT_OF_DATE
+    assert bead(sketch, 'e1').freshness == OUT_OF_DATE
 
-    assert bead(sketch, 'a2').freshness == Freshness.UP_TO_DATE
-    assert bead(sketch, 'b2').freshness == Freshness.UP_TO_DATE
-    assert bead(sketch, 'c2').freshness == Freshness.UP_TO_DATE
+    assert bead(sketch, 'a2').freshness == UP_TO_DATE
+    assert bead(sketch, 'b2').freshness == UP_TO_DATE
+    assert bead(sketch, 'c2').freshness == UP_TO_DATE
 
 
 def bead(sketch, name_version):
