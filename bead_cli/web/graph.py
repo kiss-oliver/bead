@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Iterable, Dict, List, Set, Iterator
+from typing import Iterable, Dict, List, Set, Iterator, Sequence
 
 import attr
 from cached_property import cached_property
@@ -90,7 +90,7 @@ def reverse(edges: Iterable[Edge]) -> Iterator[Edge]:
     return (edge.reversed() for edge in edges)
 
 
-def node_index_from_edges(edges: List[Edge]) -> Dict[Ref, Node]:
+def node_index_from_edges(edges: Sequence[Edge]) -> Dict[Ref, Node]:
     node_by_ref: Dict[Ref, Node] = {}
 
     def register_map(ref, node):
@@ -106,7 +106,7 @@ def node_index_from_edges(edges: List[Edge]) -> Dict[Ref, Node]:
 bead_index_from_edges = node_index_from_edges
 
 
-def toposort(edges: List[Edge]) -> List[Node]:
+def toposort(edges: Sequence[Edge]) -> List[Node]:
     """
     Topological sort.
     """
