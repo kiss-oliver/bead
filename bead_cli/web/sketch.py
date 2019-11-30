@@ -14,6 +14,7 @@ from .graph import (
     generate_input_edges,
     group_by_dest,
     toposort,
+    bead_index_from_edges,
     refs_from_beads,
     refs_from_edges,
 )
@@ -38,9 +39,7 @@ class Sketch:
 
     @classmethod
     def from_edges(cls, edges: Sequence[Edge]):
-        src_by_ref = {e.src_ref: e.src for e in edges}
-        dest_by_ref = {e.dest_ref: e.dest for e in edges}
-        beads = {**src_by_ref, **dest_by_ref}.values()
+        beads = bead_index_from_edges(edges).values()
         return cls(tuple(beads), tuple(edges))
 
     @cached_property
