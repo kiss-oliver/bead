@@ -8,13 +8,24 @@ from .freshness import UP_TO_DATE, OUT_OF_DATE
 from .dummy import Dummy
 from .cluster import Cluster, create_cluster_index
 from . import graphviz
-from .graph import Edge, Ref, generate_input_edges, group_by_dest, toposort
+from .graph import (
+    Edge,
+    Ref,
+    generate_input_edges,
+    group_by_dest,
+    toposort,
+    refs_from_beads,
+    refs_from_edges,
+)
 
 
 @attr.s(frozen=True, auto_attribs=True)
 class Sketch:
     beads: Tuple[Dummy, ...]
     edges: Tuple[Edge, ...]
+
+    def __attrs_post_init__(self):
+        assert refs_from_edges(self.edges) - refs_from_beads(self.beads) == set()
 
     @classmethod
     def from_beads(cls, beads: Sequence[Dummy]):

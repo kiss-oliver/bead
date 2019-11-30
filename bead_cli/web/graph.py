@@ -90,7 +90,7 @@ def reverse(edges: Iterable[Edge]) -> Iterator[Edge]:
     return (edge.reversed() for edge in edges)
 
 
-def node_index_from_edges(edges: Sequence[Edge]) -> Dict[Ref, Node]:
+def node_index_from_edges(edges: Iterable[Edge]) -> Dict[Ref, Node]:
     node_by_ref: Dict[Ref, Node] = {}
 
     def register_map(ref, node):
@@ -103,7 +103,16 @@ def node_index_from_edges(edges: Sequence[Edge]) -> Dict[Ref, Node]:
     return node_by_ref
 
 
+def refs_from_nodes(nodes: Iterable[Node]) -> Set[Ref]:
+    return {node.ref for node in nodes}
+
+
 bead_index_from_edges = node_index_from_edges
+refs_from_beads = refs_from_nodes
+
+
+def refs_from_edges(edges: Iterable[Edge]) -> Set[Ref]:
+    return set(node_index_from_edges(edges))
 
 
 def toposort(edges: Sequence[Edge]) -> List[Node]:
