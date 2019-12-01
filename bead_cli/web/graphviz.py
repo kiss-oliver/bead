@@ -135,7 +135,9 @@ class Context:
             + [
                 indent,
                 f'{before_label[-1]} -> {after_label[0]} ',
-                f'[fontcolor="{color}" color="{color}" fontsize="10" label="{label}" weight="100"]',
+                '[',
+                f'fontcolor="{color}" color="{color}" fontsize="10" label="{label}" weight="100"',
+                ']',
                 ';'
             ]
             + [indent, '\n']
