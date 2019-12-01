@@ -20,6 +20,7 @@ from . import arg_metavar
 from . import arg_help
 from .web.csv import read_beads, write_beads
 from .web.sketch import Sketch
+from .web import sketch as web_sketch
 from .web.dummy import Dummy
 
 timestamp = tech.timestamp.timestamp
@@ -185,15 +186,18 @@ def print_inputs(env, workspace, verbose):
             print('\tName[s]:')
             has_name = False
             for box in boxes:
+                # TODO: print_inputs: find_names -> find_around(name, timestamp)
                 (
                     exact_match, best_guess, best_guess_timestamp, names
                 ) = box.find_names(input.kind, input.content_id, input.timestamp)
                 #
                 has_name = has_name or exact_match or best_guess or names
                 if exact_match:
+                    # TODO: print_inputs: verify exact match by content_id
                     print(f'\t * -r {box.name} {exact_match}')
                     names.remove(exact_match)
                 elif best_guess:
+                    # timestamp not exact
                     print(f'\t ? -r {box.name} {best_guess}')
                     names.remove(best_guess)
                 for name in sorted(names):
@@ -306,13 +310,9 @@ class CmdWeb(Command):
 
         sketch = Sketch.from_beads(all_beads)
         if args.names:
-            beads_to_plot = {
-                bead.content_id
-                for bead in sketch.all_beads
-                if bead.name in args.names}
-            sketch.restrict_to(beads_to_plot)
+            sketch = web_sketch.set_sinks(sketch, args.names)
         if args.heads_only:
-            sketch = sketch.heads()
+            sketch = web_sketch.heads_of(sketch)
         sketch.color_beads()
         dot_str = sketch.as_dot()
 
