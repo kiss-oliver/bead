@@ -149,6 +149,7 @@ def plot_clusters_as_dot(sketch: Sketch):
     and their up-to-date status.
     """
     formatted_bead_clusters = '\n\n'.join(c.as_dot for c in sketch.clusters)
+    graphviz_context = graphviz.Context()
 
     def format_inputs():
         def edges_as_dot():
@@ -156,7 +157,7 @@ def plot_clusters_as_dot(sketch: Sketch):
                 is_auxiliary_edge = (
                     edge.dest.freshness not in (OUT_OF_DATE, UP_TO_DATE))
 
-                yield graphviz.dot_edge(edge.src, edge.dest, edge.label, is_auxiliary_edge)
+                yield graphviz_context.dot_edge(edge.src, edge.dest, edge.label, is_auxiliary_edge)
         return '\n'.join(edges_as_dot())
 
     return graphviz.DOT_GRAPH_TEMPLATE.format(
