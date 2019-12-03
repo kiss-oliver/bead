@@ -206,6 +206,8 @@ class CmdLoad(Command):
             else:
                 warning('No inputs defined to load.')
         else:
+            if not workspace.has_input(input_nick):
+                die(f'No input with name {input_nick}')
             _load(env, workspace, workspace.get_input(input_nick))
 
 

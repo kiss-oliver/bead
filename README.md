@@ -89,7 +89,7 @@ Thank you for your interest!
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-by-name/ci)), text in this section and afterwards will be overwritten
 
 - [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L67)
-- [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L56)
+- [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L57)
 - [FIXME: rename Bead.timestamp* to .freeze_time*](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/bead.py#L33)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L21)
 - [FIXME: test_archive.given_a_bead is fragile and yields an invalid BEAD](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/test_archive.py#L41)
@@ -97,11 +97,9 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [TODO: ask the user to report the exception?!](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/main.py#L107)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L105)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L160)
-- [TODO: print_inputs: find_names -> find_around(name, timestamp)](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L189)
-- [TODO: print_inputs: verify exact match by content_id](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L196)
-- [TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L240)
+- [TODO: use a template and render it with passing in all data](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L237)
 - [XXX: cli parsing: revisit when python 2.x no longer supported](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/cmdparse.py#L80)
 - [XXX: introspect parameter names, default values, annotations?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/cmdparse.py#L115)
 - [XXX: list command: use tabulate?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/box.py#L51)
-- [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L163)
-- [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L93)
+- [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L164)
+- [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L94)

@@ -1,12 +1,13 @@
 import os
 import sys
-import time
 import subprocess
 import webbrowser
+
 
 from bead import tech
 from bead.workspace import Workspace
 from bead import layouts
+import bead.spec as bead_spec
 
 from bead.box import UnionBox
 
@@ -178,45 +179,41 @@ def print_inputs(env, workspace, verbose):
         boxes = env.get_boxes()
 
         print('Inputs:')
+        has_not_loaded = False
+        is_not_first_input = True
         for input in inputs:
-            print('input/' + input.name)
+            if is_not_first_input:
+                print('')
+            is_not_loaded = not workspace.is_loaded(input.name)
+            has_not_loaded = has_not_loaded or is_not_loaded
+            print(f'input/{input.name}')
+            print(f'\tStatus:      {"**NOT LOADED**" if is_not_loaded else "loaded"}')
             input_bead_name = workspace.get_input_bead_name(input.name)
-            print(f'\tBead name: {input_bead_name}')
-            print(f'\tFreeze time: {input.timestamp_str}')
-            print('\tName[s]:')
-            has_name = False
-            for box in boxes:
-                # TODO: print_inputs: find_names -> find_around(name, timestamp)
-                (
-                    exact_match, best_guess, best_guess_timestamp, names
-                ) = box.find_names(input.kind, input.content_id, input.timestamp)
-                #
-                has_name = has_name or exact_match or best_guess or names
-                if exact_match:
-                    # TODO: print_inputs: verify exact match by content_id
-                    print(f'\t * -r {box.name} {exact_match}')
-                    names.remove(exact_match)
-                elif best_guess:
-                    # timestamp not exact
-                    print(f'\t ? -r {box.name} {best_guess}')
-                    names.remove(best_guess)
-                for name in sorted(names):
-                    print(f'\t [-r {box.name} {name}]')
-            if not has_name:
-                print('\t!!! Not found !!!')
-            if verbose or not has_name:
-                print(f'\tBead kind:   {input.kind}')
+            print(f'\tBead:        {input_bead_name} # {input.timestamp_str}')
+            if verbose:
+                print(f'\tKind:        {input.kind}')
                 print(f'\tContent id:  {input.content_id}')
+            print('\tBox[es]:')
+            has_box = False
+            for box in boxes:
+                try:
+                    context = box.get_context(
+                        bead_spec.BEAD_NAME, input_bead_name, input.timestamp)
+                except LookupError:
+                    # not in this box
+                    continue
+                bead = context.best
+                has_box = True
+                exact_match = bead.content_id == input.content_id
+                print(f'\t {"*" if exact_match else "?"} -r {box.name} # {bead.timestamp_str}')
+            if not has_box:
+                print('\t - no candidates :(')
+                print('\t   Maybe it has been renamed? or is it in an unreachable box?')
+            is_not_first_input = True
 
         print('')
-        unloaded = [
-            input.name
-            for input in inputs
-            if not workspace.is_loaded(input.name)]
-        if unloaded:
-            print('These inputs are not loaded:')
-            unloaded_list = '\t- ' + '\n\t- '.join(unloaded)
-            print(unloaded_list.expandtabs(2))
+        if has_not_loaded:
+            print('Some inputs are currently not loaded.')
             print('You can "load" or "update" them manually.')
     else:
         print('No inputs defined')
@@ -337,6 +334,7 @@ class CmdWeb(Command):
 def load_all_beads(boxes):
     columns = int(os.environ.get('COLUMNS', 80))
     all_beads = []
+    import time
     load_start = time.perf_counter()
     # This UnionBox.all_beads is the meat, the rest is just user feedback for big/slow
     # environments

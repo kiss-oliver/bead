@@ -39,8 +39,8 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         self.assert_loaded(robot, 'input2', fixtures.TS2)
 
         cli('status')
-        self.assertThat(robot.stdout, Contains(f'Bead name: {bead1}'))
-        self.assertThat(robot.stdout, Contains(f'Bead name: {bead2}'))
+        self.assertThat(robot.stdout, Contains(bead1))
+        self.assertThat(robot.stdout, Contains(bead2))
 
         # `update` works by name, not by kind
         copy(fixtures.TS3, bead1)
