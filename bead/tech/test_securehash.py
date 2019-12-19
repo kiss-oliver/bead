@@ -60,7 +60,7 @@ class Test(TestCase):
 
     def then_result_is_an_ascii_string_of_more_than_32_chars(self):
         self.__hashresult.encode('ascii')
-        self.assertIsInstance(self.__hashresult, ''.__class__)
+        self.assertIsInstance(self.__hashresult, str)
         self.assertGreater(len(self.__hashresult), 32)
 
     def then_the_hashes_are_the_same(self):

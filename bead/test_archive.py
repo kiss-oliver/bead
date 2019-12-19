@@ -76,7 +76,7 @@ class Test_Archive(TestCase):
         self.__content_id = bead.content_id
 
     def then_content_id_is_a_string(self):
-        self.assertIsInstance(self.__content_id, ''.__class__)
+        self.assertIsInstance(self.__content_id, str)
 
     def when_a_nonexistent_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'

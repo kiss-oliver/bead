@@ -25,5 +25,4 @@ def uuid():
     # uuid1 by itself has privacy/security concerns, so hash it
     # + add a random uuid to remain collision free
     scrambled_uuid1 = hashlib.sha256(uuid1().bytes).hexdigest()[:32]
-    unicode = ''.__class__
-    return unicode(scrambled_uuid1) + '-' + unicode(uuid4())
+    return str(scrambled_uuid1) + '-' + str(uuid4())

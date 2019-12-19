@@ -43,7 +43,7 @@ def file(file, file_size):
     assert bytes_read == file_size
 
     _add_suffix(hash, file_size)
-    return ''.__class__(hash.hexdigest())
+    return str(hash.hexdigest())
 
 
 def bytes(bytes):
@@ -54,4 +54,4 @@ def bytes(bytes):
     _add_prefix(hash, len(bytes))
     hash.update(bytes)
     _add_suffix(hash, len(bytes))
-    return ''.__class__(hash.hexdigest())
+    return str(hash.hexdigest())

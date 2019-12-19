@@ -164,8 +164,8 @@ class Parser:
         MISMATCH = 'Names, commands, and titles do not match up!'
         assert len(names) == len(commands), MISMATCH
         assert len(names) == len(titles), MISMATCH
-        assert all(isinstance(n, ''.__class__) for n in names), MISMATCH
-        assert all(isinstance(t, ''.__class__) for t in titles), MISMATCH
+        assert all(isinstance(n, str) for n in names), MISMATCH
+        assert all(isinstance(t, str) for t in titles), MISMATCH
 
         for name, command, title in zip(names, commands, titles):
             self.command(name, command, title)
