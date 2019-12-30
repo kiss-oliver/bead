@@ -1,6 +1,4 @@
 git+https://github.com/e3krisztian/arglinker#egg=arglinker
-fixtures==1.3.1
-testtools==1.8.0
 pytest-cov==2.8.1
 flake8
 freezegun==0.3.12

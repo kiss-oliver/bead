@@ -2,9 +2,9 @@ import contextlib
 import io
 import os
 import pathlib
+import tempfile
 
 import unittest
-import fixtures
 from unittest import skip, skipIf, skipUnless
 
 from . import tech
@@ -76,11 +76,12 @@ class Fixture:
 
     def cleanUp(self):
         while self.__cleanups:
-            self.__cleanups[-1]()
+            cleanup, args, kwargs = self.__cleanups[-1]
+            cleanup(*args, **kwargs)
             del self.__cleanups[-1]
 
-    def addCleanup(self, cleanup):
-        self.__cleanups.append(cleanup)
+    def addCleanup(self, cleanup, *args, **kwargs):
+        self.__cleanups.append((cleanup, args, kwargs))
 
     def useFixture(self, fixture):
         fixture.setUp()
@@ -98,11 +99,11 @@ class Fixture:
 # commonly used fixtures
 
 
-class TempDir(fixtures.Fixture):
+class TempDir(Fixture):
 
     def setUp(self):
         super().setUp()
-        self.path = tech.fs.Path(self.useFixture(fixtures.TempDir()).path)
+        self.path = tech.fs.Path(tempfile.mkdtemp())
         # we need our own rmtree, that can remove read only files as well
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
