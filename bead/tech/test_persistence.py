@@ -45,4 +45,4 @@ class Test(TestCase):
         self.__structure = m.loads(self.__string)
 
     def then_it_equals_the_original_structure(self):
-        self.assertEquals(get_structure(), self.__structure)
+        assert get_structure() == self.__structure

@@ -11,7 +11,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
     def test_by_name(self, robot, bead_a):
         robot.cli('develop', bead_a)
 
-        self.assertTrue(Workspace(robot.cwd / bead_a).is_valid)
+        assert Workspace(robot.cwd / bead_a).is_valid
         self.assert_file_contains(robot.cwd / bead_a / 'README', bead_a)
 
     def test_missing_bead(self, robot, bead_a):
@@ -43,7 +43,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
         robot.cli('develop', '-x', bead_a)
         ws = robot.cwd / bead_a
 
-        self.assertTrue(Workspace(ws).is_valid)
+        assert Workspace(ws).is_valid
 
         # output must be unpacked as well!
         self.assert_file_contains(ws / layouts.Workspace.OUTPUT / 'README', bead_a)

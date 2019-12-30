@@ -107,7 +107,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
 
             robot.cli('status')
             assert bead_b not in robot.stdout
-            self.assertEquals([], list(robot.ls('input')))
+            assert [] == list(robot.ls('input'))
 
     def test_add_with_hacked_bead_is_refused(self, robot, hacked_bead, bead_a):
         robot.cli('develop', bead_a)
@@ -166,7 +166,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         orig_files = sorted(files_with_times())
         robot.cli('input', 'update')
         after_update_files = sorted(files_with_times())
-        self.assertEquals(orig_files, after_update_files)
+        assert orig_files == after_update_files
 
         assert f'Skipping update of {bead_a}:' in robot.stdout
         assert f'Skipping update of {bead_b}:' in robot.stdout
@@ -186,7 +186,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         orig_files = sorted(files_with_times())
         robot.cli('input', 'update', bead_a)
         after_update_files = sorted(files_with_times())
-        self.assertEquals(orig_files, after_update_files)
+        assert orig_files == after_update_files
 
         assert f'Skipping update of {bead_a}:' in robot.stdout
 

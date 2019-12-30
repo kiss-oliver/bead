@@ -57,7 +57,7 @@ class Test_create(TestCase):
         assert not self.workspace.inputs
 
     def then_workspace_is_of_specified_kind(self):
-        self.assertEquals(A_KIND, self.workspace.kind)
+        assert A_KIND == self.workspace.kind
 
 
 class Test_for_current_working_directory(TestCase):
@@ -66,7 +66,7 @@ class Test_for_current_working_directory(TestCase):
         root = self.new_temp_dir()
         with chdir(root):
             ws = m.Workspace.for_current_working_directory()
-        self.assertEquals(tech.fs.Path(root), ws.directory)
+        assert tech.fs.Path(root) == ws.directory
 
     def test_workspace_root(self):
         root = self.new_temp_dir()
@@ -74,7 +74,7 @@ class Test_for_current_working_directory(TestCase):
         workspace.create(A_KIND)
         with chdir(root):
             ws = m.Workspace.for_current_working_directory()
-        self.assertEquals(tech.fs.Path(root), ws.directory)
+        assert tech.fs.Path(root) == ws.directory
 
     def test_workspace_above_root(self):
         root = self.new_temp_dir()
@@ -82,7 +82,7 @@ class Test_for_current_working_directory(TestCase):
         workspace.create(A_KIND)
         with chdir(root / layouts.Workspace.INPUT):
             ws = m.Workspace.for_current_working_directory()
-        self.assertEquals(tech.fs.Path(root), ws.directory)
+        assert tech.fs.Path(root) == ws.directory
 
 
 class Test_pack(TestCase):
@@ -146,13 +146,13 @@ class Test_pack(TestCase):
         with zipfile.ZipFile(self.__zipfile) as z:
             layout = layouts.Archive
 
-            self.assertEquals(self.__OUTPUT1, z.read(layout.DATA / 'output1'))
-            self.assertEquals(self.__SOURCE1, z.read(layout.CODE / 'source1'))
-            self.assertEquals(self.__SOURCE2, z.read(layout.CODE / 'subdir/source2'))
+            assert self.__OUTPUT1 == z.read(layout.DATA / 'output1')
+            assert self.__SOURCE1 == z.read(layout.CODE / 'source1')
+            assert self.__SOURCE2 == z.read(layout.CODE / 'subdir/source2')
 
             files = z.namelist()
-            self.assertIn(layout.BEAD_META, files)
-            self.assertIn(layout.MANIFEST, files)
+            assert layout.BEAD_META in files
+            assert layout.MANIFEST in files
 
     def then_archive_is_valid_bead(self):
         bead = Archive(self.__zipfile)
@@ -160,7 +160,7 @@ class Test_pack(TestCase):
 
     def then_archive_has_comment(self):
         with zipfile.ZipFile(self.__zipfile) as z:
-            self.assertEquals(self.__BEAD_COMMENT, z.comment.decode('utf-8'))
+            assert self.__BEAD_COMMENT == z.comment.decode('utf-8')
 
     def then_archive_does_not_contain_workspace_meta_and_temp_files(self):
         def does_not_contain(workspace_path):
@@ -190,7 +190,7 @@ class Test_pack_stability(TestCase):
 
         bead1 = make_bead()
         bead2 = make_bead()
-        self.assertEquals(bead1.content_id, bead2.content_id)
+        assert bead1.content_id == bead2.content_id
 
 
 def make_bead(path, filespecs):
@@ -252,7 +252,7 @@ class Test_load(TestCase):
 
     def then_data_files_in_bead_are_available_in_workspace(self):
         with open(self.__workspace_dir / 'input/bead1/output1', 'rb') as f:
-            self.assertEquals(b'data for bead1', f.read())
+            assert b'data for bead1' == f.read()
 
     def then_extracted_files_under_input_are_readonly(self):
         root = self.__workspace_dir / 'input/bead1'
@@ -273,18 +273,18 @@ class Test_load(TestCase):
 class Test_input_map(TestCase):
 
     def test_default_value(self, workspace_with_input, input_nick):
-        self.assertEquals(input_nick, workspace_with_input.get_input_bead_name(input_nick))
+        assert input_nick == workspace_with_input.get_input_bead_name(input_nick)
 
     def test_define(self, workspace_with_input, input_nick):
         bead_name = f'{input_nick}2'
         workspace_with_input.set_input_bead_name(input_nick, bead_name)
-        self.assertEquals(bead_name, workspace_with_input.get_input_bead_name(input_nick))
+        assert bead_name == workspace_with_input.get_input_bead_name(input_nick)
 
     def test_update(self, workspace_with_input, input_nick):
         workspace_with_input.set_input_bead_name(input_nick, f'{input_nick}2')
         bead_name = f'{input_nick}42'
         workspace_with_input.set_input_bead_name(input_nick, bead_name)
-        self.assertEquals(bead_name, workspace_with_input.get_input_bead_name(input_nick))
+        assert bead_name == workspace_with_input.get_input_bead_name(input_nick)
 
     def test_independent_update(self, workspace_with_input, input_nick):
         input_nick2 = f'{input_nick}2'
@@ -292,12 +292,8 @@ class Test_input_map(TestCase):
 
         workspace_with_input.set_input_bead_name(input_nick, f'{input_nick}1111')
         workspace_with_input.set_input_bead_name(input_nick2, f'{input_nick2}222')
-        self.assertEquals(
-            f'{input_nick}1111',
-            workspace_with_input.get_input_bead_name(input_nick))
-        self.assertEquals(
-            f'{input_nick2}222',
-            workspace_with_input.get_input_bead_name(input_nick2))
+        assert f'{input_nick}1111' == workspace_with_input.get_input_bead_name(input_nick)
+        assert f'{input_nick2}222' == workspace_with_input.get_input_bead_name(input_nick2)
 
     # implementation
 

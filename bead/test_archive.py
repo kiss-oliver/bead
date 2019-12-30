@@ -57,7 +57,7 @@ class Test_Archive(TestCase):
 
     def then_file1_has_the_expected_content(self):
         with open(self.__extractedfile, 'rb') as f:
-            self.assertEquals(b'''file1's known content''', f.read())
+            assert b'''file1's known content''' == f.read()
 
     def when_a_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'
@@ -66,17 +66,14 @@ class Test_Archive(TestCase):
         self.__extractedfile = os.path.join(self.__extracteddir, 'file1')
 
     def then_directory_has_the_expected_files(self):
-        self.assertEquals(
-            {'file1', 'file2'},
-            set(os.listdir(self.__extracteddir))
-        )
+        assert {'file1', 'file2'} == set(os.listdir(self.__extracteddir))
 
     def when_content_id_is_checked(self):
         bead = m.Archive(self.__bead)
         self.__content_id = bead.content_id
 
     def then_content_id_is_a_string(self):
-        self.assertIsInstance(self.__content_id, str)
+        assert isinstance(self.__content_id, str)
 
     def when_a_nonexistent_directory_is_extracted(self):
         self.__extracteddir = self.new_temp_dir() / 'destination dir'
@@ -84,5 +81,5 @@ class Test_Archive(TestCase):
         bead.extract_dir('path/to/nonexistent', self.__extracteddir)
 
     def then_an_empty_directory_is_created(self):
-        self.assertTrue(os.path.isdir(self.__extracteddir))
-        self.assertEquals([], os.listdir(self.__extracteddir))
+        assert os.path.isdir(self.__extracteddir)
+        assert [] == os.listdir(self.__extracteddir)
