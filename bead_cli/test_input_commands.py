@@ -1,5 +1,4 @@
 from bead.test import TestCase
-from testtools.matchers import Not, Contains
 
 import os
 from bead.workspace import Workspace
@@ -43,7 +42,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cd(bead_with_inputs)
 
         robot.cli('status')
-        self.assertThat(robot.stdout, Contains(bead_b))
+        assert bead_b in robot.stdout
 
         assert not Workspace(robot.cwd).is_loaded('input_b')
 
@@ -51,24 +50,24 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         self.assert_loaded(robot, 'input_b', bead_a)
 
         robot.cli('status')
-        self.assertThat(robot.stdout, Not(Contains(bead_b)))
+        assert bead_b not in robot.stdout
 
     def test_load_on_workspace_without_input_gives_feedback(self, robot, bead_a):
         robot.cli('develop', bead_a)
         robot.cd(bead_a)
         robot.cli('input', 'load')
 
-        self.assertThat(robot.stderr, Contains('WARNING'))
-        self.assertThat(robot.stderr, Contains('No inputs defined to load.'))
+        assert 'WARNING' in robot.stderr
+        assert 'No inputs defined to load.' in robot.stderr
 
     def test_load_with_missing_bead_gives_warning(self, robot, bead_with_inputs, bead_a):
         robot.cli('develop', bead_with_inputs)
         robot.cd(bead_with_inputs)
         robot.reset()
         robot.cli('input', 'load')
-        self.assertThat(robot.stderr, Contains('WARNING'))
-        self.assertThat(robot.stderr, Contains('input_a'))
-        self.assertThat(robot.stderr, Contains('input_b'))
+        assert 'WARNING' in robot.stderr
+        assert 'input_a' in robot.stderr
+        assert 'input_b' in robot.stderr
 
     def test_load_only_one_input(self, robot, bead_with_inputs, bead_a):
         robot.cli('develop', bead_with_inputs)
@@ -93,8 +92,8 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
             robot.cli('input', 'add', 'x', 'non-existing-bead')
             self.fail('Expected an error exit!')
         except SystemExit:
-            self.assertThat(robot.stderr, Contains('ERROR'))
-            self.assertThat(robot.stderr, Contains('non-existing-bead'))
+            assert 'ERROR' in robot.stderr
+            assert 'non-existing-bead' in robot.stderr
 
     def test_add_with_path_separator_in_name_is_error(self, robot, bead_a, bead_b):
         robot.cli('develop', bead_a)
@@ -103,11 +102,11 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
             robot.cli('input', 'add', 'name/with/path/separator', bead_b)
             self.fail('Expected an error exit!')
         except SystemExit:
-            self.assertThat(robot.stderr, Contains('ERROR'))
-            self.assertThat(robot.stderr, Contains('name/with/path/separator'))
+            assert 'ERROR' in robot.stderr
+            assert 'name/with/path/separator' in robot.stderr
 
             robot.cli('status')
-            self.assertThat(robot.stdout, Not(Contains(bead_b)))
+            assert bead_b not in robot.stdout
             self.assertEquals([], list(robot.ls('input')))
 
     def test_add_with_hacked_bead_is_refused(self, robot, hacked_bead, bead_a):
@@ -115,7 +114,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cd(bead_a)
         robot.cli('input', 'add', 'hack', hacked_bead)
         self.assertFalse(Workspace(robot.cwd).has_input('hack'))
-        self.assertThat(robot.stderr, Contains('WARNING'))
+        assert 'WARNING' in robot.stderr
 
     def test_update_with_hacked_bead_is_refused(self, robot, hacked_bead, bead_a):
         robot.cli('develop', bead_a)
@@ -123,7 +122,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cli('input', 'add', 'intelligence', bead_a)
         robot.cli('input', 'update', 'intelligence', hacked_bead)
         self.assert_loaded(robot, 'intelligence', bead_a)
-        self.assertThat(robot.stderr, Contains('WARNING'))
+        assert 'WARNING' in robot.stderr
 
     def test_update_to_next_version(self, robot, bead_with_history):
         robot.cli('new', 'test-workspace')
@@ -169,8 +168,8 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         after_update_files = sorted(files_with_times())
         self.assertEquals(orig_files, after_update_files)
 
-        self.assertThat(robot.stdout, Contains(f'Skipping update of {bead_a}:'))
-        self.assertThat(robot.stdout, Contains(f'Skipping update of {bead_b}:'))
+        assert f'Skipping update of {bead_a}:' in robot.stdout
+        assert f'Skipping update of {bead_b}:' in robot.stdout
 
     def test_update_with_same_bead_is_noop(self, robot, bead_a):
         robot.cli('new', 'test-workspace')
@@ -189,7 +188,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         after_update_files = sorted(files_with_times())
         self.assertEquals(orig_files, after_update_files)
 
-        self.assertThat(robot.stdout, Contains(f'Skipping update of {bead_a}:'))
+        assert f'Skipping update of {bead_a}:' in robot.stdout
 
     def test_unload_all(self, robot, bead_with_inputs):
         robot.cli('develop', bead_with_inputs)

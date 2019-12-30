@@ -1,7 +1,5 @@
 from bead.test import TestCase, skip
 
-from testtools.matchers import Contains
-
 import shutil
 # from bead.workspace import Workspace
 from . import test_fixtures as fixtures
@@ -39,8 +37,8 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         self.assert_loaded(robot, 'input2', fixtures.TS2)
 
         cli('status')
-        self.assertThat(robot.stdout, Contains(bead1))
-        self.assertThat(robot.stdout, Contains(bead2))
+        assert bead1 in robot.stdout
+        assert bead2 in robot.stdout
 
         # `update` works by name, not by kind
         copy(fixtures.TS3, bead1)

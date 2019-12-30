@@ -1,7 +1,6 @@
 import os
 
 from bead.test import TestCase, skipIf
-from testtools.matchers import Contains
 
 from . import test_fixtures as fixtures
 from bead.workspace import Workspace
@@ -12,7 +11,7 @@ class Test(TestCase, fixtures.RobotAndBeads):
 
     def test_invalid_workspace_causes_error(self, robot):
         self.assertRaises(SystemExit, robot.cli, 'save')
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        assert 'ERROR' in robot.stderr
 
     def test_on_success_there_is_feedback(self, robot, box):
         robot.cli('new', 'bead')
@@ -50,7 +49,7 @@ class Test_no_box(TestCase):
         robot.cd('bead')
         robot.cli('save')
         # there is a message on stderr that a new box has been created
-        self.assertThat(robot.stderr, Contains('home'))
+        assert 'home' in robot.stderr
         # a new box with name `home` has been indeed created and it has exactly one bead
         with robot.environment as env:
             homebox = env.get_box('home')
@@ -81,7 +80,7 @@ class Test_more_than_one_boxes(TestCase):
     def test_save_dies_without_explicit_box(self, robot, box1, box2):
         robot.cli('new', 'bead')
         self.assertRaises(SystemExit, robot.cli, 'save', 'bead')
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        assert 'ERROR' in robot.stderr
 
     def test_save_stores_bead_in_specified_box(self, robot, box1, box2):
         robot.cli('new', 'bead')
@@ -99,4 +98,4 @@ class Test_more_than_one_boxes(TestCase):
         self.assertRaises(
             SystemExit,
             robot.cli, 'save', 'unknown-box', '--workspace', 'bead')
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        assert 'ERROR' in robot.stderr

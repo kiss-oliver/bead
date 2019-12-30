@@ -1,5 +1,4 @@
 from bead.test import TestCase
-from testtools.matchers import Not, Contains
 
 from .test_robot import Robot
 
@@ -79,50 +78,49 @@ class Test_box_commands(TestCase):
     # tests
     def test_list_when_there_are_no_boxes(self, robot):
         robot.cli('box', 'list')
-        self.assertThat(
-            robot.stdout, Contains('There are no defined boxes'))
+        assert 'There are no defined boxes' in robot.stdout
 
     def test_add_non_existing_directory_fails(self, robot):
         robot.cli('box', 'add', 'notadded', 'non-existing')
-        self.assertThat(robot.stdout, Contains('ERROR'))
-        self.assertThat(robot.stdout, Not(Contains('notadded')))
+        assert 'ERROR' in robot.stdout
+        assert 'notadded' not in robot.stdout
 
     def test_add_multiple(self, robot, dir1, dir2):
         robot.cli('box', 'add', 'name1', 'dir1')
         robot.cli('box', 'add', 'name2', 'dir2')
-        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+        assert 'ERROR' not in robot.stdout
 
         robot.cli('box', 'list')
-        self.assertThat(robot.stdout, Contains('name1'))
-        self.assertThat(robot.stdout, Contains('name2'))
-        self.assertThat(robot.stdout, Contains('dir1'))
-        self.assertThat(robot.stdout, Contains('dir2'))
+        assert 'name1' in robot.stdout
+        assert 'name2' in robot.stdout
+        assert 'dir1' in robot.stdout
+        assert 'dir2' in robot.stdout
 
     def test_add_with_same_name_fails(self, robot, dir1, dir2):
         robot.cli('box', 'add', 'name', 'dir1')
-        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+        assert 'ERROR' not in robot.stdout
 
         robot.cli('box', 'add', 'name', 'dir2')
-        self.assertThat(robot.stdout, Contains('ERROR'))
+        assert 'ERROR' in robot.stdout
 
     def test_add_same_directory_twice_fails(self, robot, dir1):
         robot.cli('box', 'add', 'name1', dir1)
-        self.assertThat(robot.stdout, Not(Contains('ERROR')))
+        assert 'ERROR' not in robot.stdout
 
         robot.cli('box', 'add', 'name2', dir1)
-        self.assertThat(robot.stdout, Contains('ERROR'))
+        assert 'ERROR' in robot.stdout
 
     def test_forget_box(self, robot, dir1, dir2):
         robot.cli('box', 'add', 'box-to-delete', dir1)
         robot.cli('box', 'add', 'another-box', dir2)
 
         robot.cli('box', 'forget', 'box-to-delete')
-        self.assertThat(robot.stdout, Contains('forgotten'))
+        assert 'forgotten' in robot.stdout
 
         robot.cli('box', 'list')
-        self.assertThat(robot.stdout, Not(Contains('box-to-delete')))
-        self.assertThat(robot.stdout, Contains('another-box'))
+        assert 'box-to-delete' not in robot.stdout
+        assert 'another-box' in robot.stdout
 
     def test_forget_nonexisting_box(self, robot):
         robot.cli('box', 'forget', 'non-existing')
-        self.assertThat(robot.stdout, Contains('WARNING'))
+        assert 'WARNING' in robot.stdout

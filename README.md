@@ -93,7 +93,7 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [FIXME: rename Bead.timestamp* to .freeze_time*](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/bead.py#L33)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L21)
 - [FIXME: test_archive.given_a_bead is fragile and yields an invalid BEAD](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/test_archive.py#L41)
-- [FIXME: this test helper uses private implementation information](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_feature_update_by_name.py#L89)
+- [FIXME: this test helper uses private implementation information](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_feature_update_by_name.py#L87)
 - [TODO: ask the user to report the exception?!](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/main.py#L107)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L105)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L160)
