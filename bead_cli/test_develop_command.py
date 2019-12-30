@@ -1,5 +1,5 @@
 from bead.test import TestCase
-from testtools.matchers import FileContains, Contains, FileExists
+from testtools.matchers import FileExists
 
 from bead.workspace import Workspace
 from bead import layouts
@@ -13,15 +13,15 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
         robot.cli('develop', bead_a)
 
         self.assertTrue(Workspace(robot.cwd / bead_a).is_valid)
-        self.assertThat(robot.cwd / bead_a / 'README', FileContains(bead_a))
+        self.assert_file_contains(robot.cwd / bead_a / 'README', bead_a)
 
     def test_missing_bead(self, robot, bead_a):
         robot.cli('box', 'forget', 'box')
         try:
             robot.cli('develop', bead_a)
         except SystemExit:
-            self.assertThat(robot.stderr, Contains('Bead'))
-            self.assertThat(robot.stderr, Contains('not found'))
+            assert 'Bead' in robot.stderr
+            assert 'not found' in robot.stderr
         else:
             self.fail('develop should have exited on missing bead')
 
@@ -40,7 +40,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
 
     def test_hacked_bead_is_detected(self, robot, hacked_bead):
         self.assertRaises(SystemExit, robot.cli, 'develop', hacked_bead)
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        assert 'ERROR' in robot.stderr
 
     def test_extract_output(self, robot, bead_a):
         robot.cli('develop', '-x', bead_a)
@@ -49,6 +49,4 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
         self.assertTrue(Workspace(ws).is_valid)
 
         # output must be unpacked as well!
-        self.assertThat(
-            ws / layouts.Workspace.OUTPUT / 'README',
-            FileContains(bead_a))
+        self.assert_file_contains(ws / layouts.Workspace.OUTPUT / 'README', bead_a)

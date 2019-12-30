@@ -1,5 +1,5 @@
 from bead.test import TestCase
-from testtools.matchers import FileContains, Not, Contains, FileExists
+from testtools.matchers import Not, Contains, FileExists
 
 from .test_robot import Robot
 
@@ -51,9 +51,7 @@ class Test_shared_box(TestCase):
         # update only one input
         bob.cli('input', 'update', 'alicebead1')
 
-        self.assertThat(
-            bob.cwd / 'input/alicebead1/datafile',
-            FileContains('''Alice's new data'''))
+        self.assert_file_contains(bob.cwd / 'input/alicebead1/datafile', '''Alice's new data''')
 
         # second input directory not changed
         self.assertThat(
@@ -63,9 +61,7 @@ class Test_shared_box(TestCase):
         # update all inputs
         bob.cli('input', 'update')
 
-        self.assertThat(
-            bob.cwd / 'input/alicebead2/datafile',
-            FileContains('''Alice's new data'''))
+        self.assert_file_contains(bob.cwd / 'input/alicebead2/datafile', '''Alice's new data''')
 
 
 class Test_box_commands(TestCase):

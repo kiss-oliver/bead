@@ -1,4 +1,5 @@
 import contextlib
+import pathlib
 
 import testtools
 import fixtures
@@ -38,6 +39,9 @@ class TestCase(TestCase):
 
     def new_temp_dir(self):
         return self.useFixture(TempDir()).path
+
+    def assert_file_contains(self, filename, content_fragment):
+        assert content_fragment in pathlib.Path(filename).read_text()
 
 ###
 # commonly used fixtures

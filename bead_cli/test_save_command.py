@@ -1,7 +1,7 @@
 import os
 
 from bead.test import TestCase, skipIf
-from testtools.matchers import Contains, FileContains
+from testtools.matchers import Contains
 
 from . import test_fixtures as fixtures
 from bead.workspace import Workspace
@@ -35,7 +35,7 @@ class Test(TestCase, fixtures.RobotAndBeads):
         robot.cli('nuke', 'bead')
 
         robot.cli('develop', 'bead')
-        self.assertThat(robot.cwd / 'bead/symlink', FileContains('content'))
+        self.assert_file_contains(robot.cwd / 'bead/symlink', 'content')
 
 
 class Test_no_box(TestCase):

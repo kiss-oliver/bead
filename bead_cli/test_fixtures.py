@@ -5,8 +5,6 @@ import os
 import warnings
 import zipfile
 
-from testtools.matchers import FileContains
-
 from bead.workspace import Workspace
 from bead import layouts
 from bead import tech
@@ -123,6 +121,4 @@ class RobotAndBeads(object):
         Test beads are assumed to have different README-s, so the test goes by the expected value
         of the README.
         """
-        self.assertThat(
-            robot.cwd / 'input' / input_nick / 'README',
-            FileContains(readme_content))
+        self.assert_file_contains(robot.cwd / 'input' / input_nick / 'README', readme_content)
