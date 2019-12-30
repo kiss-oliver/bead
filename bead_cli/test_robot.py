@@ -1,11 +1,10 @@
 import contextlib
 import os
-import fixtures
 from tracelog import TRACELOG
 
 from bead import tech
 
-from bead.test import TempDir, CaptureStdout, CaptureStderr, chdir
+from bead.test import TempDir, CaptureStdout, CaptureStderr, chdir, Fixture, setenv
 from .main import run
 from .environment import Environment
 
@@ -15,7 +14,7 @@ def environment(robot):
     '''
     Context manager - enable running code in the context of the robot.
     '''
-    with fixtures.EnvironmentVariable('HOME', robot.home):
+    with setenv('HOME', robot.home):
         with chdir(robot.cwd):
             try:
                 # FIXME: robot: environment file should be built by a function in environment
@@ -25,7 +24,7 @@ def environment(robot):
                 raise
 
 
-class Robot(fixtures.Fixture):
+class Robot(Fixture):
     '''
     Represents a fake user.
 

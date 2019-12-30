@@ -1,6 +1,5 @@
 import os
 from bead.test import TestCase
-from testtools.content import text_content
 
 from .test_robot import Robot
 
@@ -25,7 +24,7 @@ class Test_basic_command_line(TestCase):
 
     # tests
     def test(self, robot, cli, cd, ls, box_dir):
-        self.addDetail('home', text_content(robot.home))
+        print(f'home: {robot.home}')
 
         cli('new', 'something')
         self.assertIn('something', robot.stdout)

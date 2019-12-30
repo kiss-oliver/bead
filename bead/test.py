@@ -1,12 +1,13 @@
 import contextlib
+import io
+import os
 import pathlib
 
-import testtools
+import unittest
 import fixtures
 from unittest import skip, skipIf, skipUnless
 
 from . import tech
-import os
 
 import arglinker
 from tracelog import TRACELOG
@@ -22,20 +23,36 @@ def chdir(directory):
         os.chdir(cwd)
 
 
+@contextlib.contextmanager
+def setenv(variable, value):
+    old_value = os.environ.get(variable)
+    try:
+        os.environ[variable] = value
+        yield
+    finally:
+        if old_value is None:
+            del os.environ[variable]
+        else:
+            os.environ[variable] = old_value
+
+
 skip, skipIf, skipUnless  # reexport
 
-TestCase = arglinker.add_test_linker(testtools.TestCase)
 
-
-class TestCase(TestCase):
+class TestCase(arglinker.add_test_linker(unittest.TestCase)):
 
     def setUp(self, *args, **kwargs):
-        super(TestCase, self).setUp(*args, **kwargs)
+        super().setUp(*args, **kwargs)
         TRACELOG(self.__class__.__module__, self.__class__.__name__)
 
     def tearDown(self, *args, **kwargs):
-        super(TestCase, self).tearDown(*args, **kwargs)
+        super().tearDown(*args, **kwargs)
         TRACELOG(self.__class__.__module__, self.__class__.__name__)
+
+    def useFixture(self, fixture):
+        fixture.setUp()
+        self.addCleanup(fixture.cleanUp)
+        return fixture
 
     def new_temp_dir(self):
         return self.useFixture(TempDir()).path
@@ -50,6 +67,33 @@ class TestCase(TestCase):
         assert not os.path.exists(filename)
 
 
+class Fixture:
+    def __init__(self):
+        self.__cleanups = []
+
+    def setUp(self):
+        pass
+
+    def cleanUp(self):
+        while self.__cleanups:
+            self.__cleanups[-1]()
+            del self.__cleanups[-1]
+
+    def addCleanup(self, cleanup):
+        self.__cleanups.append(cleanup)
+
+    def useFixture(self, fixture):
+        fixture.setUp()
+        self.addCleanup(fixture.cleanUp)
+        return fixture
+
+    def __enter__(self):
+        self.setUp()
+        return self
+
+    def __exit__(self, *_exc):
+        self.cleanUp()
+
 ###
 # commonly used fixtures
 
@@ -57,32 +101,33 @@ class TestCase(TestCase):
 class TempDir(fixtures.Fixture):
 
     def setUp(self):
-        super(TempDir, self).setUp()
+        super().setUp()
         self.path = tech.fs.Path(self.useFixture(fixtures.TempDir()).path)
         # we need our own rmtree, that can remove read only files as well
         self.addCleanup(tech.fs.rmtree, self.path, ignore_errors=True)
 
 
-class _CaptureStdStream(fixtures.Fixture):
+class _CaptureStream(Fixture):
 
-    def __init__(self, stream):
-        assert stream.startswith('sys.std')
-        super(_CaptureStdStream, self).__init__()
-        self.stream = stream
+    def __init__(self, redirector):
+        self.redirector = redirector
+        self.string_stream = io.StringIO()
+        super().__init__()
 
     def setUp(self):
-        super(_CaptureStdStream, self).setUp()
-        stdout = self.useFixture(fixtures.StringStream(self.stream)).stream
-        self.useFixture(fixtures.MonkeyPatch(self.stream, stdout))
+        super().setUp()
+        redirect = self.redirector(self.string_stream)
+        redirect.__enter__()
+        self.addCleanup(lambda: redirect.__exit__(None, None, None))
 
     @property
     def text(self):
-        return self.getDetails()[self.stream].as_text()
+        return self.string_stream.getvalue()
 
 
 def CaptureStdout():
-    return _CaptureStdStream('sys.stdout')
+    return _CaptureStream(contextlib.redirect_stdout)
 
 
 def CaptureStderr():
-    return _CaptureStdStream('sys.stderr')
+    return _CaptureStream(contextlib.redirect_stderr)
