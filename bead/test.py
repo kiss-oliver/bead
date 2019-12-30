@@ -43,6 +43,13 @@ class TestCase(TestCase):
     def assert_file_contains(self, filename, content_fragment):
         assert content_fragment in pathlib.Path(filename).read_text()
 
+    def assert_file_exists(self, filename):
+        assert os.path.exists(filename)
+
+    def assert_file_does_not_exists(self, filename):
+        assert not os.path.exists(filename)
+
+
 ###
 # commonly used fixtures
 

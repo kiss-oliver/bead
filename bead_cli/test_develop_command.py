@@ -1,5 +1,4 @@
 from bead.test import TestCase
-from testtools.matchers import FileExists
 
 from bead.workspace import Workspace
 from bead import layouts
@@ -28,9 +27,7 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
     def assert_develop_version(self, robot, timestamp, *bead_spec):
         assert bead_spec[0] == 'bead_with_history'
         robot.cli('develop', *bead_spec)
-        self.assertThat(
-            robot.cwd / 'bead_with_history' / 'sentinel-' + timestamp,
-            FileExists())
+        self.assert_file_exists(robot.cwd / 'bead_with_history' / 'sentinel-' + timestamp)
 
     def test_last_version(self, robot, bead_with_history):
         self.assert_develop_version(robot, fixtures.TS_LAST, bead_with_history)

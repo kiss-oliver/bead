@@ -1,6 +1,5 @@
 from bead.tech.fs import read_file, rmtree, write_file
 from bead.test import TestCase
-from testtools.matchers import FileExists
 
 from . import test_fixtures as fixtures
 
@@ -13,25 +12,25 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
 
     def test_dot_output(self, robot, bead_with_inputs):
         robot.cli('web', '-o', 'web')
-        self.assertThat(robot.cwd / 'web.dot', FileExists())
+        self.assert_file_exists(robot.cwd / 'web.dot')
 
     @needs_dot
     def test_svg_output(self, robot, bead_with_inputs):
         robot.cli('web', '--svg', '-o', 'web')
-        self.assertThat(robot.cwd / 'web.svg', FileExists())
+        self.assert_file_exists(robot.cwd / 'web.svg')
 
     @needs_dot
     def test_png_output(self, robot, bead_with_inputs):
         robot.cli('web', '--png', '-o', 'web')
-        self.assertThat(robot.cwd / 'web.png', FileExists())
+        self.assert_file_exists(robot.cwd / 'web.png')
 
     def test_csv(self, robot, bead_with_inputs, box):
         robot.cli('web', '--to-csv', '-o', 'web')
         orig_web_dot = read_file(robot.cwd / 'web.dot')
 
-        self.assertThat(robot.cwd / 'web_beads.csv', FileExists())
-        self.assertThat(robot.cwd / 'web_inputs.csv', FileExists())
-        self.assertThat(robot.cwd / 'web_input_maps.csv', FileExists())
+        self.assert_file_exists(robot.cwd / 'web_beads.csv')
+        self.assert_file_exists(robot.cwd / 'web_inputs.csv')
+        self.assert_file_exists(robot.cwd / 'web_input_maps.csv')
 
         assert 'bead_a' in orig_web_dot
         assert 'bead_b' in orig_web_dot
