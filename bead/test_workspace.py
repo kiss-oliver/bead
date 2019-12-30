@@ -49,12 +49,12 @@ class Test_create(TestCase):
         self.workspace.create(A_KIND)
 
     def then_directory_is_a_valid_bead_dir(self):
-        self.assertTrue(self.workspace.is_valid)
+        assert self.workspace.is_valid
 
     def then_workspace_has_no_inputs(self):
-        self.assertFalse(self.workspace.has_input('bead1'))
-        self.assertFalse(self.workspace.is_loaded('bead1'))
-        self.assertFalse(self.workspace.inputs)
+        assert not self.workspace.has_input('bead1')
+        assert not self.workspace.is_loaded('bead1')
+        assert not self.workspace.inputs
 
     def then_workspace_is_of_specified_kind(self):
         self.assertEquals(A_KIND, self.workspace.kind)
@@ -156,7 +156,7 @@ class Test_pack(TestCase):
 
     def then_archive_is_valid_bead(self):
         bead = Archive(self.__zipfile)
-        self.assertTrue(bead.is_valid)
+        assert bead.is_valid
 
     def then_archive_has_comment(self):
         with zipfile.ZipFile(self.__zipfile) as z:
@@ -256,15 +256,15 @@ class Test_load(TestCase):
 
     def then_extracted_files_under_input_are_readonly(self):
         root = self.__workspace_dir / 'input/bead1'
-        self.assertTrue(os.path.exists(root))
+        assert os.path.exists(root)
         self.assertRaises(IOError, open, root / 'output1', 'ab')
         # also folders are read only - this does not work on Windows
         if os.name == 'posix':
             self.assertRaises(IOError, open, root / 'new-file', 'wb')
 
     def then_input_info_is_added_to_bead_meta(self):
-        self.assertTrue(self.workspace.has_input('bead1'))
-        self.assertTrue(self.workspace.is_loaded('bead1'))
+        assert self.workspace.has_input('bead1')
+        assert self.workspace.is_loaded('bead1')
 
     def then_another_bead_can_be_loaded(self):
         self._load_a_bead('bead2')
@@ -370,36 +370,36 @@ class Test_is_valid(TestCase):
     # tests
 
     def test_newly_created_bead_is_valid(self, archive_with_two_files_path):
-        self.assertTrue(Archive(archive_with_two_files_path).is_valid)
+        assert Archive(archive_with_two_files_path).is_valid
 
     def test_adding_a_data_file_to_an_archive_makes_bead_invalid(self, archive_path):
         with zipfile.ZipFile(archive_path, 'a') as z:
             z.writestr(layouts.Archive.DATA / 'extra_file', b'something')
 
-        self.assertFalse(Archive(archive_path).is_valid)
+        assert not Archive(archive_path).is_valid
 
     def test_adding_a_code_file_to_an_archive_makes_bead_invalid(self, archive_path):
         with zipfile.ZipFile(archive_path, 'a') as z:
             z.writestr(layouts.Archive.CODE / 'extra_file', b'something')
 
-        self.assertFalse(Archive(archive_path).is_valid)
+        assert not Archive(archive_path).is_valid
 
     def test_unzipping_and_zipping_an_archive_remains_valid(self, unzipped_archive_path):
         rezipped_archive_path = self.new_temp_dir() / 'rezipped_archive.zip'
         zip_up(unzipped_archive_path, rezipped_archive_path)
 
-        self.assertTrue(Archive(rezipped_archive_path).is_valid)
+        assert Archive(rezipped_archive_path).is_valid
 
     def test_deleting_a_file_in_the_manifest_makes_the_bead_invalid(self, unzipped_archive_path):
         os.remove(unzipped_archive_path / layouts.Archive.CODE / 'code1')
         modified_archive_path = self.new_temp_dir() / 'modified_archive.zip'
         zip_up(unzipped_archive_path, modified_archive_path)
 
-        self.assertFalse(Archive(modified_archive_path).is_valid)
+        assert not Archive(modified_archive_path).is_valid
 
     def test_changing_a_file_makes_the_bead_invalid(self, unzipped_archive_path):
         write_file(unzipped_archive_path / layouts.Archive.CODE / 'code1', b'HACKED')
         modified_archive_path = self.new_temp_dir() / 'modified_archive.zip'
         zip_up(unzipped_archive_path, modified_archive_path)
 
-        self.assertFalse(Archive(modified_archive_path).is_valid)
+        assert not Archive(modified_archive_path).is_valid

@@ -17,8 +17,7 @@ class Test(TestCase, fixtures.RobotAndBeads):
         robot.cli('new', 'bead')
         robot.cd('bead')
         robot.cli('save')
-        self.assertNotEqual(
-            robot.stdout, '', 'Expected some feedback, but got none :(')
+        assert robot.stdout != '', 'Expected some feedback, but got none :('
 
     @skipIf(not hasattr(os, 'symlink'), 'missing os.symlink')
     def test_symlink_is_resolved_on_save(self, robot, box):
@@ -53,7 +52,7 @@ class Test_no_box(TestCase):
         # a new box with name `home` has been indeed created and it has exactly one bead
         with robot.environment as env:
             homebox = env.get_box('home')
-        self.assertEquals(1, bead_count(homebox))
+        assert 1 == bead_count(homebox)
 
 
 def bead_count(box, kind=None):
@@ -87,11 +86,11 @@ class Test_more_than_one_boxes(TestCase):
         robot.cli('save', box1.name, '--workspace=bead')
         with robot.environment:
             kind = Workspace('bead').kind
-        self.assertEquals(1, bead_count(box1, kind))
-        self.assertEquals(0, bead_count(box2, kind))
+        assert 1 == bead_count(box1, kind)
+        assert 0 == bead_count(box2, kind)
         robot.cli('save', box2.name, '-w', 'bead')
-        self.assertEquals(1, bead_count(box1, kind))
-        self.assertEquals(1, bead_count(box2, kind))
+        assert 1 == bead_count(box1, kind)
+        assert 1 == bead_count(box2, kind)
 
     def test_invalid_box_specified(self, robot, box1, box2):
         robot.cli('new', 'bead')

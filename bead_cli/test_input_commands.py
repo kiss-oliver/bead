@@ -75,7 +75,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cli('input', 'load', 'input_a')
         self.assert_loaded(robot, 'input_a', bead_a)
         with robot.environment:
-            self.assertFalse(Workspace('.').is_loaded('input_b'))
+            assert not Workspace('.').is_loaded('input_b')
 
     def test_deleted_box_does_not_stop_load(self, robot, bead_with_inputs):
         deleted_box = self.new_temp_dir()
@@ -113,7 +113,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         robot.cli('develop', bead_a)
         robot.cd(bead_a)
         robot.cli('input', 'add', 'hack', hacked_bead)
-        self.assertFalse(Workspace(robot.cwd).has_input('hack'))
+        assert not Workspace(robot.cwd).has_input('hack')
         assert 'WARNING' in robot.stderr
 
     def test_update_with_hacked_bead_is_refused(self, robot, hacked_bead, bead_a):
