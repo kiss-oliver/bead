@@ -234,7 +234,6 @@ class CmdStatus(Command):
         workspace = args.workspace
         verbose = args.verbose
         env = args.get_env()
-        # TODO: use a template and render it with passing in all data
         kind_needed = verbose
         if workspace.is_valid:
             print(f'Bead Name: {workspace.name}')

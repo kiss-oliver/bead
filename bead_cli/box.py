@@ -48,7 +48,6 @@ class CmdList(Command):
         def print_box(box):
             print(f'{box.name}: {box.location}')
         if boxes:
-            # XXX: list command: use tabulate?
             print('Boxes:')
             print('-------------')
             for box in boxes:

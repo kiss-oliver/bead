@@ -77,10 +77,6 @@ class Parser:
         # subparsers should be an `argparse` implementation detail, but is not
         self.__subparsers = None
 
-        # XXX: cli parsing: revisit when python 2.x no longer supported
-        # it might be tempting to use argparser.set_defaults()
-        # to set default command to print help, but it works only on 3.x!
-
     @classmethod
     def new(cls, defaults, *args, **kwargs):
         '''
@@ -112,9 +108,8 @@ class Parser:
             instance = commandish()
             return instance
         if callable(commandish):
-            # XXX: introspect parameter names, default values, annotations?
-            raise NotImplementedError(
-                'Can not yet work with vanilla callables')
+            # enhancement: introspect parameter names, default values, annotations?
+            raise NotImplementedError('Can not work with vanilla callables')
 
     def arg(self, *args, **kwargs):
         '''

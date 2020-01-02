@@ -38,7 +38,7 @@ class Test_Archive(TestCase):
     __content_id = None
 
     def given_a_bead(self):
-        # FIXME: test_archive.given_a_bead is fragile and yields an invalid BEAD
+        # yields an invalid BEAD (meta is simplified), sufficient for unit testing
         self.__bead = self.new_temp_dir() / 'bead.zip'
         with zipfile.ZipFile(self.__bead, 'w') as z:
             z.writestr(
