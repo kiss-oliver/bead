@@ -1,9 +1,12 @@
 import sys
+import tempfile
+import traceback
 
 import appdirs
 from .cmdparse import Parser, Command
 
 from bead.tech.fs import Path
+from bead.tech.timestamp import timestamp
 from . import workspace
 from . import input
 from . import box
@@ -98,14 +101,48 @@ def run(config_dir, argv):
     return parser.dispatch(argv)
 
 
-def main():
+FAILURE_TEMPLATE = """\
+{exception}
+
+If you are using the latest version, and have not reported this error yet
+please report this problem by copy-pasting the content of file {error_report}
+at {repo}/issues/new
+or attaching the file to an email to {dev}@gmail.com.
+
+Please make sure you copy-paste from the file {error_report}
+and not from the console, as the shown exception text was limited
+for your convenience, and it is not really helpful in fixing the bug.
+"""
+
+
+def main(run=run):
     config_dir = appdirs.user_config_dir(
         PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
     try:
         retval = run(config_dir, sys.argv[1:])
     except BaseException:
-        # TODO: ask the user to report the exception?!
-        raise
+        sys_argv = f'{sys.argv!r}'
+        exception = traceback.format_exc()
+        short_exception = traceback.format_exc(limit=1)
+        with tempfile.NamedTemporaryFile(
+            dir='.',
+            prefix=f'error_{timestamp()}',
+            suffix='.txt',
+            mode='w',
+            delete=False
+        ) as f:
+            error_report = f.name
+            f.write(f'sys_argv = {sys_argv}\n{exception}\n')
+        print(
+            FAILURE_TEMPLATE.format(
+                exception=short_exception,
+                error_report=error_report,
+                repo='https://github.com/e3krisztian/bead',
+                dev='e3krisztian',
+            ),
+            file=sys.stderr
+        )
+        retval = -1
     sys.exit(retval)
 
 
