@@ -5,6 +5,7 @@ from typing import Dict, Optional
 from bead.meta import InputSpec
 from bead_cli.web.dummy import Dummy
 from bead_cli.web.graph import Ref
+from bead_cli.web.sketch import Sketch
 
 
 TS_BASE = datetime.datetime(
@@ -107,6 +108,17 @@ class Sketcher:
                 if name not in self._phantoms:
                     yield bead
         return tuple(bead_gen())
+
+    @property
+    def sketch(self) -> Sketch:
+        return Sketch.from_beads(self.beads)
+
+
+def bead(sketch: Sketch, name_version: str) -> Dummy:
+    for bead in sketch.beads:
+        if bead.content_id == f'content_id_{name_version}':
+            return bead
+    raise ValueError('Dummy by name-version not found', name_version)
 
 
 if __name__ == '__main__':
