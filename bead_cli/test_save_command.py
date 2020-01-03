@@ -30,7 +30,7 @@ class Test(TestCase, fixtures.RobotAndBeads):
         # save to box & clean up
         robot.cli('save')
         robot.cd('..')
-        robot.cli('nuke', 'bead')
+        robot.cli('zap', 'bead')
 
         robot.cli('develop', 'bead')
         self.assert_file_contains(robot.cwd / 'bead/symlink', 'content')

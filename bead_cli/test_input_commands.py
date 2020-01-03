@@ -17,7 +17,7 @@ class Test_input_commands(TestCase, fixtures.RobotAndBeads):
         self.assert_loaded(robot, 'input1', fixtures.TS2)
         robot.cli('save')
         robot.cd('..')
-        robot.cli('nuke', 'nextbead')
+        robot.cli('zap', 'nextbead')
 
         robot.cli('develop', 'nextbead')
         robot.cd('nextbead')

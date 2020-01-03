@@ -23,7 +23,7 @@ Add some data to the output of this new bead which we can use later. This bead h
     /somepath/name$ bead save
     Successfully stored bead.
     
-    /somepath/name$ bead nuke
+    /somepath/name$ bead zap
     Deleted workspace /somepath/name
 
 ## Working with inputs in a new bead 

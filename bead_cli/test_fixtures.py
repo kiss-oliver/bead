@@ -52,7 +52,7 @@ class RobotAndBeads(object):
             TRACELOG('store', robot.cwd, TS1, 'to', box.location)
             beads[bead_name] = Archive(box.store(Workspace('.'), TS1))
         robot.cd('..')
-        robot.cli('nuke', bead_name)
+        robot.cli('zap', bead_name)
         return bead_name
 
     def _add_inputs(self, robot, inputs):

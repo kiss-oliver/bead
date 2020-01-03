@@ -49,7 +49,7 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         # save & develop works with names
         cli('save')
         cd('..')
-        cli('nuke', bead_a)
+        cli('zap', bead_a)
         cli('develop', bead_a)
         cd(bead_a)
         copy(fixtures.TS4, bead1)

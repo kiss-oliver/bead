@@ -95,5 +95,6 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [FIXME: this test helper uses private implementation information](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_feature_update_by_name.py#L87)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L105)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L160)
+- [TODO: remove nuke command after next release](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/main.py#L45)
 - [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L164)
 - [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L94)

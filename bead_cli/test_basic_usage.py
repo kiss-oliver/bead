@@ -49,14 +49,14 @@ class Test_basic_command_line(TestCase):
         cli('web')
 
         # this might leave behind the empty directory on windows
-        cli('nuke')
+        cli('zap')
         cd('..')
-        cli('nuke', 'something')
+        cli('zap', 'something')
 
         something_develop_dir = robot.home / 'something-develop'
         if os.path.exists(something_develop_dir):
             # on windows it is not possible to remove
-            # the current working directory (nuke does this)
+            # the current working directory (zap does this)
             assert os.name != 'posix', 'Must be removed on posix'
             assert [] == ls(something_develop_dir)
             os.rmdir(something_develop_dir)

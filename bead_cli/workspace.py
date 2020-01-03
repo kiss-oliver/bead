@@ -245,7 +245,7 @@ class CmdStatus(Command):
             warning(f'Invalid workspace ({workspace.directory})')
 
 
-class CmdNuke(Command):
+class CmdZap(Command):
     '''
     Delete the workspace, inluding data, code and documentation.
     '''
@@ -261,6 +261,19 @@ class CmdNuke(Command):
         # the directory we are in -> ignore errors
         tech.fs.rmtree(directory, ignore_errors=os.name != 'posix')
         print(f'Deleted workspace {directory}')
+
+
+class CmdNuke(Command):
+    '''
+    No operation, you probably want zap, to delete the workspace.
+
+    Nuke was a bad name.
+    '''
+
+    def run(self, args):
+        print('Nothing happened.')
+        print()
+        print('Try again with zap, the nuke command is about to disappear.')
 
 
 class CmdWeb(Command):
