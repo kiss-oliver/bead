@@ -125,7 +125,11 @@ def main(run=run):
         PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
     try:
         retval = run(config_dir, sys.argv[1:])
+    except KeyboardInterrupt:
+        print("Interrupted :(", file=sys.stderr)
+        retval = -1
     except BaseException:
+        # all remaining errors are catched - including SystemExit
         sys_argv = f'{sys.argv!r}'
         exception = traceback.format_exc()
         short_exception = traceback.format_exc(limit=1)

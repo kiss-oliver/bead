@@ -184,8 +184,19 @@ class Parser:
                 'ERROR: not a full command <%s>\n'
                 % ' '.join(pipes.quote(arg) for arg in argv))
             self.argparser.print_help()
-            return 2
+            return -1
 
-        args = self.argparser.parse_args(argv)
+        try:
+            args = self.argparser.parse_args(argv)
+        except SystemExit:
+            # argparse throws SystemExit when help triggered,
+            #   which is a surprising API:
+            # https://bugs.python.org/issue10506
+            #
+            # also most of the test runners misbehaves/misbehaved on it:
+            # https://github.com/testing-cabal/testtools/issues/144
+            #
+            # this is worked around here
+            return -1
         run = getattr(args, '_cmdparse__run', print_help)
         return run(args)
