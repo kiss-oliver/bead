@@ -10,6 +10,7 @@ from bead.tech.timestamp import timestamp
 from . import workspace
 from . import input
 from . import box
+from .web import commands as web
 from . import PACKAGE, VERSION
 
 
@@ -51,13 +52,28 @@ def make_argument_parser(defaults):
             workspace.CmdZap,
             'Delete workspace.',
 
-            'web',
-            workspace.CmdWeb,
-            'Visualize connections to other beads.',
-
             'version',
             CmdVersion,
             'Show program version.'))
+
+    (parser
+        .group('web', 'Visualize connections to other beads.')
+        .commands(
+            'graph',
+            web.CmdGraph,
+            'Create image file[s] of connections between archives.',
+
+            'view',
+            web.CmdView,
+            'Visualize connections between archives, delete temporary files on exit.',
+
+            'export',
+            web.CmdExport,
+            'Export metadata, including connections between beads.',
+
+            'advise',
+            web.CmdAdvise,
+            'Create a script to fix the input map for ARCHIVE.'))
 
     (parser
         .group('input', 'Manage data loaded from other beads')

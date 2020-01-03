@@ -11,21 +11,22 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
     # tests
 
     def test_dot_output(self, robot, bead_with_inputs):
-        robot.cli('web', '-o', 'web')
+        robot.cli('web', 'graph', 'web')
         self.assert_file_exists(robot.cwd / 'web.dot')
 
     @needs_dot
     def test_svg_output(self, robot, bead_with_inputs):
-        robot.cli('web', '--svg', '-o', 'web')
+        robot.cli('web', 'graph', '--svg', 'web')
         self.assert_file_exists(robot.cwd / 'web.svg')
 
     @needs_dot
     def test_png_output(self, robot, bead_with_inputs):
-        robot.cli('web', '--png', '-o', 'web')
+        robot.cli('web', 'graph', '--png', 'web')
         self.assert_file_exists(robot.cwd / 'web.png')
 
     def test_csv(self, robot, bead_with_inputs, box):
-        robot.cli('web', '--to-csv', '-o', 'web')
+        robot.cli('web', 'graph', 'web')
+        robot.cli('web', 'export', 'web')
         orig_web_dot = read_file(robot.cwd / 'web.dot')
 
         self.assert_file_exists(robot.cwd / 'web_beads.csv')
@@ -41,16 +42,16 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
         robot.cli('box', 'forget', box.name)
         rmtree(box.directory)
 
-        robot.cli('web', '--from-csv', 'web')
+        robot.cli('web', 'graph', '--from-csv', 'web')
         csv_web_dot = read_file(robot.cwd / 'web.dot')
 
         assert orig_web_dot == csv_web_dot
 
     def test_heads_only(self, robot, bead_with_history):
-        robot.cli('web', '-o', 'web',)
+        robot.cli('web', 'graph', 'web',)
         full_web = read_file(robot.cwd / 'web.dot')
 
-        robot.cli('web', '-o', 'web', '--heads-only')
+        robot.cli('web', 'graph', 'web', '--heads-only')
         heads_only_web = read_file(robot.cwd / 'web.dot')
 
         assert len(heads_only_web) < len(full_web)

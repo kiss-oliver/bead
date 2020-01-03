@@ -1,15 +1,10 @@
 import os
 import sys
-import subprocess
-import webbrowser
-
 
 from bead import tech
 from bead.workspace import Workspace
 from bead import layouts
 import bead.spec as bead_spec
-
-from bead.box import UnionBox
 
 from .cmdparse import Command
 from .common import die, warning
@@ -19,10 +14,6 @@ from .common import BEAD_REF_BASE, BEAD_TIME, resolve_bead
 from .common import verify_with_feedback
 from . import arg_metavar
 from . import arg_help
-from .web.csv import read_beads, write_beads
-from .web.sketch import Sketch
-from .web import sketch as web_sketch
-from .web.dummy import Dummy
 
 timestamp = tech.timestamp.timestamp
 
@@ -274,98 +265,3 @@ class CmdNuke(Command):
         print('Nothing happened.')
         print()
         print('You probably want to use zap, the nuke command is about to disappear.')
-
-
-class CmdWeb(Command):
-    '''
-    Visualize connections to other beads.
-
-    Write a GraphViz .dot file and create other representations as requested.
-    '''
-
-    def declare(self, arg):
-        arg(OPTIONAL_ENV)
-        arg('-o', '--output-base', default='web',
-            help='File name base of generated files'
-            + ' (e.g. dot file will be stored as <OUTPUT_BASE>.dot)')
-        arg('--to-csv', default=False, action='store_true',
-            help='Write bead meta data to files:'
-            + ' <OUTPUT_BASE>-beads.csv and <OUTPUT_BASE>-inputs.csv')
-        arg('--from-csv', metavar='INPUT_BASE',
-            help='Load bead metadata from <INPUT_BASE>-beads.csv and <INPUT_BASE>-inputs.csv')
-        arg('--svg', default=False, action='store_true',
-            help="Call GraphViz's `dot` to create <OUTPUT_BASE>.svg file as well")
-        arg('--png', default=False, action='store_true',
-            help="Call GraphViz's `dot` to create an <OUTPUT_BASE>.png file as well")
-        arg('--view', default=False, action='store_true',
-            help="Open web browser with the generated SVG file (implies --svg)")
-        arg('--heads-only', default=False, action='store_true',
-            help="Show only input edges for the most recent beads for each bead-group")
-        arg('names', metavar='NAME', nargs='*',
-            help="Restrict output graph to these names and their inputs (default: all beads)")
-
-    def run(self, args):
-        output_file_base = args.output_base
-
-        if args.from_csv:
-            all_beads = read_beads(args.from_csv)
-        else:
-            env = args.get_env()
-            all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
-        print(f"Loaded {len(all_beads)} beads")
-
-        if args.to_csv:
-            write_beads(output_file_base, all_beads)
-
-        sketch = Sketch.from_beads(all_beads)
-        if args.names:
-            sketch = web_sketch.set_sinks(sketch, args.names)
-        if args.heads_only:
-            sketch = web_sketch.heads_of(sketch)
-        sketch.color_beads()
-        dot_str = sketch.as_dot()
-
-        dot_file = f'{output_file_base}.dot'
-        print(f"Creating {dot_file}")
-        tech.fs.write_file(dot_file, dot_str)
-
-        if args.png:
-            png_file = f'{output_file_base}.png'
-            print(f"Creating {png_file}")
-            graphviz_dot(dot_file, png_file)
-
-        if args.svg or args.view:
-            svg_file = f'{output_file_base}.svg'
-            print(f"Creating {svg_file}")
-            graphviz_dot(dot_file, svg_file)
-            if args.view:
-                print(f"Viewing {svg_file}")
-                webbrowser.open(svg_file)
-
-
-def load_all_beads(boxes):
-    columns = int(os.environ.get('COLUMNS', 80))
-    all_beads = []
-    import time
-    load_start = time.perf_counter()
-    # This UnionBox.all_beads is the meat, the rest is just user feedback for big/slow
-    # environments
-    for n, bead in enumerate(UnionBox(boxes).all_beads()):
-        load_end = time.perf_counter()
-
-        msg = f"\rLoaded bead {n+1} ({bead.archive_filename})"[:columns]
-        msg = msg + ' ' * (columns - len(msg))
-        print(msg, end="", flush=True)
-        if load_end - load_start > 1:
-            print(f"\nLoading took {load_end - load_start} seconds")
-        all_beads.append(bead)
-        load_start = time.perf_counter()
-    print("\r" + " " * columns + "\r", end="")
-    return all_beads
-
-
-def graphviz_dot(dot_file, output_file):
-    _, ext = os.path.splitext(output_file)
-    filetype = ext.lstrip('.')
-    cmd = ['dot', dot_file, '-o', output_file, '-T', filetype]
-    subprocess.check_call(cmd)
