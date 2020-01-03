@@ -123,7 +123,7 @@ class Ref:
         return cls(bead.name, bead.content_id)
 
     @classmethod
-    def from_bead_input(cls, bead, input) -> 'Ref':
+    def from_bead_input(cls, bead, input: InputSpec) -> 'Ref':
         src_bead_name = bead.get_input_bead_name(input.name)
         return cls(src_bead_name, input.content_id)
 
