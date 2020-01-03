@@ -273,7 +273,7 @@ class CmdNuke(Command):
     def run(self, args):
         print('Nothing happened.')
         print()
-        print('Try again with zap, the nuke command is about to disappear.')
+        print('You probably want to use zap, the nuke command is about to disappear.')
 
 
 class CmdWeb(Command):
