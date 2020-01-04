@@ -56,6 +56,9 @@ class Sketch:
     def as_dot(self):
         return plot_clusters_as_dot(self)
 
+    def drop_deleted_inputs(self) -> "Sketch":
+        return drop_deleted_inputs(self)
+
 
 def simplify(sketch: Sketch) -> Sketch:
     """
@@ -184,3 +187,16 @@ def color_beads(sketch: Sketch) -> bool:
                 cluster_head.set_freshness(OUT_OF_DATE)
 
     return sink.freshness is UP_TO_DATE
+
+
+def drop_deleted_inputs(sketch: Sketch) -> Sketch:
+    edges_as_refs = {(edge.src_ref, edge.dest_ref) for edge in sketch.edges}
+    beads = []
+    for bead in sketch.beads:
+        inputs_to_keep = []
+        for input in bead.inputs:
+            input_ref = Ref.from_bead_input(bead, input)
+            if (input_ref, bead.ref) in edges_as_refs:
+                inputs_to_keep.append(input)
+        beads.append(attr.evolve(bead, inputs=inputs_to_keep))
+    return Sketch.from_beads(beads)
