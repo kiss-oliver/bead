@@ -14,7 +14,10 @@ def test_new_version_marks_older_superseded():
 
     sketch = sketcher.sketch
     orig_beads = sketch.beads
-    sketch = Sketch(beads=orig_beads, edges=tuple(e for e in sketch.edges if e.label == 'survivor'))
+    sketch = Sketch(
+        beads=orig_beads,
+        edges=tuple(e for e in sketch.edges if e.label == 'survivor')
+    )
 
     sketch = sketch.drop_deleted_inputs()
     assert orig_beads != sketch.beads
