@@ -7,7 +7,7 @@ from typing import Callable, Dict, List
 import attr
 
 from bead.meta import InputSpec
-from .dummy import Dummy
+from .dummy import Dummy, Freshness
 
 
 def write_beads(file_base, beads: List[Dummy]):
@@ -111,8 +111,12 @@ def _read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
             inputs=inputs_by_owner.get(rb['content_id'], ()),
             input_map=input_maps_by_owner.get((rb['box'], rb['name'], rb['content_id'])),
             name=rb['name'],
-            box_name=rb['box'])
+            box_name=rb['box'],
+            freshness=Freshness[rb['freshness']],
+        )
         for rb in _read_csv(beads_csv_stream)]
+    for bead in beads:
+        attr.validate(bead)
     return beads
 
 
@@ -123,7 +127,7 @@ def _write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stre
     def header(csv_header):
         return csv_header.split(',')
     bead_writer = (
-        csv.DictWriter(beads_csv_stream, header('box,name,kind,content_id,freeze_time')))
+        csv.DictWriter(beads_csv_stream, header('box,name,kind,content_id,freeze_time,freshness')))
     inputs_writer = (
         csv.DictWriter(inputs_csv_stream, header('owner,name,kind,content_id,freeze_time')))
     input_maps_writer = (
@@ -139,7 +143,8 @@ def _write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stre
                 'name': bead.name,
                 'kind': bead.kind,
                 'content_id': bead.content_id,
-                'freeze_time': bead.timestamp_str
+                'freeze_time': bead.timestamp_str,
+                'freshness': bead.freshness.name,
             })
         for input in bead.inputs:
             inputs_writer.writerow(
