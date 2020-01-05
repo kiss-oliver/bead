@@ -26,8 +26,8 @@ class CmdGraph(Command):
         arg('output_base', default='web', nargs='?',
             help='File name base of generated files'
             + ' (e.g. dot file will be stored as <OUTPUT_BASE>.dot)')
-        arg('--from-csv', metavar='INPUT_BASE',
-            help='Load bead metadata from <INPUT_BASE>-beads.csv and <INPUT_BASE>-inputs.csv')
+        arg('--from-meta', metavar='INPUT_BASE',
+            help='Load bead metadata from <INPUT_BASE>.bead-meta')
         arg('--svg', default=False, action='store_true',
             help="Call GraphViz's `dot` to create <OUTPUT_BASE>.svg file as well")
         arg('--png', default=False, action='store_true',
@@ -40,8 +40,8 @@ class CmdGraph(Command):
     def run(self, args):
         output_file_base = args.output_base
 
-        if args.from_csv:
-            all_beads = read_beads(args.from_csv)
+        if args.from_meta:
+            all_beads = read_beads(f'{args.from_meta}.bead-meta')
         else:
             env = args.get_env()
             all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
@@ -77,7 +77,7 @@ class CmdView(Command):
 
     def declare(self, arg):
         arg(OPTIONAL_ENV)
-        arg('--from-csv', metavar='INPUT_BASE',
+        arg('--from-meta', metavar='INPUT_BASE',
             help='Load bead metadata from <INPUT_BASE>-beads.csv and <INPUT_BASE>-inputs.csv')
         arg('--heads-only', default=False, action='store_true',
             help="Show only input edges for the most recent beads for each bead-group")
@@ -88,8 +88,8 @@ class CmdView(Command):
         tempdir = tech.fs.Path(tempfile.mkdtemp())
         output_file_base = tempdir / 'web'
 
-        if args.from_csv:
-            all_beads = read_beads(args.from_csv)
+        if args.from_meta:
+            all_beads = read_beads(args.from_meta)
         else:
             env = args.get_env()
             all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
@@ -121,24 +121,22 @@ class CmdExport(Command):
     '''
     Export connections to other beads.
 
-    Write bead meta data to files:
-     <OUTPUT_BASE>-beads.csv, <OUTPUT_BASE>-inputs.csv, and  <OUTPUT_BASE>-inputmap.csv
+    Write bead meta data to file: <OUTPUT_BASE>.bead-meta
     '''
 
     def declare(self, arg):
         arg(OPTIONAL_ENV)
         arg('output_base', default='web', nargs='?',
-            help='File name base of generated files'
-            + ' (e.g. dot file will be stored as <OUTPUT_BASE>.dot)')
+            help='File name base, bead meta-s will be written to <OUTPUT_BASE>.bead-meta')
 
     def run(self, args):
-        output_file_base = args.output_base
+        output_file_name = f'{args.output_base}.bead-meta'
 
         env = args.get_env()
         all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
         print(f"Loaded {len(all_beads)} beads")
 
-        write_beads(output_file_base, all_beads)
+        write_beads(output_file_name, all_beads)
 
 
 class CmdAdvise(Command):

@@ -1,9 +1,9 @@
 import csv
 import io
-
+from zipfile import ZipFile
 import pytest
 
-from bead_cli.web.csv import read_beads, write_beads, BeadMetaCsvStreams
+from bead_cli.web.csv import read_beads, write_beads
 from bead_cli.web.freshness import Freshness
 
 
@@ -47,13 +47,15 @@ box,ood1,id_ood1,root,root1
 
 
 @pytest.fixture
-def test_beads():
-    with (
-        BeadMetaCsvStreams(
-            beads=io.StringIO(BEAD_CSV),
-            inputs=io.StringIO(INPUT_CSV),
-            input_maps=io.StringIO(INPUT_MAPS_CSV))) as streams:
-        return streams.read_beads()
+def test_beads(tmp_path):
+    meta = tmp_path / 'temp_meta'
+
+    with ZipFile(meta, 'w') as zf:
+        zf.writestr('beads.csv', BEAD_CSV)
+        zf.writestr('inputs.csv', INPUT_CSV)
+        zf.writestr('input_maps.csv', INPUT_MAPS_CSV)
+
+    return read_beads(meta)
 
 
 def test_freshness(test_beads):
@@ -63,47 +65,47 @@ def test_freshness(test_beads):
     assert beads_by_name['root2'].freshness == Freshness.OUT_OF_DATE
 
 
-def test_written_data_is_unchanged(test_beads):
-    streams = (
-        BeadMetaCsvStreams(
-            beads=io.StringIO(),
-            inputs=io.StringIO(),
-            input_maps=io.StringIO()))
-
-    streams.write_beads(test_beads)
+def test_written_data_is_unchanged(test_beads, tmp_path):
+    new_meta = tmp_path / 'new_meta'
+    write_beads(new_meta, test_beads)
 
     def read_sorted(text_csv, fields):
         def sort_key(record):
             return [record[field] for field in fields]
         return sorted(csv.DictReader(io.StringIO(text_csv)), key=sort_key)
 
+    def read_zip(filename):
+        with ZipFile(new_meta) as zf:
+            with zf.open(filename) as f:
+                return io.TextIOWrapper(f).read()
+
     # written beads remain the same
     sort_fields = ['content_id']
     assert (
         read_sorted(BEAD_CSV, sort_fields) ==
-        read_sorted(streams.beads.getvalue(), sort_fields))
+        read_sorted(read_zip('beads.csv'), sort_fields))
     # written inputs remain the same
     sort_fields = ['owner', 'content_id']
     assert (
         read_sorted(INPUT_CSV, sort_fields) ==
-        read_sorted(streams.inputs.getvalue(), sort_fields))
+        read_sorted(read_zip('inputs.csv'), sort_fields))
     # written input_maps remain the same
     sort_fields = ['box', 'name', 'content_id', 'input']
     assert (
         read_sorted(INPUT_MAPS_CSV, sort_fields) ==
-        read_sorted(streams.input_maps.getvalue(), sort_fields))
+        read_sorted(read_zip('input_maps.csv'), sort_fields))
 
 
 def test_files(tmp_path, test_beads):
-    file_base = tmp_path / 'test_'
+    meta = tmp_path / 'new_meta'
 
-    write_beads(file_base, test_beads)
-    beads_read_back = read_beads(file_base)
+    write_beads(meta, test_beads)
+    beads_read_back = read_beads(meta)
     assert test_beads == beads_read_back
 
 
 def test_missing_file(tmp_path):
-    file_base = tmp_path / 'test_'
+    meta = tmp_path / 'nonexisting_file'
 
     with pytest.raises(FileNotFoundError):
-        read_beads(file_base)
+        read_beads(meta)

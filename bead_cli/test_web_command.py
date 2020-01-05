@@ -24,28 +24,26 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
         robot.cli('web', 'graph', '--png', 'web')
         self.assert_file_exists(robot.cwd / 'web.png')
 
-    def test_csv(self, robot, bead_with_inputs, box):
+    def test_meta(self, robot, bead_with_inputs, box):
         robot.cli('web', 'graph', 'web')
         robot.cli('web', 'export', 'web')
         orig_web_dot = read_file(robot.cwd / 'web.dot')
 
-        self.assert_file_exists(robot.cwd / 'web_beads.csv')
-        self.assert_file_exists(robot.cwd / 'web_inputs.csv')
-        self.assert_file_exists(robot.cwd / 'web_input_maps.csv')
+        self.assert_file_exists(robot.cwd / 'web.bead-meta')
 
         assert 'bead_a' in orig_web_dot
         assert 'bead_b' in orig_web_dot
         assert bead_with_inputs in orig_web_dot
 
-        # destroy everything, except the csv files
+        # destroy everything, except the meta files
         write_file(robot.cwd / 'web.dot', '')
         robot.cli('box', 'forget', box.name)
         rmtree(box.directory)
 
-        robot.cli('web', 'graph', '--from-csv', 'web')
-        csv_web_dot = read_file(robot.cwd / 'web.dot')
+        robot.cli('web', 'graph', '--from-meta', 'web')
+        meta_web_dot = read_file(robot.cwd / 'web.dot')
 
-        assert orig_web_dot == csv_web_dot
+        assert orig_web_dot == meta_web_dot
 
     def test_heads_only(self, robot, bead_with_history):
         robot.cli('web', 'graph', 'web',)

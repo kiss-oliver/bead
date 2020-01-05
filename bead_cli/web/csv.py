@@ -1,8 +1,8 @@
 import csv
-from collections import defaultdict
-from contextlib import ExitStack
 import io
-from typing import Callable, Dict, List
+from zipfile import ZipFile
+from collections import defaultdict
+from typing import List
 
 import attr
 
@@ -10,69 +10,82 @@ from bead.meta import InputSpec
 from .dummy import Dummy, Freshness
 
 
-def write_beads(file_base, beads: List[Dummy]):
-    with BeadMetaCsvStreams.for_writing(file_base) as streams:
-        streams.write_beads(beads)
+def write_beads(file_name, beads: List[Dummy]):
+    with ZipFile(file_name, mode='w') as zf:
+        _write_beads(beads, zf)
 
 
-def read_beads(file_base) -> List[Dummy]:
-    with BeadMetaCsvStreams.for_reading(file_base) as streams:
-        return streams.read_beads()
+class _Csv:
+    def __init__(self, filename, fields_str):
+        header = fields_str.split(',')
+        self.stream = io.StringIO()
+        self.filename = filename
+        self.writer = csv.DictWriter(self.stream, header)
+        self.writer.writeheader()
+
+    def add(self, row: dict):
+        self.writer.writerow(row)
+
+    def save(self, zipfile: ZipFile):
+        zipfile.writestr(self.filename, self.stream.getvalue())
 
 
-@attr.s
-class BeadMetaCsvStreams:
-    beads: io.TextIOBase = attr.ib()
-    inputs: io.TextIOBase = attr.ib()
-    input_maps: io.TextIOBase = attr.ib()
-    close: Callable[[], None] = attr.ib(default=(lambda: None))
+def _write_beads(beads, zipfile: ZipFile):
+    """
+    Persist Dummys (or Beads) to csv streams.
+    """
 
-    @classmethod
-    def for_reading(cls, base):
-        return cls.open_all(base, mode='r')
+    beads_csv = _Csv('beads.csv', 'box,name,kind,content_id,freeze_time,freshness')
+    inputs_csv = _Csv('inputs.csv', 'owner,name,kind,content_id,freeze_time')
+    input_maps_csv = _Csv('input_maps.csv', 'box,name,content_id,input,bead_name')
 
-    @classmethod
-    def for_writing(cls, base):
-        return cls.open_all(base, mode='w')
+    for bead in beads:
+        beads_csv.add(
+            {
+                'box': bead.box_name,
+                'name': bead.name,
+                'kind': bead.kind,
+                'content_id': bead.content_id,
+                'freeze_time': bead.timestamp_str,
+                'freshness': bead.freshness.name,
+            })
+        for input in bead.inputs:
+            inputs_csv.add(
+                {
+                    'owner': bead.content_id,
+                    'name': input.name,
+                    'kind': input.kind,
+                    'content_id': input.content_id,
+                    'freeze_time': input.timestamp_str
+                })
+        input_map = bead.input_map
+        for input_nick in input_map:
+            input_maps_csv.add(
+                {
+                    'box': bead.box_name,
+                    'name': bead.name,
+                    'content_id': bead.content_id,
+                    'input': input_nick,
+                    'bead_name': input_map.get(input_nick)
+                })
 
-    @classmethod
-    def open_all(cls, base, mode):
-        field_to_file_name = cls.get_file_names_by_fields(base)
-        assert 'close' not in field_to_file_name
-        assert set(field_to_file_name) - set(attr.fields_dict(cls)) == set()
-        exit_stack = ExitStack()
-        attrs = {}
-        for field, file_name in field_to_file_name.items():
-            try:
-                attrs[field] = exit_stack.enter_context(open(file_name, mode))
-            except:
-                exit_stack.close()
-                raise
-        return cls(**attrs, close=exit_stack.pop_all().close)
+    beads_csv.save(zipfile)
+    inputs_csv.save(zipfile)
+    input_maps_csv.save(zipfile)
 
-    @classmethod
-    def get_file_names_by_fields(cls, base) -> Dict[str, str]:
-        return {
-            'beads': f'{base}_beads.csv',
-            'inputs': f'{base}_inputs.csv',
-            'input_maps': f'{base}_input_maps.csv',
-        }
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
-
-    def read_beads(self):
-        return _read_beads(self.beads, self.inputs, self.input_maps)
-
-    def write_beads(self, beads):
-        _write_beads(beads, self.beads, self.inputs, self.input_maps)
+def read_beads(file_name) -> List[Dummy]:
+    with ZipFile(file_name) as zf:
+        with zf.open('inputs.csv') as f:
+            inputs_by_owner = _read_inputs(f)
+        with zf.open('input_maps.csv') as f:
+            input_maps_by_owner = _read_input_maps(f)
+        with zf.open('beads.csv') as f:
+            return _read_beads(f, inputs_by_owner, input_maps_by_owner)
 
 
 def _read_csv(csv_stream):
-    records = list(csv.DictReader(csv_stream))
+    records = list(csv.DictReader(io.TextIOWrapper(csv_stream)))
     return records
 
 
@@ -97,12 +110,10 @@ def _read_input_maps(csv_stream):
     return input_maps_by_owner
 
 
-def _read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
+def _read_beads(beads_csv_stream, inputs_by_owner, input_maps_by_owner):
     """
     Read back persisted Dummy-s.
     """
-    inputs_by_owner = _read_inputs(inputs_csv_stream)
-    input_maps_by_owner = _read_input_maps(input_maps_csv_stream)
     beads = [
         Dummy(
             kind=rb['kind'],
@@ -118,50 +129,3 @@ def _read_beads(beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
     for bead in beads:
         attr.validate(bead)
     return beads
-
-
-def _write_beads(beads, beads_csv_stream, inputs_csv_stream, input_maps_csv_stream):
-    """
-    Persist Dummys (or Beads) to csv streams.
-    """
-    def header(csv_header):
-        return csv_header.split(',')
-    bead_writer = (
-        csv.DictWriter(beads_csv_stream, header('box,name,kind,content_id,freeze_time,freshness')))
-    inputs_writer = (
-        csv.DictWriter(inputs_csv_stream, header('owner,name,kind,content_id,freeze_time')))
-    input_maps_writer = (
-        csv.DictWriter(input_maps_csv_stream, header('box,name,content_id,input,bead_name')))
-
-    bead_writer.writeheader()
-    inputs_writer.writeheader()
-    input_maps_writer.writeheader()
-    for bead in beads:
-        bead_writer.writerow(
-            {
-                'box': bead.box_name,
-                'name': bead.name,
-                'kind': bead.kind,
-                'content_id': bead.content_id,
-                'freeze_time': bead.timestamp_str,
-                'freshness': bead.freshness.name,
-            })
-        for input in bead.inputs:
-            inputs_writer.writerow(
-                {
-                    'owner': bead.content_id,
-                    'name': input.name,
-                    'kind': input.kind,
-                    'content_id': input.content_id,
-                    'freeze_time': input.timestamp_str
-                })
-        input_map = bead.input_map
-        for input_nick in input_map:
-            input_maps_writer.writerow(
-                {
-                    'box': bead.box_name,
-                    'name': bead.name,
-                    'content_id': bead.content_id,
-                    'input': input_nick,
-                    'bead_name': input_map.get(input_nick)
-                })
