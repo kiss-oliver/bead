@@ -88,7 +88,7 @@ Thank you for your interest!
 
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-by-name/ci)), text in this section and afterwards will be overwritten
 
-- [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L67)
+- [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L68)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L48)
 - [FIXME: rename Bead.timestamp* to .freeze_time*](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/bead.py#L33)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L20)

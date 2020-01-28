@@ -38,6 +38,22 @@ class InvalidArchive(Exception):
     """Not a valid bead archive"""
 
 
+def _zipfile_user(method):
+    # method is called with the zipfile opened
+    @functools.wraps(method)
+    def f(self, *args, **kwargs):
+        if self.zipfile:
+            return method(self, *args, **kwargs)
+        try:
+            with zipfile.ZipFile(self.archive_filename) as self.zipfile:
+                return method(self, *args, **kwargs)
+        except (zipfile.BadZipFile, OSError, IOError):
+            raise InvalidArchive(self.archive_filename)
+        finally:
+            self.zipfile = None
+    return f
+
+
 class Archive(UnpackableBead):
 
     def __init__(self, filename, box_name=''):
@@ -48,27 +64,11 @@ class Archive(UnpackableBead):
         self._meta = self._load_meta()
         self._content_id = None
 
-    def __zipfile_user(method):
-        # method is called with the zipfile opened
-        @functools.wraps(method)
-        def f(self, *args, **kwargs):
-            if self.zipfile:
-                return method(self, *args, **kwargs)
-            try:
-                with zipfile.ZipFile(self.archive_filename) as self.zipfile:
-                    return method(self, *args, **kwargs)
-            except (zipfile.BadZipFile, OSError, IOError):
-                raise InvalidArchive(self.archive_filename)
-            finally:
-                self.zipfile = None
-        return f
-
     # -
     # FIXME: Archive.is_valid is too costly for a property
     # in fact it is so costly in some cases, that the user is worth
     # notifying that processing is happening, see verify_with_feedback(archive)
     @property
-    @__zipfile_user
     def is_valid(self):
         '''
         verify, that
@@ -84,6 +84,7 @@ class Archive(UnpackableBead):
         '''
         return all(self._checks())
 
+    @_zipfile_user
     def _checks(self):
         yield self._has_well_formed_meta()
         yield self._bead_creation_time_is_in_the_past()
@@ -111,7 +112,7 @@ class Archive(UnpackableBead):
         #                 2010/04/08/precision-and-accuracy-of-datetime/
         return freeze_time <= now
 
-    @__zipfile_user
+    @_zipfile_user
     def _extra_file(self):
         data_dir_prefix = layouts.Archive.DATA + '/'
         code_dir_prefix = layouts.Archive.CODE + '/'
@@ -125,7 +126,7 @@ class Archive(UnpackableBead):
                     # unexpected extra file!
                     return name
 
-    @__zipfile_user
+    @_zipfile_user
     def _file_with_different_content_id(self):
         for name, hash in self.manifest.items():
             try:
@@ -137,9 +138,8 @@ class Archive(UnpackableBead):
                 return name
 
     @property
-    @__zipfile_user
     def manifest(self):
-        return persistence.zip_load(self.zipfile, layouts.Archive.MANIFEST)
+        return self.zip_load(layouts.Archive.MANIFEST)
 
     @property
     def content_id(self):
@@ -147,7 +147,7 @@ class Archive(UnpackableBead):
             self._content_id = self.calculate_content_id()
         return self._content_id
 
-    @__zipfile_user
+    @_zipfile_user
     def calculate_content_id(self):
         # there is currently only one meta version
         # and it must match the one defined in the workspace module
@@ -170,11 +170,14 @@ class Archive(UnpackableBead):
         # harm to this Archive instance
         return deepcopy(self._meta)
 
+    @_zipfile_user
+    def zip_load(self, filename):
+        return persistence.zip_load(self.zipfile, filename)
+
     @property
-    @__zipfile_user
     def input_map(self):
         try:
-            return persistence.zip_load(self.zipfile, layouts.Archive.INPUT_MAP)
+            return self.zip_load(layouts.Archive.INPUT_MAP)
         except:
             return {}
 
@@ -183,14 +186,13 @@ class Archive(UnpackableBead):
         return tuple(meta.parse_inputs(self.meta))
 
     # -
-    @__zipfile_user
     def _load_meta(self):
         try:
-            return persistence.zip_load(self.zipfile, layouts.Archive.BEAD_META)
+            return self.zip_load(layouts.Archive.BEAD_META)
         except:
             raise InvalidArchive(self.archive_filename)
 
-    @__zipfile_user
+    @_zipfile_user
     def extract_file(self, zip_path, fs_path):
         '''
             Extract zip_path from zipfile to fs_path.
@@ -205,7 +207,7 @@ class Archive(UnpackableBead):
             with open(fs_path, 'wb') as target:
                 shutil.copyfileobj(source, target)
 
-    @__zipfile_user
+    @_zipfile_user
     def extract_dir(self, zip_dir, fs_dir):
         '''
             Extract all files from zipfile under zip_dir to fs_dir.
