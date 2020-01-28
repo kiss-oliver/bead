@@ -4,12 +4,11 @@ import os
 import pathlib
 import tempfile
 
-import unittest
 from unittest import skip, skipIf, skipUnless
 
 from . import tech
 
-import arglinker
+import tests.arglinker
 from tracelog import TRACELOG
 
 
@@ -39,7 +38,7 @@ def setenv(variable, value):
 skip, skipIf, skipUnless  # reexport
 
 
-class TestCase(arglinker.add_test_linker(unittest.TestCase)):
+class TestCase(tests.arglinker.TestCase):
 
     def setUp(self, *args, **kwargs):
         super().setUp(*args, **kwargs)

@@ -4,7 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-arglinker = {git = "https://github.com/e3krisztian/arglinker"}
 mypy = "*"
 flake8 = "*"
 vulture = "*"

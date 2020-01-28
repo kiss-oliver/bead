@@ -1,4 +1,4 @@
-git+https://github.com/e3krisztian/arglinker#egg=arglinker
-pytest-cov==2.8.1
 flake8
+mypy==0.761
 freezegun==0.3.12
+pytest-cov==2.8.1
