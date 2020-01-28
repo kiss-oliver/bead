@@ -8,6 +8,7 @@ packages_to_test=(bead bead_cli tests)
 
 pwd
 flake8 "${packages_to_test[@]}"
+mypy --ignore-missing-imports "${packages_to_test[@]}"
 set -x
 if [ $# = 0 ]; then
   exec pytest "${packages_to_test[@]}"

@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Sequence
 
 from .tech.timestamp import time_from_timestamp
-from .meta import InputSpec
+from .meta import BeadName, InputSpec
 
 
 class Bead:
@@ -21,7 +21,7 @@ class Bead:
     kind: str
     # kind is deprecated. Humans naturally agree on domain specific names instead.
     # The price is living with bad, undescriptive names, that are hard to improve upon later.
-    name: str
+    name: BeadName
     inputs: Sequence[InputSpec]
 
     # frozen beads only details
