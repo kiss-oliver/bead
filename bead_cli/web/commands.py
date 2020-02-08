@@ -8,7 +8,7 @@ from bead.box import UnionBox
 
 from ..common import OPTIONAL_ENV
 from ..cmdparse import Command
-from .csv import read_beads, write_beads
+from .io import read_beads, write_beads
 from .sketch import Sketch
 from . import sketch as web_sketch
 from .dummy import Dummy
