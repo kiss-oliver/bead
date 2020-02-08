@@ -74,7 +74,7 @@ assert isinstance(InputName('asd'), BeadName)
 
 @attr.s(auto_attribs=True, frozen=True)
 class InputSpec:
-    name: InputName
+    name: InputName = attr.ib(converter=InputName)
     kind: str
     content_id: str
     timestamp_str: str
@@ -92,7 +92,7 @@ def parse_inputs(meta):
     for name in inputs:
         spec = inputs[name]
         yield InputSpec(
-            InputName(name),
+            name,
             spec[INPUT_KIND],
             spec[INPUT_CONTENT_ID],
             spec[INPUT_FREEZE_TIME])

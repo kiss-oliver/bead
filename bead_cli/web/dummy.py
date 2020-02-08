@@ -11,11 +11,11 @@ from .freshness import Freshness
 InputMap = Dict[InputName, BeadName]
 
 
-def input_map_converter(v) -> InputMap:
+def input_map_converter(value) -> InputMap:
     """attr converter"""
-    if v is None:
+    if value is None:
         return {}
-    return v
+    return {InputName(k): BeadName(v) for k, v in value.items()}
 
 
 class FrozenInputMap(ValidatingStr):
@@ -79,7 +79,7 @@ class Dummy:
 
     # these can be modified after the object is created
     input_map: InputMap = attr.ib(kw_only=True, factory=dict, converter=input_map_converter)
-    freshness: Freshness = attr.ib(kw_only=True, default=Freshness.SUPERSEDED)
+    freshness: Freshness = attr.ib(kw_only=True, default=Freshness.SUPERSEDED, converter=Freshness)
     box_name: str = attr.ib(kw_only=True, default='')
 
     @cached_property
