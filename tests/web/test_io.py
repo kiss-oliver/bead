@@ -8,7 +8,7 @@ META_JSON = """\
 [
     {
         "@class": "Dummy",
-        "@encoding": "attr",
+        "@encoding": "attrs",
         "box_name": "box",
         "content_id": "id_ood2",
         "freshness": {
@@ -23,7 +23,7 @@ META_JSON = """\
         "inputs": [
             {
                 "@class": "InputSpec",
-                "@encoding": "attr",
+                "@encoding": "attrs",
                 "content_id": "id_ood1",
                 "kind": "kind_ood1",
                 "name": "ood1",
@@ -31,7 +31,7 @@ META_JSON = """\
             },
             {
                 "@class": "InputSpec",
-                "@encoding": "attr",
+                "@encoding": "attrs",
                 "content_id": "id_root2_utd",
                 "kind": "kind_root_2",
                 "name": "root2",
@@ -44,7 +44,7 @@ META_JSON = """\
     },
     {
         "@class": "Dummy",
-        "@encoding": "attr",
+        "@encoding": "attrs",
         "box_name": "box",
         "content_id": "id_ood1",
         "freshness": {
@@ -58,7 +58,7 @@ META_JSON = """\
         "inputs": [
             {
                 "@class": "InputSpec",
-                "@encoding": "attr",
+                "@encoding": "attrs",
                 "content_id": "id_root1_ood",
                 "kind": "kind_root_1",
                 "name": "root",
@@ -71,7 +71,7 @@ META_JSON = """\
     },
     {
         "@class": "Dummy",
-        "@encoding": "attr",
+        "@encoding": "attrs",
         "box_name": "",
         "content_id": "id_root2_utd",
         "freshness": {
@@ -87,7 +87,7 @@ META_JSON = """\
     },
     {
         "@class": "Dummy",
-        "@encoding": "attr",
+        "@encoding": "attrs",
         "box_name": "",
         "content_id": "id_root1_utd",
         "freshness": {
@@ -103,7 +103,7 @@ META_JSON = """\
     },
     {
         "@class": "Dummy",
-        "@encoding": "attr",
+        "@encoding": "attrs",
         "box_name": "",
         "content_id": "id_root1_ood",
         "freshness": {
@@ -119,7 +119,7 @@ META_JSON = """\
     },
     {
         "@class": "Dummy",
-        "@encoding": "attr",
+        "@encoding": "attrs",
         "box_name": "",
         "content_id": "id_ood3",
         "freshness": {
@@ -133,7 +133,7 @@ META_JSON = """\
         "inputs": [
             {
                 "@class": "InputSpec",
-                "@encoding": "attr",
+                "@encoding": "attrs",
                 "content_id": "id_ood2",
                 "kind": "kind_ood2",
                 "name": "ood2",
@@ -141,7 +141,7 @@ META_JSON = """\
             },
             {
                 "@class": "InputSpec",
-                "@encoding": "attr",
+                "@encoding": "attrs",
                 "content_id": "id_phantom",
                 "kind": "kind_ood2",
                 "name": "phantom",
