@@ -48,6 +48,10 @@ def make_argument_parser(defaults):
             workspace.CmdNuke,
             'No operation, you probably want zap, to delete the workspace.',
 
+            'web',
+            web.CmdWeb,
+            'Manage the big picture - [visualize] connections between beads.',
+
             'zap',
             workspace.CmdZap,
             'Delete workspace.',
@@ -55,25 +59,6 @@ def make_argument_parser(defaults):
             'version',
             CmdVersion,
             'Show program version.'))
-
-    (parser
-        .group('web', 'Visualize connections to other beads.')
-        .commands(
-            'graph',
-            web.CmdGraph,
-            'Create image file[s] of connections between archives.',
-
-            'view',
-            web.CmdView,
-            'Visualize connections between archives, delete temporary files on exit.',
-
-            'export',
-            web.CmdExport,
-            'Export metadata, including connections between beads.',
-
-            'advise',
-            web.CmdAdvise,
-            'Create a script to fix the input map for ARCHIVE.'))
 
     (parser
         .group('input', 'Manage data loaded from other beads')

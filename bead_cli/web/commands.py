@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 import tempfile
@@ -12,6 +13,63 @@ from .io import read_beads, write_beads
 from .sketch import Sketch
 from . import sketch as web_sketch
 from .dummy import Dummy
+
+
+class CmdWeb(Command):
+    '''
+    Visualize the big picture.
+
+    Tool to capture/load/filter/save/visualize connections between
+    all available beads.
+
+    Sub-commands describe a processing pipe-line, where each sub command
+    work on an input graph, and yield an output graph.  Where the graph
+    is defined by archive meta-s as nodes and input connections between
+    archive meta-s as edges.
+
+    The processing pipe-line starts off with all the available beads in
+    the defined boxes as initial input.
+
+    However preparing this big picture is an expensive operation if there
+    are more than a dozen beads, therefore it is optimized away if the
+    first sub-command is "load".
+
+    Sub commands simplify the big picture by dropping input connections
+    and meta-s.
+
+    Subcommands:
+
+    load filename.web
+        Load previously exported web metadata from file.
+
+    / [source-name[s]] ... [sink-name[s]] /
+        Filters beads by input connections:
+        - if the set of sources is not empty:
+          drop all that do not have any of the sources as direct/indirect
+          inputs.
+        - if the set of sinks is not empty:
+          drop all that are not direct/indirect inputs to any of the sinks.
+
+    save filename.{web,dot,png,svg}
+        Save current web metadata to file - for processing later.
+
+    color
+        Assign freshness of beads.
+        Answers the question: "Are all input at the latest version?"
+
+    heads
+        Reduce connections to include only most recent versions
+        and beads to only those most recent and those referenced
+        by the remaining connections.
+    '''
+
+    FORMATTER_CLASS = argparse.RawDescriptionHelpFormatter
+
+    def declare(self, arg):
+        arg(OPTIONAL_ENV)
+
+    def run(self, args):
+        pass
 
 
 class CmdGraph(Command):

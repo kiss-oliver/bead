@@ -24,6 +24,8 @@ class Command:
     argparse (user input), and a function.
     '''
 
+    FORMATTER_CLASS = argparse.HelpFormatter
+
     def declare(self, arg):
         '''
         Declare command arguments by overriding it.
@@ -142,7 +144,11 @@ class Parser:
         '''
         command = self._make_command(commandish)
         parser = self._subparsers.add_parser(
-            name, help=title, description=command.description)
+            name,
+            help=title,
+            description=command.description,
+            formatter_class=command.FORMATTER_CLASS
+        )
         command.declare(self.__class__(parser, self.defaults).arg)
         parser.set_defaults(_cmdparse__run=command.run)
 
