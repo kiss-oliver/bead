@@ -168,16 +168,16 @@ class Ref:
     content_id: str
 
     @classmethod
-    def from_bead(cls, bead) -> 'Ref':
+    def from_bead(cls, bead: Dummy) -> 'Ref':
         return cls(bead.name, bead.content_id)
 
     @classmethod
-    def from_bead_input(cls, bead, input: InputSpec) -> 'Ref':
+    def from_bead_input(cls, bead: Dummy, input: InputSpec) -> 'Ref':
         src_bead_name = bead.get_input_bead_name(input.name)
         return cls(src_bead_name, input.content_id)
 
     @classmethod
-    def index_for(cls, beads: Iterable[Bead]) -> Dict['Ref', Bead]:
+    def index_for(cls, beads: Iterable[Dummy]) -> Dict['Ref', Dummy]:
         bead_by_ref = {}
         for bead in beads:
             bead_by_ref[cls.from_bead(bead)] = bead

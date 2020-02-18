@@ -237,7 +237,7 @@ class Workspace(Bead):
         return ws
 
 
-class _ZipCreator(object):
+class _ZipCreator:
     def __init__(self):
         self.hashes = {}
         self.zipfile = None

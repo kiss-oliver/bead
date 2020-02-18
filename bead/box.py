@@ -17,6 +17,7 @@ Boxes can be used to:
 from datetime import datetime, timedelta
 from glob import iglob, escape as glob_escape
 import os
+from typing import Iterator, Iterable, Sequence
 
 from .archive import Archive, InvalidArchive
 from . import spec as bead_spec
@@ -98,7 +99,7 @@ There {is,will be,was} more info about BEADs at
 '''
 
 
-class Box(object):
+class Box:
     """
     Store Beads.
     """
@@ -122,13 +123,13 @@ class Box(object):
         for bead in self._beads(query):
             return bead
 
-    def all_beads(self):
+    def all_beads(self) -> Iterator[Archive]:
         '''
         Iterator for all beads in this Box
         '''
         return iter(self._beads([]))
 
-    def _beads(self, conditions):
+    def _beads(self, conditions) -> Iterable[Archive]:
         '''
         Retrieve matching beads.
         '''
@@ -221,7 +222,7 @@ class Box(object):
 
 
 class UnionBox:
-    def __init__(self, boxes):
+    def __init__(self, boxes: Sequence[Box]):
         self.boxes = tuple(boxes)
 
     def get_context(self, check_type, check_param, time):
@@ -242,7 +243,7 @@ class UnionBox:
         context = self.get_context(check_type, check_param, time)
         return context.best
 
-    def all_beads(self):
+    def all_beads(self) -> Iterator[Archive]:
         '''
         Iterator for all beads in this Box
         '''

@@ -75,7 +75,7 @@ def OPTIONAL_ENV(parser):
         help=arg_help.ENV)
 
 
-class DefaultArgSentinel(object):
+class DefaultArgSentinel:
     '''
     I am a sentinel for default values.
 

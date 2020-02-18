@@ -14,7 +14,7 @@ META_JSON = """\
         "freshness": {
             "@class": "Freshness",
             "@encoding": "enum",
-            "@value": "SUPERSEDED"
+            "value": "SUPERSEDED"
         },
         "input_map": {
             "ood1": "ood1",
@@ -50,7 +50,7 @@ META_JSON = """\
         "freshness": {
             "@class": "Freshness",
             "@encoding": "enum",
-            "@value": "UP_TO_DATE"
+            "value": "UP_TO_DATE"
         },
         "input_map": {
             "root": "root1"
@@ -77,7 +77,7 @@ META_JSON = """\
         "freshness": {
             "@class": "Freshness",
             "@encoding": "enum",
-            "@value": "OUT_OF_DATE"
+            "value": "OUT_OF_DATE"
         },
         "input_map": {},
         "inputs": [],
@@ -93,7 +93,7 @@ META_JSON = """\
         "freshness": {
             "@class": "Freshness",
             "@encoding": "enum",
-            "@value": "SUPERSEDED"
+            "value": "SUPERSEDED"
         },
         "input_map": {},
         "inputs": [],
@@ -109,7 +109,7 @@ META_JSON = """\
         "freshness": {
             "@class": "Freshness",
             "@encoding": "enum",
-            "@value": "SUPERSEDED"
+            "value": "SUPERSEDED"
         },
         "input_map": {},
         "inputs": [],
@@ -125,7 +125,7 @@ META_JSON = """\
         "freshness": {
             "@class": "Freshness",
             "@encoding": "enum",
-            "@value": "UP_TO_DATE"
+            "value": "UP_TO_DATE"
         },
         "input_map": {
             "phantom": "real_name_of_phantom"

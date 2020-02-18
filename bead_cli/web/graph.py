@@ -28,7 +28,7 @@ class Edge:
         return self.dest.ref
 
 
-def generate_input_edges(bead_index: Dict[Ref, Dummy], bead) -> Iterator[Edge]:
+def generate_input_edges(bead_index: Dict[Ref, Dummy], bead: Dummy) -> Iterator[Edge]:
     """
     Generate all the 'Edge's leading from the bead to its inputs.
 

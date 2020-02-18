@@ -9,7 +9,7 @@ ENCODING = '@encoding'
 ENCODING_ATTRS = 'attrs'
 ENCODING_ENUM = 'enum'
 CLASS_NAME = '@class'
-ENUM_VALUE = '@value'
+ENUM_VALUE = 'value'
 
 
 CLASSES = (Dummy, Ref, InputSpec, Freshness)

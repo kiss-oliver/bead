@@ -129,8 +129,10 @@ def main(run=run):
     except KeyboardInterrupt:
         print("Interrupted :(", file=sys.stderr)
         retval = -1
+    except SystemExit:
+        raise
     except BaseException:
-        # all remaining errors are catched - including SystemExit
+        # all remaining errors are catched - including RunTimeErrors
         sys_argv = f'{sys.argv!r}'
         exception = traceback.format_exc()
         short_exception = traceback.format_exc(limit=1)

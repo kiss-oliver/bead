@@ -7,7 +7,7 @@ import webbrowser
 from bead import tech
 from bead.box import UnionBox
 
-from ..common import OPTIONAL_ENV
+from ..common import OPTIONAL_ENV, die
 from ..cmdparse import Command
 from .io import read_beads, write_beads
 from .sketch import Sketch
@@ -67,9 +67,124 @@ class CmdWeb(Command):
 
     def declare(self, arg):
         arg(OPTIONAL_ENV)
+        arg(
+            'words',
+            metavar='...',
+            nargs=argparse.REMAINDER,
+            help='Sub-commands and their arguments'
+        )
 
     def run(self, args):
+        env = args.get_env()
+        commands, remaining_words = parse_commands(env, args.words)
+        if remaining_words:
+            msg = 'Could not fully parse command line.\n'
+            if commands:
+                msg += 'Parsed commands:'
+                msg += '\n\t'.join(map(str, commands))
+            msg += f'\nCould not parse: {remaining_words}'
+            die(msg)
+        else:
+            sketch = Sketch.from_beads([])
+            for command in commands:
+                sketch = command(sketch)
+
+
+def parse_commands(env, words):
+    remaining_words = words[::-1]
+    commands = []
+
+    if remaining_words and remaining_words[-1] != 'load':
+        commands.append(LoadAll(env.get_boxes()))
+
+    while remaining_words:
+        remaining = remaining_words[:]
+        cmd_name = remaining_words.pop()
+        try:
+            cmd_class = SUBCOMMANDS[cmd_name]
+            cmd = cmd_class(remaining_words)
+        except:
+            return commands, remaining
+        commands.append(cmd)
+
+    return commands, remaining_words[::-1]
+
+
+class SketchProcessor:
+    def __init__(self, _args):
         pass
+
+    def __call__(self, sketch):
+        return sketch
+
+    def __str__(self):
+        cls = self.__class__.__name__
+        args = vars(self)
+        return f'{cls}({args})'
+
+    def sketch_from_beads(self, beads):
+        return Sketch.from_beads([Dummy.from_bead(bead) for bead in beads])
+
+
+class LoadAll(SketchProcessor):
+    def __init__(self, boxes):
+        super().__init__([])
+        self.boxes = boxes
+
+    def __call__(self, _sketch):
+        beads = load_all_beads(self.boxes)
+        return self.sketch_from_beads(beads)
+
+
+class Load(SketchProcessor):
+    def __init__(self, args):
+        self.file_name = args.pop()
+
+    def __call__(self, _sketch):
+        beads = read_beads(self.file_name)
+        return self.sketch_from_beads(beads)
+
+
+class Save(SketchProcessor):
+    def __init__(self, args):
+        self.file_name = args.pop()
+
+    def __call__(self, sketch):
+        return write_beads(self.file_name, sketch.beads)
+
+
+class Filter(SketchProcessor):
+    def __init__(self, args):
+        self.sources = self._pop_names(args, sentinel='...')
+        self.sinks = self._pop_names(args, sentinel='/')
+        super().__init__(args)
+
+    def _pop_names(self, args, sentinel):
+        names = []
+        while args:
+            name = args.pop()
+            if name == sentinel:
+                return names
+            if name in ('...', '/'):
+                raise ValueError(f'Unexpected delimiter: {repr(name)} after {names}.')
+            if not is_valid_name(name):
+                raise ValueError(f'Malformed name: {repr(name)} after {names}.')
+            names.append(name)
+        raise ValueError(f'Delimiter not found: {repr(sentinel)}.')
+
+    def __call__(self, _env, _sketch):
+        print(f'filter: {self.sources} ... {self.sinks}')
+
+
+def is_valid_name(name):
+    return name not in ('...', '/')
+
+
+SUBCOMMANDS = {
+    'load': Load,
+    'save': Save,
+    '/': Filter,
+}
 
 
 class CmdGraph(Command):
@@ -195,12 +310,6 @@ class CmdExport(Command):
         print(f"Loaded {len(all_beads)} beads")
 
         write_beads(output_file_name, all_beads)
-
-
-class CmdAdvise(Command):
-    '''
-    Create a script to fix the input map for ARCHIVE.
-    '''
 
 
 def load_all_beads(boxes):

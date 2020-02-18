@@ -21,7 +21,7 @@ TS5 = '20150901T151019000005+0200'
 TS_LAST = TS5
 
 
-class RobotAndBeads(object):
+class RobotAndBeads:
 
     # fixtures
     def robot(self):
