@@ -1,7 +1,6 @@
 import argparse
 import os
 import subprocess
-import tempfile
 import webbrowser
 
 from bead import tech
@@ -50,17 +49,23 @@ class CmdWeb(Command):
         - if the set of sinks is not empty:
           drop all that are not direct/indirect inputs to any of the sinks.
 
-    save filename.{web,dot,png,svg}
+    save filename.web
         Save current web metadata to file - for processing later.
+
+    png filename.png
+        Save connections as image in PNG format
+
+    svg filename.svg
+        Save connections as image in SVG format
 
     color
         Assign freshness of beads.
         Answers the question: "Are all input at the latest version?"
 
     heads
-        Reduce connections to include only most recent versions
-        and beads to only those most recent and those referenced
-        by the remaining connections.
+        Reduce graph to include only most recent versions
+        of beads per cluster and possibly older ones, that are referenced
+        by the newest ones.
     '''
 
     FORMATTER_CLASS = argparse.RawDescriptionHelpFormatter
@@ -126,6 +131,11 @@ class SketchProcessor:
         return Sketch.from_beads([Dummy.from_bead(bead) for bead in beads])
 
 
+class ProcessorWithFileName(SketchProcessor):
+    def __init__(self, args):
+        self.file_name = args.pop()
+
+
 class LoadAll(SketchProcessor):
     def __init__(self, boxes):
         super().__init__([])
@@ -133,24 +143,49 @@ class LoadAll(SketchProcessor):
 
     def __call__(self, _sketch):
         beads = load_all_beads(self.boxes)
+        print(f"Loaded {len(beads)} beads")
         return self.sketch_from_beads(beads)
 
 
-class Load(SketchProcessor):
-    def __init__(self, args):
-        self.file_name = args.pop()
-
+class Load(ProcessorWithFileName):
     def __call__(self, _sketch):
         beads = read_beads(self.file_name)
         return self.sketch_from_beads(beads)
 
 
-class Save(SketchProcessor):
-    def __init__(self, args):
-        self.file_name = args.pop()
-
+class Save(ProcessorWithFileName):
     def __call__(self, sketch):
-        return write_beads(self.file_name, sketch.beads)
+        write_beads(self.file_name, sketch.beads)
+        return sketch
+
+
+class WriteDot(ProcessorWithFileName):
+    def __call__(self, sketch):
+        dot_str = sketch.as_dot()
+        tech.fs.write_file(self.file_name, dot_str)
+        return sketch
+
+
+class WritePng(ProcessorWithFileName):
+    def __call__(self, sketch):
+        dot_str = sketch.as_dot()
+        print(f"Creating PNG: {self.file_name}")
+        graphviz_dot(dot_str, self.file_name, format='png')
+        return sketch
+
+
+class WriteSvg(ProcessorWithFileName):
+    def __call__(self, sketch):
+        dot_str = sketch.as_dot()
+        print(f"Creating SVG: {self.file_name}")
+        graphviz_dot(dot_str, self.file_name, format='svg')
+        return sketch
+
+
+class View(ProcessorWithFileName):
+    def __call__(self, sketch):
+        print(f"Viewing {self.file_name}")
+        webbrowser.open(self.file_name)
 
 
 class Filter(SketchProcessor):
@@ -172,144 +207,39 @@ class Filter(SketchProcessor):
             names.append(name)
         raise ValueError(f'Delimiter not found: {repr(sentinel)}.')
 
-    def __call__(self, _env, _sketch):
-        print(f'filter: {self.sources} ... {self.sinks}')
+    def __call__(self, sketch):
+        if self.sources:
+            sketch = web_sketch.set_sources(sketch, self.sources)
+        if self.sinks:
+            sketch = web_sketch.set_sinks(sketch, self.sinks)
+        return sketch
 
 
 def is_valid_name(name):
     return name not in ('...', '/')
 
 
+class SetFreshness(SketchProcessor):
+    def __call__(self, sketch):
+        sketch.color_beads()
+        return sketch
+
+
+class KeepOnlyHeads(SketchProcessor):
+    def __call__(self, sketch):
+        return web_sketch.heads_of(sketch).drop_deleted_inputs()
+
+
 SUBCOMMANDS = {
     'load': Load,
     'save': Save,
+    'dot': WriteDot,
+    'png': WritePng,
+    'svg': WriteSvg,
     '/': Filter,
+    'color': SetFreshness,
+    'heads': KeepOnlyHeads,
 }
-
-
-class CmdGraph(Command):
-    '''
-    Visualize connections to other beads.
-
-    Write a GraphViz .dot file and create other representations as requested.
-    '''
-
-    def declare(self, arg):
-        arg(OPTIONAL_ENV)
-        arg('output_base', default='web', nargs='?',
-            help='File name base of generated files'
-            + ' (e.g. dot file will be stored as <OUTPUT_BASE>.dot)')
-        arg('--from-meta', metavar='INPUT_BASE',
-            help='Load bead metadata from <INPUT_BASE>.bead-meta')
-        arg('--svg', default=False, action='store_true',
-            help="Call GraphViz's `dot` to create <OUTPUT_BASE>.svg file as well")
-        arg('--png', default=False, action='store_true',
-            help="Call GraphViz's `dot` to create an <OUTPUT_BASE>.png file as well")
-        arg('--heads-only', default=False, action='store_true',
-            help="Show only input edges for the most recent beads for each bead-group")
-        arg('names', metavar='NAME', nargs='*',
-            help="Restrict output graph to these names and their inputs (default: all beads)")
-
-    def run(self, args):
-        output_file_base = args.output_base
-
-        if args.from_meta:
-            all_beads = read_beads(f'{args.from_meta}.bead-meta')
-        else:
-            env = args.get_env()
-            all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
-        print(f"Loaded {len(all_beads)} beads")
-
-        sketch = Sketch.from_beads(all_beads)
-        if args.names:
-            sketch = web_sketch.set_sinks(sketch, args.names)
-        if args.heads_only:
-            sketch = web_sketch.heads_of(sketch)
-        sketch.color_beads()
-        dot_str = sketch.as_dot()
-
-        dot_file = f'{output_file_base}.dot'
-        print(f"Creating {dot_file}")
-        tech.fs.write_file(dot_file, dot_str)
-
-        if args.png:
-            png_file = f'{output_file_base}.png'
-            print(f"Creating {png_file}")
-            graphviz_dot(dot_file, png_file)
-
-        if args.svg:
-            svg_file = f'{output_file_base}.svg'
-            print(f"Creating {svg_file}")
-            graphviz_dot(dot_file, svg_file)
-
-
-class CmdView(Command):
-    '''
-    Visualize connections between archives, clean up all temporary files on exit.
-    '''
-
-    def declare(self, arg):
-        arg(OPTIONAL_ENV)
-        arg('--from-meta', metavar='INPUT_BASE',
-            help='Load bead metadata from <INPUT_BASE>-beads.csv and <INPUT_BASE>-inputs.csv')
-        arg('--heads-only', default=False, action='store_true',
-            help="Show only input edges for the most recent beads for each bead-group")
-        arg('names', metavar='NAME', nargs='*',
-            help="Restrict output graph to these names and their inputs (default: all beads)")
-
-    def run(self, args):
-        tempdir = tech.fs.Path(tempfile.mkdtemp())
-        output_file_base = tempdir / 'web'
-
-        if args.from_meta:
-            all_beads = read_beads(args.from_meta)
-        else:
-            env = args.get_env()
-            all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
-        print(f"Loaded {len(all_beads)} beads")
-
-        sketch = Sketch.from_beads(all_beads)
-        if args.names:
-            sketch = web_sketch.set_sinks(sketch, args.names)
-        if args.heads_only:
-            sketch = web_sketch.heads_of(sketch)
-        sketch.color_beads()
-        dot_str = sketch.as_dot()
-
-        dot_file = f'{output_file_base}.dot'
-        print(f"Creating {dot_file}")
-        tech.fs.write_file(dot_file, dot_str)
-
-        svg_file = f'{output_file_base}.svg'
-        print(f"Creating {svg_file}")
-        graphviz_dot(dot_file, svg_file)
-        print(f"Viewing {svg_file}")
-        webbrowser.open(svg_file)
-
-        input('Press return to clean up')
-        tech.fs.rmtree(tempdir)
-
-
-class CmdExport(Command):
-    '''
-    Export connections to other beads.
-
-    Write bead meta data to file: <OUTPUT_BASE>.bead-meta
-    '''
-
-    def declare(self, arg):
-        arg(OPTIONAL_ENV)
-        arg('output_base', default='web', nargs='?',
-            help='File name base, bead meta-s will be written to <OUTPUT_BASE>.bead-meta')
-
-    def run(self, args):
-        output_file_name = f'{args.output_base}.bead-meta'
-
-        env = args.get_env()
-        all_beads = [Dummy.from_bead(b) for b in load_all_beads(env.get_boxes())]
-        print(f"Loaded {len(all_beads)} beads")
-
-        write_beads(output_file_name, all_beads)
 
 
 def load_all_beads(boxes):
@@ -333,8 +263,6 @@ def load_all_beads(boxes):
     return all_beads
 
 
-def graphviz_dot(dot_file, output_file):
-    _, ext = os.path.splitext(output_file)
-    filetype = ext.lstrip('.')
-    cmd = ['dot', dot_file, '-o', output_file, '-T', filetype]
-    subprocess.check_call(cmd)
+def graphviz_dot(dot_str, output_file, format):
+    cmd = ['dot', '-o', output_file, '-T', format]
+    subprocess.run(cmd, input=dot_str.encode('utf-8'), capture_output=True, check=True)
