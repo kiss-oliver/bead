@@ -12,18 +12,18 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
     # tests
 
     def test_dot_output(self, robot, bead_with_inputs):
-        robot.cli('web', 'dot', 'web.dot')
-        self.assert_file_exists(robot.cwd / 'web.dot')
+        robot.cli('web', 'dot', 'all.dot')
+        self.assert_file_exists(robot.cwd / 'all.dot')
 
     @needs_dot
     def test_svg_output(self, robot, bead_with_inputs):
-        robot.cli('web', 'svg', 'web.svg')
-        self.assert_file_exists(robot.cwd / 'web.svg')
+        robot.cli('web', 'svg', 'all.svg')
+        self.assert_file_exists(robot.cwd / 'all.svg')
 
     @needs_dot
     def test_png_output(self, robot, bead_with_inputs):
-        robot.cli('web', 'png', 'web.png')
-        self.assert_file_exists(robot.cwd / 'web.png')
+        robot.cli('web', 'png', 'all.png')
+        self.assert_file_exists(robot.cwd / 'all.png')
 
     def test_meta_save_load(self, robot, bead_with_inputs, box):
         robot.cli('web', 'save', 'all.web')
@@ -41,14 +41,14 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
         robot.cli('box', 'forget', box.name)
         rmtree(box.directory)
 
-        robot.cli('web', 'load', 'all.web', 'dot', 'web.dot')
-        meta_web_dot = read_file(robot.cwd / 'web.dot')
+        robot.cli('web', 'load', 'all.web', 'dot', 'all.dot')
+        meta_web_dot = read_file(robot.cwd / 'all.dot')
 
         assert orig_web_dot == meta_web_dot
 
     def test_heads_only(self, robot, bead_with_history):
-        robot.cli('web', 'dot', 'web.dot', 'heads', 'dot', 'heads-only.dot')
-        full_web = read_file(robot.cwd / 'web.dot')
+        robot.cli('web', 'dot', 'all.dot', 'heads', 'dot', 'heads-only.dot')
+        full_web = read_file(robot.cwd / 'all.dot')
         heads_only_web = read_file(robot.cwd / 'heads-only.dot')
 
         assert len(heads_only_web) < len(full_web)
