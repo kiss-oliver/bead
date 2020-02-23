@@ -109,7 +109,7 @@ def parse_commands(env, words):
             cmd_class = SUBCOMMANDS[cmd_name]
             cmd = cmd_class(remaining_words)
         except:
-            return commands, remaining
+            return commands, remaining[::-1]
         commands.append(cmd)
 
     return commands, remaining_words[::-1]
