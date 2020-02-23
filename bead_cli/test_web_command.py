@@ -2,8 +2,9 @@ import re
 from bead.tech.fs import read_file, rmtree, write_file
 from bead.test import TestCase
 
+from bead_cli.web.io import write_beads
 from . import test_fixtures as fixtures
-
+from tests.sketcher import Sketcher
 from tests.web.test_graphviz import needs_dot
 
 
@@ -59,3 +60,18 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
         assert 'ERROR' in robot.stderr
         assert re.search('.ould not .*parse', robot.stderr)
         assert str(['this-command-does-not-exist', 'c']) in robot.stderr
+
+    def test_filter_no_args_no_filtering(self, robot):
+        sketcher = Sketcher()
+        sketcher.define('a1 b1 c1 d1')
+        sketcher.compile(
+            """
+            a1 -> b1 -> c1 -> d1
+                  b1 -------> d1
+            """
+        )
+        sketch = sketcher.sketch
+        write_beads(robot.cwd / 'computation.web', sketch.beads)
+
+        robot.cli('web load computation.web / ... / save filtered.web')
+        assert robot.read_file('computation.web') == robot.read_file('filtered.web')

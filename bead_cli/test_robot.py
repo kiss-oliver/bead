@@ -81,6 +81,9 @@ class Robot(Fixture):
         Imitate calling the command line tool with the given args
         '''
         TRACELOG(*args)
+        if len(args) == 1 and ' ' in args[0]:
+            return self.cli(*args[0].split())
+
         with self.environment:
             with CaptureStdout() as stdout, CaptureStderr() as stderr:
                 try:
@@ -107,6 +110,9 @@ class Robot(Fixture):
         assert not os.path.isabs(path)
         TRACELOG(path, content, realpath=self.cwd / path)
         tech.fs.write_file(self.cwd / path, content)
+
+    def read_file(self, filename):
+        return tech.fs.read_file(self.cwd / filename)
 
     def reset(self):
         '''
