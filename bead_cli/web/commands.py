@@ -239,6 +239,7 @@ SUBCOMMANDS = {
     '/': Filter,
     'color': SetFreshness,
     'heads': KeepOnlyHeads,
+    'view': View,
 }
 
 
