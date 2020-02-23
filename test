@@ -2,16 +2,31 @@
 cd $(dirname "$0")
 
 packages_to_test=(bead bead_cli tests)
-
 [ -d test-env ] || make test-env || exit 1
 . test-env/bin/activate
 
 pwd
 flake8 "${packages_to_test[@]}"
 mypy --ignore-missing-imports "${packages_to_test[@]}"
+
+# coverage
+if [ "${c}" == "" ]
+then
+  cov=()
+else
+  cov=(
+      --cov-report=term-missing:skip-covered
+      --cov-report=html:coverage
+  )
+  for dir in ${packages_to_test[@]}
+  do
+      cov[${#cov[@]}]=--cov=$dir
+  done
+fi
+
 set -x
 if [ $# = 0 ]; then
-  exec pytest "${packages_to_test[@]}"
+  exec pytest "${cov[@]}" "${packages_to_test[@]}"
 else
-  exec pytest "$@"
+  exec pytest "${cov[@]}" "$@"
 fi
