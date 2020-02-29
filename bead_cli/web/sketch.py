@@ -1,9 +1,10 @@
 import itertools
-from typing import Dict, List, Tuple, Sequence
+from typing import Set, Dict, List, Tuple, Sequence, Iterable
 
 import attr
 from cached_property import cached_property
 
+from bead.tech.timestamp import EPOCH_STR
 from .freshness import UP_TO_DATE, OUT_OF_DATE
 from .dummy import Dummy
 from .cluster import Cluster, create_cluster_index
@@ -13,8 +14,10 @@ from .graph import (
     Edge,
     Ref,
     generate_input_edges,
+    group_by_src,
     group_by_dest,
     toposort,
+    closure,
     bead_index_from_edges,
     refs_from_beads,
     refs_from_edges,
@@ -125,7 +128,14 @@ def set_sources(sketch: Sketch, cluster_names: List[str]) -> Sketch:
 
     Makes a new instance
     """
-    raise NotImplementedError
+    cluster_filter = ClusterFilter(sketch)
+
+    edges = cluster_filter.get_encoded_edges()
+    root_refs = cluster_filter.get_encoded_refs(cluster_names)
+
+    cluster_refs_to_keep = closure(root_refs, group_by_src(edges))
+
+    return cluster_filter.get_filtered_by_refs(cluster_refs_to_keep)
 
 
 def set_sinks(sketch: Sketch, cluster_names: List[str]) -> Sketch:
@@ -134,7 +144,69 @@ def set_sinks(sketch: Sketch, cluster_names: List[str]) -> Sketch:
 
     Makes a new instance
     """
-    raise NotImplementedError
+    cluster_filter = ClusterFilter(sketch)
+
+    edges = cluster_filter.get_encoded_edges()
+    edges = [e.reversed() for e in edges]
+    root_refs = cluster_filter.get_encoded_refs(cluster_names)
+
+    cluster_refs_to_keep = closure(root_refs, group_by_src(edges))
+
+    return cluster_filter.get_filtered_by_refs(cluster_refs_to_keep)
+
+
+class ClusterFilter:
+    def __init__(self, sketch):
+        self.sketch = sketch
+        self.dummy_by_name = {
+            name: Dummy(
+                name=name,
+                content_id=name,
+                kind=name,
+                timestamp_str=EPOCH_STR,
+            )
+            for name in sketch.cluster_by_name
+        }
+
+    def get_encoded_edges(self) -> Sequence[Edge]:
+        src_dest_pairs = self.convert_to_name_pairs(self.sketch.edges)
+        return [
+            Edge(
+                self.dummy_by_name[src],
+                self.dummy_by_name[dest])
+            for src, dest in src_dest_pairs
+        ]
+
+    def get_encoded_refs(self, bead_names: Iterable[str]) -> List[Ref]:
+        return [self.dummy_by_name[name].ref for name in sorted(set(bead_names))]
+
+    def get_filtered_by_refs(self, encoded_refs) -> Sketch:
+        src_dest_pairs = self.convert_to_name_pairs(self.sketch.edges)
+        clusters_to_keep = {r.name for r in encoded_refs}
+        cluster_edges_to_keep = {
+            (src, dest)
+            for src, dest in src_dest_pairs
+            if src in clusters_to_keep and dest in clusters_to_keep
+        }
+        encoded_edges = [
+            Edge(
+                self.dummy_by_name[src],
+                self.dummy_by_name[dest],
+            )
+            for src, dest in cluster_edges_to_keep
+        ]
+        return self.get_filtered_by_edges(encoded_edges)
+
+    def get_filtered_by_edges(self, encoded_edges: Iterable[Edge]) -> Sketch:
+        src_dest_pairs = self.convert_to_name_pairs(encoded_edges)
+        bead_names = {src for src, _ in src_dest_pairs} | {dest for _, dest in src_dest_pairs}
+        assert bead_names - set(self.dummy_by_name) == set()
+        beads = tuple(b for b in self.sketch.beads if b.name in bead_names)
+        edges = tuple(e for e in self.sketch.edges if (e.src.name, e.dest.name) in src_dest_pairs)
+        return Sketch(beads, edges).drop_deleted_inputs()
+
+    def convert_to_name_pairs(self, edges: Iterable[Edge]) -> Set[Tuple[str, str]]:
+        return {(e.src.name, e.dest.name) for e in edges}
 
 
 def drop_before(sketch: Sketch, timestamp) -> Sketch:
