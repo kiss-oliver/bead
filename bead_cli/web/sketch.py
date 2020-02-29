@@ -7,6 +7,7 @@ from cached_property import cached_property
 from .freshness import UP_TO_DATE, OUT_OF_DATE
 from .dummy import Dummy
 from .cluster import Cluster, create_cluster_index
+from .io import read_beads, write_beads
 from . import graphviz
 from .graph import (
     Edge,
@@ -41,6 +42,14 @@ class Sketch:
     def from_edges(cls, edges: Sequence[Edge]):
         beads = bead_index_from_edges(edges).values()
         return cls(tuple(beads), tuple(edges))
+
+    @classmethod
+    def from_file(cls, file_name):
+        beads = read_beads(file_name)
+        return cls.from_beads(beads)
+
+    def to_file(self, file_name):
+        write_beads(file_name, self.beads)
 
     @cached_property
     def cluster_by_name(self) -> Dict[str, Cluster]:

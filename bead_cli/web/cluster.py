@@ -61,6 +61,9 @@ class Cluster:
     def as_dot(self):
         return ''.join(graphviz.dot_cluster_as_fragments(self.name, self.beads()))
 
+    def __len__(self):
+        return len(self.beads_by_content_id)
+
 
 def create_cluster_index(beads: Iterable[Dummy]) -> Dict[str, Cluster]:
     cluster_by_name: Dict[str, Cluster] = {}

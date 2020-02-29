@@ -66,7 +66,7 @@ def group_by_dest(edges) -> Dict[Ref, List[Edge]]:
     return edges_by_dest
 
 
-def closure(roots: List[Ref], edges_by_src: Dict[Ref, List[Edge]]):
+def closure(roots: List[Ref], edges_by_src: Dict[Ref, List[Edge]]) -> Set[Ref]:
     """
     Return the set of reachable nodes from roots.
     edges_by_src is edges grouped by their `src`.
