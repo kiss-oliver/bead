@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import textwrap
 from typing import Set
 import webbrowser
 
@@ -19,31 +20,24 @@ class CmdWeb(Command):
     '''
     Visualize the big picture.
 
-    Tool to capture/load/filter/save/visualize connections between
-    all available beads.
+    Capture/load/filter/save/visualize connections between all available
+    computation archives.
 
     Sub-commands describe a processing pipe-line, where each sub command
-    work on an input graph, and yield an output graph.  Where the graph
-    is defined by archive meta-s as nodes and input connections between
-    archive meta-s as edges.
+    work on an input graph, and yield an output graph.
 
-    The processing pipe-line starts off with all the available beads in
-    the defined boxes as initial input.
+    The processing pipe-line by default starts off with the graph of
+    available archives and their input connections clustered by name.
+    (see also "load" below for an alternative, speedier initial graph)
 
-    However preparing this big picture is an expensive operation if there
-    are more than a dozen beads, therefore it is optimized away if the
-    first sub-command is "load".
-
-    Sub commands simplify the big picture by dropping input connections
-    and meta-s.
-
-    Subcommands:
+    Available pipe-line commands:
 
     load filename.web
-        Load previously exported web metadata from file.
+        Throw away current graph and load previously exported web from file.
+        When it is the first command, discovering all archives is skipped.
 
     / [source-name[s]] ... [sink-name[s]] /
-        Filters beads by input connections:
+        Filters computations by following input connections:
         - if the set of sources is not empty:
           drop all that do not have any of the sources as direct/indirect
           inputs.
@@ -51,7 +45,7 @@ class CmdWeb(Command):
           drop all that are not direct/indirect inputs to any of the sinks.
 
     save filename.web
-        Save current web metadata to file - for processing later.
+        Save current web metadata to file - ("load" above is one use case).
 
     png filename.png
         Save connections as image in PNG format
@@ -60,13 +54,16 @@ class CmdWeb(Command):
         Save connections as image in SVG format
 
     color
-        Assign freshness of beads.
+        Assign freshness to nodes, which are visualized as colors.
         Answers the question: "Are all input at the latest version?"
 
     heads
-        Reduce graph to include only most recent versions
-        of beads per cluster and possibly older ones, that are referenced
-        by the newest ones.
+        Reduce graph to include only most recent computations per
+        cluster and possibly a few older ones, that are referenced
+        by outdated, but not yet superseded (updated) computations.
+
+    view filename
+        open filename in browser (shortcut after save/png/svg)
     '''
 
     FORMATTER_CLASS = argparse.RawDescriptionHelpFormatter
@@ -81,6 +78,10 @@ class CmdWeb(Command):
         )
 
     def run(self, args):
+        if not args.words:
+            print('No sub-commands given, see usage below:')
+            print(textwrap.dedent(self.__doc__))
+            return
         env = args.get_env()
         commands, remaining_words = parse_commands(env, args.words)
         if remaining_words:
