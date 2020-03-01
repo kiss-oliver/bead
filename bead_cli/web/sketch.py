@@ -178,7 +178,11 @@ class ClusterFilter:
         ]
 
     def get_encoded_refs(self, bead_names: Iterable[str]) -> List[Ref]:
-        return [self.dummy_by_name[name].ref for name in sorted(set(bead_names))]
+        return [
+            self.dummy_by_name[name].ref
+            for name in sorted(set(bead_names))
+            if name in self.dummy_by_name
+        ]
 
     def get_filtered_by_refs(self, encoded_refs) -> Sketch:
         src_dest_pairs = self.convert_to_name_pairs(self.sketch.edges)

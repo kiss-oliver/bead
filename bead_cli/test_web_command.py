@@ -61,18 +61,22 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
         assert re.search('.ould not .*parse', robot.stderr)
         assert str(['this-command-does-not-exist', 'c']) in robot.stderr
 
+
+class Test_web_filter(TestCase, fixtures.RobotAndBeads):
+
     def sketch(self, robot):
         sketcher = Sketcher()
         sketcher.define('a1 b1 c1 d1 e1 f1')
         sketcher.compile(
             """
-            a1 -> b1 -> c1 -> d1   e1 -> f1
-                  b1 -------> d1
+            a1 -> b1 -> c1 -> d1
+
+                  b1 ------------> e1 -> f1
             """
         )
         sketcher.sketch.to_file(robot.cwd / 'computation.web')
 
-    def small_links_sketch(self, robot):
+    def indirect_links_sketch(self, robot):
         sketcher = Sketcher()
         sketcher.define('a1 b1 b2 c1 c2 d3 e1 f1')
         sketcher.compile(
@@ -89,14 +93,14 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
 
         assert robot.read_file('computation.web') == robot.read_file('filtered.web')
 
-    def test_filter_sources_through_cluster_links(self, robot, small_links_sketch):
+    def test_filter_sources_through_cluster_links(self, robot, indirect_links_sketch):
         robot.cli('web load computation.web / b ... / save filtered.web')
 
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
         assert sketch.cluster_by_name.keys() == set('bcd')
         assert len(sketch.cluster_by_name['c']) == 2
 
-    def test_filter_sinks_through_cluster_links(self, robot, small_links_sketch):
+    def test_filter_sinks_through_cluster_links(self, robot, indirect_links_sketch):
         robot.cli('web load computation.web / ... c / save filtered.web')
 
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
@@ -106,4 +110,11 @@ class Test_web(TestCase, fixtures.RobotAndBeads):
     def test_filter(self, robot, sketch):
         robot.cli('web load computation.web / b c ... c f / save filtered.web')
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
-        assert sketch.cluster_by_name.keys() == set('bcdef')
+        assert sketch.cluster_by_name.keys() == set('bcef')
+
+    def test_filter_filtered_out_sink(self, robot, indirect_links_sketch):
+        # f1 is unreachable from sources {b, c}, so it will be not a reachable sink
+        robot.cli('web load computation.web / b c ... c f / save filtered.web')
+
+        sketch = Sketch.from_file(robot.cwd / 'filtered.web')
+        assert sketch.cluster_by_name.keys() == set('bc')

@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+from typing import Set
 import webbrowser
 
 from bead import tech
@@ -194,8 +195,8 @@ class Filter(SketchProcessor):
         self.sinks = self._pop_names(args, sentinel='/')
         super().__init__(args)
 
-    def _pop_names(self, args, sentinel):
-        names = []
+    def _pop_names(self, args, sentinel) -> Set[str]:
+        names: Set[str] = set()
         while args:
             name = args.pop()
             if name == sentinel:
@@ -204,7 +205,7 @@ class Filter(SketchProcessor):
                 raise ValueError(f'Unexpected delimiter: {repr(name)} after {names}.')
             if not is_valid_name(name):
                 raise ValueError(f'Malformed name: {repr(name)} after {names}.')
-            names.append(name)
+            names.add(name)
         raise ValueError(f'Delimiter not found: {repr(sentinel)}.')
 
     def __call__(self, sketch):
