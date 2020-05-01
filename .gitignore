@@ -3,7 +3,6 @@
 .tox
 .coverage
 /coverage
-test-env
 build
 executables/
 .*_cache/

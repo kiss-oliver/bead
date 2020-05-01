@@ -1,9 +1,9 @@
 #!/bin/bash
+set -x
+
 cd $(dirname "$0")
 
 packages_to_test=(bead bead_cli tests)
-[ -d test-env ] || make test-env || exit 1
-. test-env/bin/activate
 
 pwd
 flake8 "${packages_to_test[@]}"
@@ -24,7 +24,6 @@ else
   done
 fi
 
-set -x
 if [ $# = 0 ]; then
   exec pytest "${cov[@]}" "${packages_to_test[@]}"
 else
