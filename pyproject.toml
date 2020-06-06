@@ -4,6 +4,15 @@ version = "0.0.3"
 description = "Linked frozen computations"
 authors = ["Krisztián Fekete"]
 license = "The Unlicense"
+packages = [
+    { include = "bead" },
+    { include = "bead_cli" },
+    { include = "tracelog.py" },
+    { include = "tests" },
+]
+
+[tool.poetry.scripts]
+bead = 'bead_cli.main:main'
 
 [tool.poetry.dependencies]
 python = "> 3.6"
