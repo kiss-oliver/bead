@@ -6,12 +6,13 @@ from . import arg_metavar
 from . import arg_help
 from .common import (
     OPTIONAL_WORKSPACE, OPTIONAL_ENV,
-    DefaultArgSentinel,
+    DefaultArgSentinel, assert_valid_workspace,
     verify_with_feedback,
     die, warning
 )
 from .common import BEAD_REF_BASE_defaulting_to, BEAD_OFFSET, BEAD_TIME, resolve_bead, TIME_LATEST
 from bead.box import UnionBox
+from bead.workspace import Workspace
 import bead.spec as bead_spec
 
 # input_nick
@@ -56,7 +57,7 @@ class CmdAdd(Command):
     def run(self, args):
         input_nick = args.input_nick
         bead_ref_base = args.bead_ref_base
-        workspace = args.workspace
+        workspace = get_workspace(args)
         env = args.get_env()
 
         if os.path.dirname(input_nick):
@@ -84,7 +85,7 @@ class CmdDelete(Command):
 
     def run(self, args):
         input_nick = args.input_nick
-        workspace = args.workspace
+        workspace = get_workspace(args)
         workspace.delete_input(input_nick)
         print(f'Input {input_nick} is deleted.')
 
@@ -111,7 +112,7 @@ class CmdUpdate(Command):
     def update_all_inputs(self, args):
         assert args.bead_ref_base is SAME_BEAD_NEWEST_VERSION
         assert not args.bead_offset, "--next, --prev can not be specified when updating all inputs"
-        workspace = args.workspace
+        workspace = get_workspace(args)
         env = args.get_env()
         unionbox = UnionBox(env.get_boxes())
         for input in workspace.inputs:
@@ -135,7 +136,7 @@ class CmdUpdate(Command):
     def update_one_input(self, args):
         input_nick = args.input_nick
         bead_ref_base = args.bead_ref_base
-        workspace = args.workspace
+        workspace = get_workspace(args)
         env = args.get_env()
         input = workspace.get_input(input_nick)
         if bead_ref_base is SAME_BEAD_NEWEST_VERSION:
@@ -196,7 +197,7 @@ class CmdLoad(Command):
 
     def run(self, args):
         input_nick = args.input_nick
-        workspace = args.workspace
+        workspace = get_workspace(args)
         env = args.get_env()
         if input_nick is ALL_INPUTS:
             inputs = workspace.inputs
@@ -254,12 +255,10 @@ class CmdUnload(Command):
 
     def run(self, args):
         input_nick = args.input_nick
-        workspace = args.workspace
+        workspace = get_workspace(args)
         if input_nick is ALL_INPUTS:
-            inputs = workspace.inputs
-            if inputs:
-                for input in inputs:
-                    _unload(workspace, input.name)
+            for input in workspace.inputs:
+                _unload(workspace, input.name)
         else:
             _unload(workspace, input_nick)
 
@@ -271,3 +270,8 @@ def _unload(workspace, input_nick):
         print(' Done', flush=True)
     else:
         print(input_nick, 'was not loaded - skipping')
+
+
+def get_workspace(args) -> Workspace:
+    assert_valid_workspace(args.workspace)
+    return args.workspace
