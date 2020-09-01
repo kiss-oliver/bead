@@ -3,7 +3,7 @@ from typing import Iterable, Dict, List, TypeVar
 import attr
 from cached_property import cached_property
 
-from bead.meta import InputSpec, ValidatingStr, InputName, BeadName
+from bead.meta import InputSpec, InputName, BeadName
 from bead.tech.timestamp import time_from_timestamp
 from .freshness import Freshness
 
@@ -16,51 +16,6 @@ def input_map_converter(value) -> InputMap:
     if value is None:
         return {}
     return {InputName(k): BeadName(v) for k, v in value.items()}
-
-
-class FrozenInputMap(ValidatingStr):
-
-    @classmethod
-    def is_wellformed(cls, string):
-        parts = string.split('/')
-
-        def is_wellformed(i, name):
-            name_type = (InputName, BeadName)[i % 2]
-            return name_type.is_wellformed(name)
-
-        return (
-            (len(parts) % 2 == 0) and all(is_wellformed(i, name) for i, name in enumerate(parts)))
-
-    @classmethod
-    def from_input_map(cls, input_map: Dict[InputName, BeadName]):
-        return cls('/'.join(f'{input}/{value}' for input, value in sorted(input_map.items())))
-
-    def asdict(self):
-        names = self.split('/')
-        return dict(zip(names[0::2], names[1::2]))
-
-
-is_valid_input_map = FrozenInputMap.is_wellformed
-
-assert is_valid_input_map('a/b')
-assert not is_valid_input_map('')
-assert not is_valid_input_map('/')
-assert not is_valid_input_map('/.')
-assert not is_valid_input_map('./')
-assert not is_valid_input_map('a/..')
-assert FrozenInputMap('a/b')
-try:
-    FrozenInputMap('/')
-    assert 0, 'expected to fail'
-except ValueError:
-    pass
-assert (
-    FrozenInputMap.from_input_map(
-        {InputName('input1'): BeadName('bead1'), InputName('input2'): BeadName('bead2')})
-    == 'input1/bead1/input2/bead2')
-assert (
-    FrozenInputMap('input1/bead1/input2/bead2').asdict()
-    == {'input1': 'bead1', 'input2': 'bead2'})
 
 
 @attr.s(auto_attribs=True)

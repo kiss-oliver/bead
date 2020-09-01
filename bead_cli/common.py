@@ -40,6 +40,11 @@ def OPTIONAL_WORKSPACE(parser):
         help=arg_help.WORKSPACE)
 
 
+def assert_valid_workspace(workspace):
+    if not workspace.is_valid:
+        die(f'{workspace.directory} is not a valid workspace')
+
+
 class get_env:
     '''
     Make an Environment when called.

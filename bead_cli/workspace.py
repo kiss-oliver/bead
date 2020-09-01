@@ -7,7 +7,7 @@ from bead import layouts
 import bead.spec as bead_spec
 
 from .cmdparse import Command
-from .common import die, warning
+from .common import assert_valid_workspace, die, warning
 from .common import DefaultArgSentinel
 from .common import OPTIONAL_WORKSPACE, OPTIONAL_ENV
 from .common import BEAD_REF_BASE, BEAD_TIME, resolve_bead
@@ -155,11 +155,6 @@ class CmdDevelop(Command):
         # XXX: try to load smaller inputs?
         if workspace.inputs:
             print('Input data not loaded, update if needed and load manually')
-
-
-def assert_valid_workspace(workspace):
-    if not workspace.is_valid:
-        die(f'{workspace.directory} is not a valid workspace')
 
 
 def print_inputs(env, workspace, verbose):
