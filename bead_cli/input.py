@@ -74,6 +74,31 @@ class CmdAdd(Command):
         _check_load_with_feedback(workspace, args.input_nick, bead)
 
 
+class CmdMap(Command):
+    '''
+    Change the name of the bead from which the input is loaded/updated.
+    '''
+
+    def declare(self, arg):
+        arg(INPUT_NICK)
+        arg(BEAD_REF_BASE_defaulting_to(USE_INPUT_NICK))
+        arg(OPTIONAL_WORKSPACE)
+        arg(OPTIONAL_ENV)
+
+    def run(self, args):
+        input_nick = args.input_nick
+        bead_ref_base = args.bead_ref_base
+        workspace = get_workspace(args)
+
+        if input_nick not in [input_spec.name for input_spec in workspace.inputs]:
+            die(f'Unknown input name: {input_nick}')
+
+        if bead_ref_base is USE_INPUT_NICK:
+            bead_ref_base = input_nick
+
+        workspace.set_input_bead_name(input_nick, bead_ref_base)
+
+
 class CmdDelete(Command):
     '''
     Forget all about an input.
@@ -230,7 +255,7 @@ def _load(env, workspace, input):
         print(f'Skipping {input.name} (already loaded)')
 
 
-def _check_load_with_feedback(workspace, input_nick, bead):
+def _check_load_with_feedback(workspace: Workspace, input_nick, bead):
     is_valid = verify_with_feedback(bead)
     if is_valid:
         workspace.set_input_bead_name(input_nick, bead.name)

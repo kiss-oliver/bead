@@ -121,4 +121,7 @@ class RobotAndBeads:
         Test beads are assumed to have different README-s, so the test goes by the expected value
         of the README.
         """
-        self.assert_file_contains(robot.cwd / 'input' / input_nick / 'README', readme_content)
+        self.assert_file_contains(robot.cwd / f'input/{input_nick}/README', readme_content)
+
+    def assert_not_loaded(self, robot, input_nick):
+        assert not os.path.exists(robot.cwd / f'input/{input_nick}/README')

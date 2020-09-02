@@ -50,7 +50,7 @@ def make_argument_parser(defaults):
 
             'web',
             web.CmdWeb,
-            'Manage the big picture - [visualize] connections between beads.',
+            'Manage/visualize the big picture - connections between beads.',
 
             'zap',
             workspace.CmdZap,
@@ -70,6 +70,10 @@ def make_argument_parser(defaults):
             'delete',
             input.CmdDelete,
             'Forget all about an input.',
+
+            'map',
+            input.CmdMap,
+            'Change the name of the bead from which the input is loaded/updated.',
 
             'update',
             input.CmdUpdate,

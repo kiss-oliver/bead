@@ -1,6 +1,10 @@
-from bead.test import TestCase, skip
-
+import os
 import shutil
+from typing import Dict
+
+from bead.archive import Archive
+from bead.test import TestCase
+
 # from bead.workspace import Workspace
 from . import test_fixtures as fixtures
 
@@ -67,24 +71,42 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         self.assert_loaded(robot, 'input1', fixtures.TS4)
         self.assert_loaded(robot, 'input2', fixtures.TS4)
 
-    @skip('unimplemented')
-    def test_load_does_not_find_renamed_bead(self):
+    def test_load_finds_renamed_bead_only_after_rewiring_input_map(
+        self, robot, bead_a, bead_b, box, beads: Dict[str, Archive]
+    ):
         # reason: speed
         # reason: implementation simplicity
-        pass
+        cd = robot.cd
+        cli = robot.cli
 
-    @skip('unimplemented')
-    def test_locate(self):
-        # new command, that finds renamed beads by kind or by content_id
-        #  - to be used for fixing bead names in the input map
-        pass
+        # develop new version of A using B as its input
+        cli('develop', bead_a)
+        cd(bead_a)
+        cli('input', 'add', 'b', bead_b)
+        self.assert_loaded(robot, 'b', bead_b)
+
+        # rename B to C
+        os.rename(beads[bead_b].archive_filename, box.directory / f'c_{fixtures.TS1}.zip')
+
+        # unload input
+        cli('input', 'unload', 'b')
+
+        # try to load input again
+        cli('input', 'load', 'b')
+        self.assert_not_loaded(robot, 'b')
+
+        cli('input', 'map', 'b', 'c')
+        print(robot.stderr)
+        cli('input', 'load', 'b')
+        self.assert_loaded(robot, 'b', bead_b)
 
 
 def _copy(box, bead_name, bead_timestamp, new_name):
     """
     Copy a bead to a new name within box.
     """
-    # FIXME: this test helper uses private implementation information
+    # FIXME: this test helper uses private to box implementation information
+    # namely how the current box implementation stores archives in zip files
     source = box.directory / f'{bead_name}_{bead_timestamp}.zip'
     destination = box.directory / f'{new_name}_{bead_timestamp}.zip'
     shutil.copy(source, destination)

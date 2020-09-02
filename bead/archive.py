@@ -32,6 +32,7 @@ assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3.zip')
 assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923.zip')
 assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012345+0200.zip')
 assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012345-0200.zip')
+assert 'bead-2015v3' == bead_name_from_file_path('path/to/bead-2015v3_20150923.zip')
 
 
 class InvalidArchive(Exception):
