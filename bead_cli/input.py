@@ -12,8 +12,9 @@ from .common import (
 )
 from .common import BEAD_REF_BASE_defaulting_to, BEAD_OFFSET, BEAD_TIME, resolve_bead, TIME_LATEST
 from bead.box import UnionBox
-from bead.workspace import Workspace
+from bead.meta import BeadName
 import bead.spec as bead_spec
+from bead.workspace import Workspace
 
 # input_nick
 ALL_INPUTS = DefaultArgSentinel('all inputs')
@@ -87,16 +88,19 @@ class CmdMap(Command):
 
     def run(self, args):
         input_nick = args.input_nick
-        bead_ref_base = args.bead_ref_base
+        bead_name = args.bead_ref_base
         workspace = get_workspace(args)
 
         if input_nick not in [input_spec.name for input_spec in workspace.inputs]:
             die(f'Unknown input name: {input_nick}')
 
-        if bead_ref_base is USE_INPUT_NICK:
-            bead_ref_base = input_nick
+        if bead_name is USE_INPUT_NICK:
+            bead_name = input_nick
 
-        workspace.set_input_bead_name(input_nick, bead_ref_base)
+        if not BeadName.is_wellformed(bead_name):
+            die(f'Invalid bead name: {bead_name}')
+
+        workspace.set_input_bead_name(input_nick, bead_name)
 
 
 class CmdDelete(Command):
