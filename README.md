@@ -88,7 +88,7 @@ Thank you for your interest!
 
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-by-name/ci)), text in this section and afterwards will be overwritten
 
-- [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L135)
+- [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/ziparchive.py#L132)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L48)
 - [FIXME: rename Bead.timestamp* to .freeze_time*](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/bead.py#L33)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L20)
@@ -96,9 +96,9 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L106)
 - [TODO: check .meta file content against real meta](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/common.py#L138)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L161)
-- [TODO: _meta should not be loaded if there is a cache file that satisfies the request,](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L121)
+- [TODO: _meta should not be loaded if there is a cache file that satisfies the request,](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/ziparchive.py#L118)
 - [TODO: remove nuke command after next release](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/main.py#L46)
-- [TODO: use "{archive_filename}.meta" if available by default,](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L241)
-- [TODO: yield self._cached_meta_mismatch() is None](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/archive.py#L160)
+- [TODO: use "{archive_filename}.meta" if available by default,](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/ziparchive.py#L238)
+- [TODO: yield self._cached_meta_mismatch() is None](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/ziparchive.py#L157)
 - [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L155)
 - [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L85)
