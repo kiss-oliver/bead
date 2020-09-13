@@ -2,6 +2,8 @@ import os
 import pathlib
 import re
 
+from cached_property import cached_property
+
 from tracelog import TRACELOG
 from .bead import UnpackableBead
 from . import meta
@@ -52,12 +54,10 @@ class Archive(UnpackableBead):
     timestamp_str = cached_attribute(meta.FREEZE_TIME, 'timestamp_str')
     input_map = cached_attribute(CACHE_INPUT_MAP, 'input_map')
 
-    @property
+    @cached_property
     def ziparchive(self):
         # FIXME: verify ziparchive compatibility with archivecache
-        # TODO: populate cache from archive, keeping the archive open during the operation
-        # opening an archive is very expensive - with hundreds of thousands of files in a zip
-        # file it can easily take over tens of seconds just to open the file
+        # TODO: populate cache from archive
         return ZipArchive(self.archive_filename, self.box_name)
 
     @property
