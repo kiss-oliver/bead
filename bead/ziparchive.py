@@ -1,12 +1,9 @@
 from copy import deepcopy
 import functools
 import os
-import pathlib
-import re
 import shutil
 import zipfile
 
-from tracelog import TRACELOG
 from .bead import UnpackableBead
 from .exceptions import InvalidArchive
 from . import tech
@@ -28,25 +25,6 @@ META_KEYS = (
 )
 
 
-def bead_name_from_file_path(path):
-    '''
-    Parse bead name from a file path.
-
-    Might return a simpler name than intended
-    '''
-    name_with_timestamp, ext = os.path.splitext(os.path.basename(path))
-    # assert ext == '.zip'  # not enforced to allow having beads with different extensions
-    name = re.sub('_[0-9]{8}(?:[tT][-+0-9]*)?$', '', name_with_timestamp)
-    return name
-
-
-assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3.zip')
-assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923.zip')
-assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012345+0200.zip')
-assert 'bead-2015v3' == bead_name_from_file_path('bead-2015v3_20150923T010203012345-0200.zip')
-assert 'bead-2015v3' == bead_name_from_file_path('path/to/bead-2015v3_20150923.zip')
-
-
 def _zipfile_user(method):
     # method is called with the zipfile opened
     @functools.wraps(method)
@@ -63,57 +41,11 @@ def _zipfile_user(method):
     return f
 
 
-class ArchiveCache:
-    def __init__(self, archive_filename):
-        self.values = {}
-        self.archive_path = pathlib.Path(archive_filename)
-        self.load()
-
-    @property
-    def cache_path(self):
-        if self.archive_path.suffix != 'zip':
-            raise FileNotFoundError(f'Archive can not have cache {self.archive_path}')
-
-        return self.archive_path.with_suffix('meta')
-
-    def load(self):
-        try:
-            try:
-                self.values = persistence.loads(self.cache_path.read_text())
-            except persistence.ReadError:
-                TRACELOG(f"Ignoring existing, malformed bead meta cache {self.cache_path}")
-        except FileNotFoundError:
-            pass
-
-    def save(self):
-        try:
-            self.cache_path.write_text(persistence.dumps(self.values))
-        except FileNotFoundError:
-            pass
-
-    @property
-    def meta(self):
-        return {
-            key: self.values[key]
-            for key in META_KEYS
-            if key in self.values
-        }
-
-    def get(self, key, load_values):
-        """
-        load_values loads the real values from the archive
-        """
-        if key not in self.values:
-            self.values.extend(load_values())
-        return self.values[key]
-
-
 class ZipArchive(UnpackableBead):
 
     def __init__(self, filename, box_name=''):
         self.archive_filename = filename
         self.box_name = box_name
-        self.name = bead_name_from_file_path(filename)
         self.zipfile = None
         # TODO: _meta should not be loaded if there is a cache file that satisfies the request,
         #  however when loaded (any file, or property not known is requested)
@@ -214,6 +146,10 @@ class ZipArchive(UnpackableBead):
         zipinfo = self.zipfile.getinfo(layouts.Archive.MANIFEST)
         with self.zipfile.open(zipinfo) as f:
             return securehash.file(f, zipinfo.file_size)
+
+    @property
+    def meta_version(self):
+        return self._meta[meta.META_VERSION]
 
     @property
     def kind(self):

@@ -41,11 +41,10 @@ class Bead:
                 return input
 
 
-class UnpackableBead(Bead):
+class UnpackableBead(Bead, metaclass=ABCMeta):
     '''
     Provide high-level access to content of a bead.
     '''
-    __metaclass__ = ABCMeta
 
     def unpack_to(self, workspace):
         self.unpack_code_to(workspace.directory)
