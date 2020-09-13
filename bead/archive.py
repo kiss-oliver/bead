@@ -1,10 +1,12 @@
 from copy import deepcopy
 import functools
 import os
+import pathlib
 import re
 import shutil
 import zipfile
 
+from tracelog import TRACELOG
 from .bead import UnpackableBead
 from . import tech
 from . import layouts
@@ -14,6 +16,15 @@ from . import meta
 timestamp = tech.timestamp
 securehash = tech.securehash
 persistence = tech.persistence
+
+
+META_KEYS = (
+    meta.META_VERSION,
+    meta.KIND,
+    meta.FREEZE_TIME,
+    meta.FREEZE_NAME,
+    meta.INPUTS
+)
 
 
 def bead_name_from_file_path(path):
@@ -55,6 +66,51 @@ def _zipfile_user(method):
     return f
 
 
+class ArchiveCache:
+    def __init__(self, archive_filename):
+        self.values = {}
+        self.archive_path = pathlib.Path(archive_filename)
+        self.load()
+
+    @property
+    def cache_path(self):
+        if self.archive_path.suffix != 'zip':
+            raise FileNotFoundError(f'Archive can not have cache {self.archive_path}')
+
+        return self.archive_path.with_suffix('meta')
+
+    def load(self):
+        try:
+            try:
+                self.values = persistence.loads(self.cache_path.read_text())
+            except persistence.ReadError:
+                TRACELOG(f"Ignoring existing, malformed bead meta cache {self.cache_path}")
+        except FileNotFoundError:
+            pass
+
+    def save(self):
+        try:
+            self.cache_path.write_text(persistence.dumps(self.values))
+        except FileNotFoundError:
+            pass
+
+    @property
+    def meta(self):
+        return {
+            key: self.values[key]
+            for key in META_KEYS
+            if key in self.values
+        }
+
+    def get(self, key, load_values):
+        """
+        load_values loads the real values from the archive
+        """
+        if key not in self.values:
+            self.values.extend(load_values())
+        return self.values[key]
+
+
 class Archive(UnpackableBead):
 
     def __init__(self, filename, box_name=''):
@@ -62,6 +118,16 @@ class Archive(UnpackableBead):
         self.box_name = box_name
         self.name = bead_name_from_file_path(filename)
         self.zipfile = None
+        # TODO: _meta should not be loaded if there is a cache file that satisfies the request,
+        #  however when loaded (any file, or property not known is requested)
+        #  it should be checked against the potentially loaded cached values to remain consistent
+        #  and prevent metadata damage.
+        #  The cached values MUST match the values in the archive meta,
+        #  with the exception of inputs, which is also a composite:
+        #    - cached input keys must be a strict subset of inputs in the meta
+        #    - if an input is cached, the input specification (value) MUST match
+        #      the one in the archive meta.
+        # Other non-meta attributes (input-map) can be cached under extra keys
         self._meta = self._load_meta()
         self._content_id = None
 
@@ -91,16 +157,11 @@ class Archive(UnpackableBead):
         yield self._bead_creation_time_is_in_the_past()
         yield self._extra_file() is None
         yield self._file_with_different_content_id() is None
+        # TODO: yield self._cached_meta_mismatch() is None
 
     def _has_well_formed_meta(self):
-        m = self.meta
-        keys = (
-            meta.META_VERSION,
-            meta.KIND,
-            meta.FREEZE_TIME,
-            meta.FREEZE_NAME,
-            meta.INPUTS)
-        return all(key in m for key in keys)
+        meta = self.meta
+        return all(key in meta for key in META_KEYS)
 
     def _bead_creation_time_is_in_the_past(self):
         read_time = timestamp.time_from_timestamp
@@ -177,6 +238,11 @@ class Archive(UnpackableBead):
 
     @property
     def input_map(self):
+        # TODO: use "{archive_filename}.meta" if available by default,
+        #       fall back to metadata inside the zip file
+        # REASON: it is very expensive to update a zip file,
+        #   while appending is possible, it adds a new version of the file
+        #   with no clear guarantee, that it can be retrieved in order
         try:
             return self.zip_load(layouts.Archive.INPUT_MAP)
         except:

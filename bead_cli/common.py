@@ -135,6 +135,7 @@ def resolve_bead(env, bead_ref_base, time):
 
 
 def verify_with_feedback(archive):
+    # TODO: check .meta file content against real meta
     print(f'Verifying archive {archive.archive_filename} ...', end='', flush=True)
     is_valid = archive.is_valid
     if is_valid:
