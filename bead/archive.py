@@ -21,48 +21,94 @@ CACHE_CONTENT_ID = 'content_id'
 CACHE_INPUT_MAP = 'input_map'
 
 
-def cached_attribute(cache_key, ziparchive_attribute):
-    """Make a cache accessor @property with a self.ziparchive.attribute fallback
-    """
-    @property
-    def maybe_cached_attr(self):
-        try:
-            return self.cache[cache_key]
-        except LookupError:
-            return getattr(self.ziparchive, ziparchive_attribute)
-    return maybe_cached_attr
-
-
 class Archive(UnpackableBead):
     def __init__(self, filename, box_name=''):
         self.archive_filename = filename
+        self.archive_path = pathlib.Path(filename)
         self.box_name = box_name
         self.name = bead_name_from_file_path(filename)
-        self.cache = ArchiveCache(self.archive_filename)
+        self.cache = {}
+        self.load_cache()
 
-        # check that we can get access to metadata
-        # the resulting archive can still be invalid and die unexpectedly later with
+        # Check that we can get access to metadata
+        #  - either through the cache or through the archive
+        # The resulting archive can still be invalid and die unexpectedly later with
         # InvalidArchive exception, as these are potentially cached values
-        # to make the check cheap if needed
         self.meta_version
         self.timestamp
         self.kind
 
-    meta_version = cached_attribute(meta.META_VERSION, 'meta_version')
-    content_id = cached_attribute(CACHE_CONTENT_ID, 'content_id')
-    kind = cached_attribute(meta.KIND, 'kind')
-    timestamp_str = cached_attribute(meta.FREEZE_TIME, 'timestamp_str')
-    input_map = cached_attribute(CACHE_INPUT_MAP, 'input_map')
+    def load_cache(self):
+        try:
+            try:
+                self.cache = persistence.loads(self.cache_path.read_text())
+            except persistence.ReadError:
+                TRACELOG(f"Ignoring existing, malformed bead meta cache {self.cache_path}")
+        except FileNotFoundError:
+            pass
+
+    def save_cache(self):
+        try:
+            self.cache_path.write_text(persistence.dumps(self.cache))
+        except FileNotFoundError:
+            pass
+
+    @property
+    def cache_path(self):
+        if self.archive_path.suffix != 'zip':
+            raise FileNotFoundError(f'Archive can not have cache {self.archive_path}')
+
+        return self.archive_path.with_suffix('meta')
+
+    def _cached_zip_attribute(cache_key, ziparchive_attribute):
+        """Make a cache accessor @property with a self.ziparchive.attribute fallback
+
+        raises InvalidArchive if the attribute is not cached
+          and the backing ziparchive is not valid.
+        """
+        @property
+        def maybe_cached_attr(self):
+            try:
+                return self.cache[cache_key]
+            except LookupError:
+                return getattr(self.ziparchive, ziparchive_attribute)
+        return maybe_cached_attr
+
+    meta_version = _cached_zip_attribute(meta.META_VERSION, 'meta_version')
+    content_id = _cached_zip_attribute(CACHE_CONTENT_ID, 'content_id')
+    kind = _cached_zip_attribute(meta.KIND, 'kind')
+    timestamp_str = _cached_zip_attribute(meta.FREEZE_TIME, 'timestamp_str')
+    input_map = _cached_zip_attribute(CACHE_INPUT_MAP, 'input_map')
+    del _cached_zip_attribute
 
     @cached_property
     def ziparchive(self):
-        # FIXME: verify ziparchive compatibility with archivecache
-        # TODO: populate cache from archive
-        return ZipArchive(self.archive_filename, self.box_name)
+        ziparchive = ZipArchive(self.archive_filename, self.box_name)
+
+        self._check_and_populate_cache(ziparchive)
+
+        return ziparchive
+
+    def _check_and_populate_cache(self, ziparchive):
+        def ensure(cache_key, value):
+            try:
+                if self.cache[cache_key] != value:
+                    raise InvalidArchive(
+                        'Cache disagrees with zip meta', self.archive_filename, cache_key)
+            except KeyError:
+                self.cache[cache_key] = value
+
+        ensure(meta.META_VERSION, ziparchive.meta_version)
+        ensure(CACHE_CONTENT_ID, ziparchive.content_id)
+        ensure(meta.KIND, ziparchive.kind)
+        ensure(meta.FREEZE_TIME, ziparchive.timestamp_str)
+        ensure(meta.INPUTS, ziparchive.meta[meta.INPUTS])
+
+        # need not match
+        self.cache.setdefault(CACHE_INPUT_MAP, ziparchive.input_map)
 
     @property
     def is_valid(self):
-        # TODO: verify that cache matches ziparchive
         return self.ziparchive.is_valid
 
     @property
@@ -86,38 +132,6 @@ class Archive(UnpackableBead):
 
     def unpack_meta_to(self, workspace):
         self.ziparchive.unpack_meta_to(workspace)
-
-
-class ArchiveCache:
-    def __init__(self, archive_filename):
-        self.values = {}
-        self.archive_path = pathlib.Path(archive_filename)
-        self.load()
-
-    @property
-    def cache_path(self):
-        if self.archive_path.suffix != 'zip':
-            raise FileNotFoundError(f'Archive can not have cache {self.archive_path}')
-
-        return self.archive_path.with_suffix('meta')
-
-    def load(self):
-        try:
-            try:
-                self.values = persistence.loads(self.cache_path.read_text())
-            except persistence.ReadError:
-                TRACELOG(f"Ignoring existing, malformed bead meta cache {self.cache_path}")
-        except FileNotFoundError:
-            pass
-
-    def save(self):
-        try:
-            self.cache_path.write_text(persistence.dumps(self.values))
-        except FileNotFoundError:
-            pass
-
-    def __getitem__(self, key):
-        return self.values[key]
 
 
 def bead_name_from_file_path(path):

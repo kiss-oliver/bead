@@ -47,7 +47,8 @@ class Test_Archive(TestCase):
                     {
                         "meta_version": "aaa947a6-1f7a-11e6-ba3a-0021cc73492e",
                         "kind": "TEST-FAKE",
-                        "freeze_time": "20200913T173910000000+0000"
+                        "freeze_time": "20200913T173910000000+0000",
+                        "inputs": {}
                     }
                 ''')
             z.writestr('somefile1', b'''somefile1's known content''')
