@@ -94,7 +94,6 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L20)
 - [FIXME: this test helper uses private to box implementation information](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_feature_update_by_name.py#L108)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L106)
-- [TODO: check .meta file content against real meta](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/common.py#L138)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L161)
 - [TODO: remove nuke command after next release](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/main.py#L46)
 - [TODO: yield self._cached_meta_mismatch() is None](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/ziparchive.py#L67)

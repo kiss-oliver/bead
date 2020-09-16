@@ -134,8 +134,7 @@ def resolve_bead(env, bead_ref_base, time):
     return unionbox.get_at(bead_spec.BEAD_NAME, bead_ref_base, time)
 
 
-def verify_with_feedback(archive):
-    # TODO: check .meta file content against real meta
+def verify_with_feedback(archive: Archive):
     print(f'Verifying archive {archive.archive_filename} ...', end='', flush=True)
     is_valid = archive.is_valid
     if is_valid:
