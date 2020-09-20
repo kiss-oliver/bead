@@ -21,6 +21,20 @@ CACHE_CONTENT_ID = 'content_id'
 CACHE_INPUT_MAP = 'input_map'
 
 
+def _cached_zip_attribute(cache_key: str, ziparchive_attribute):
+    """Make a cache accessor @property with a self.ziparchive.attribute fallback
+
+    raises InvalidArchive if the attribute is not cached
+        and the backing ziparchive is not valid.
+    """
+    def maybe_cached_attr(self):
+        try:
+            return self.cache[cache_key]
+        except LookupError:
+            return getattr(self.ziparchive, ziparchive_attribute)
+    return property(maybe_cached_attr)
+
+
 class Archive(UnpackableBead):
     def __init__(self, filename, box_name=''):
         self.archive_filename = filename
@@ -60,26 +74,11 @@ class Archive(UnpackableBead):
 
         return self.archive_path.with_suffix('meta')
 
-    def _cached_zip_attribute(cache_key, ziparchive_attribute):
-        """Make a cache accessor @property with a self.ziparchive.attribute fallback
-
-        raises InvalidArchive if the attribute is not cached
-          and the backing ziparchive is not valid.
-        """
-        @property
-        def maybe_cached_attr(self):
-            try:
-                return self.cache[cache_key]
-            except LookupError:
-                return getattr(self.ziparchive, ziparchive_attribute)
-        return maybe_cached_attr
-
     meta_version = _cached_zip_attribute(meta.META_VERSION, 'meta_version')
     content_id = _cached_zip_attribute(CACHE_CONTENT_ID, 'content_id')
     kind = _cached_zip_attribute(meta.KIND, 'kind')
     timestamp_str = _cached_zip_attribute(meta.FREEZE_TIME, 'timestamp_str')
     input_map = _cached_zip_attribute(CACHE_INPUT_MAP, 'input_map')
-    del _cached_zip_attribute
 
     @cached_property
     def ziparchive(self):
