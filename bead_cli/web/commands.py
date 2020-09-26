@@ -8,12 +8,13 @@ import webbrowser
 from bead import tech
 from bead.box import UnionBox
 
-from ..common import OPTIONAL_ENV, die
+from ..common import OPTIONAL_ENV, die, warning
 from ..cmdparse import Command
 from .io import read_beads, write_beads
 from .sketch import Sketch
 from . import sketch as web_sketch
 from .dummy import Dummy
+from . import rewire
 
 
 class CmdWeb(Command):
@@ -57,6 +58,21 @@ class CmdWeb(Command):
         Assign freshness to nodes, which are visualized as colors.
         Answers the question: "Are all input at the latest version?"
 
+    auto-rewire
+        A hackish way to fix connections after renaming beads, thus breaking links.
+        It is hackish, because it selects the first candidate, which might
+        not be the one with the best name (think: multiple branches sharing the same bead).
+        The proper to fix broken links is using the `rewire-option` and `rewire` commands.
+
+    rewire-options options.json
+        Write out every problems and solution alternatives.
+        The output file should be examined, and edited (input-map section),
+        then applied with the `rewire` command.
+
+    rewire options.json
+        Rewrite/patch the input maps as specified in the file.
+        In case of multiple options for an input, the first option is selected.
+
     heads
         Reduce graph to include only most recent computations per
         cluster and possibly a few older ones, that are referenced
@@ -83,6 +99,7 @@ class CmdWeb(Command):
             print(textwrap.dedent(self.__doc__))
             return
         env = args.get_env()
+
         commands, remaining_words = parse_commands(env, args.words)
         if remaining_words:
             msg = 'Could not fully parse command line.\n'
@@ -91,10 +108,10 @@ class CmdWeb(Command):
                 msg += '\n\t'.join(map(str, commands))
             msg += f'\nCould not parse: {remaining_words}'
             die(msg)
-        else:
-            sketch = Sketch.from_beads([])
-            for command in commands:
-                sketch = command(sketch)
+
+        sketch = Sketch.from_beads([])
+        for command in commands:
+            sketch = command(sketch)
 
 
 def parse_commands(env, words):
@@ -232,6 +249,49 @@ class KeepOnlyHeads(SketchProcessor):
         return web_sketch.heads_of(sketch).drop_deleted_inputs()
 
 
+class RewireWriteOptions(ProcessorWithFileName):
+    def __call__(self, sketch):
+        rewire_options = rewire.get_options(sketch.beads)
+        tech.persistence.file_dump(rewire_options, self.file_name)
+        return sketch
+
+
+class Rewire(ProcessorWithFileName):
+    def __call__(self, sketch):
+        rewire_options = tech.persistence.file_load(self.file_name)
+        beads = [bead for bead in sketch.beads if bead.is_not_phantom]
+        for bead in beads:
+            _patch_first(bead, rewire_options)
+        return web_sketch.Sketch.from_beads(beads)
+
+
+class AutoRewire(SketchProcessor):
+    def __call__(self, sketch):
+        rewire_options = rewire.get_options(sketch.beads)
+        beads = [bead for bead in sketch.beads if bead.is_not_phantom]
+        for bead in beads:
+            _patch_first(bead, rewire_options)
+        return web_sketch.Sketch.from_beads(beads)
+
+
+def _patch_first(bead, rewire_options):
+    for spec in rewire_options.get(bead.box_name, []):
+        if (
+            (spec['name'] == bead.name) and
+            (spec['content_id'] == bead.content_id) and
+            (spec['timestamp'] == bead.timestamp_str)
+        ):
+            input_map = {}
+            for input, names in spec['input_map'].items():
+                if len(names) > 1:
+                    context = f'bead {bead.name}@{bead.timestamp_str}'
+                    selected_msg = f"Selected name {names[0]!r} for input {input!r} from {names!r}"
+                    warning(f"{selected_msg} for {context}")
+                input_map[input] = names[0]
+            bead.input_map = input_map
+            return
+
+
 SUBCOMMANDS = {
     'load': Load,
     'save': Save,
@@ -242,6 +302,9 @@ SUBCOMMANDS = {
     'color': SetFreshness,
     'heads': KeepOnlyHeads,
     'view': View,
+    'auto-rewire': AutoRewire,
+    'rewire-options': RewireWriteOptions,
+    'rewire': Rewire,
 }
 
 

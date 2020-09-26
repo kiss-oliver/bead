@@ -12,6 +12,8 @@ TS_BASE = datetime.datetime(
     year=2000, month=1, day=1, tzinfo=datetime.timezone.utc
 )
 
+DEFAULT_BOX_NAME = 'main'
+
 
 class Sketcher:
     """
@@ -27,13 +29,13 @@ class Sketcher:
     def __getitem__(self, name):
         return self._by_name[name]
 
-    def define(self, protos: str, kind: str = '*', box_name: str = 'main'):
+    def define(self, protos: str, kind: str = '*', box_name: str = DEFAULT_BOX_NAME):
         # 'a1 a2 b3 c4'
         for proto in protos.split():
             bead = self._create(proto, proto, kind, box_name, inputs=[])
             self._by_name[proto] = bead
 
-    def clone(self, proto: str, name: str, box_name: str):
+    def clone(self, proto: str, name: str, box_name: str = DEFAULT_BOX_NAME):
         assert name not in self._by_name
         proto_bead = self._by_name[proto]
         bead = self._create(proto, name, proto_bead.kind, box_name, proto_bead.inputs)
@@ -81,8 +83,8 @@ class Sketcher:
             timestamp_str=timestamp.strftime('%Y%m%dT%H%M%S%f%z'),
             box_name=box_name,
         )
-        # ensure, that we are using the given inputs
-        # it is important for clones to keep being clones, even if new input is added
+        # clones share inputs, thus if a new input is added to any of them
+        # they still remain clones
         bead.inputs = inputs
         return bead
 

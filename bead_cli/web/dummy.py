@@ -54,6 +54,7 @@ class Dummy:
             timestamp_str=bead.timestamp_str,
             inputs=bead.inputs,
             input_map=bead.input_map,
+            freshness=getattr(bead, 'freshness', Freshness.SUPERSEDED),
             box_name=bead.box_name)
 
     @classmethod

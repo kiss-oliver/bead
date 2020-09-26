@@ -1,7 +1,9 @@
 import re
 from bead.tech.fs import read_file, rmtree, write_file
+from bead.tech import persistence
 from bead.test import TestCase
 
+from bead_cli.web.freshness import Freshness
 from bead_cli.web.sketch import Sketch
 from . import test_fixtures as fixtures
 from tests.sketcher import Sketcher
@@ -118,3 +120,108 @@ class Test_web_filter(TestCase, fixtures.RobotAndBeads):
 
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
         assert sketch.cluster_by_name.keys() == set('bc')
+
+
+class Test_rewire(TestCase, fixtures.RobotAndBeads):
+    def renamed_e_web_file(self, robot, box):
+        sketcher = Sketcher()
+        sketcher.define('a1 b1 c1 d1 e1 f1')
+        sketcher.compile(
+            """
+            a1 -> b1 -> c1 -> d1
+                  b1 ------------> e1 -> f1
+            """
+        )
+
+        # Mess up the above a bit: make copies of `e1` to `ex` and `ey`, then deleting `e1`
+        # Since we are just making copies/renaming them, `f1` can use any of them as input.
+        # Which one to select of the copies just affects future updates.
+        sketcher.phantom('e1')
+        sketcher.clone('e1', 'ex')
+        sketcher.clone('e1', 'ey')
+        # a1 -> b1 -> c1 -> d1
+        #                          [e1] -> f1  # [e1] is phantom - it is not existing by the name e
+        #       b1 ------------> ex[e1]
+        #       b1 ------------> ey[e1]
+
+        output_filename = robot.cwd / 'computation.web'
+        sketcher.sketch.to_file(output_filename)
+        return output_filename
+
+    def test_fixture(self, renamed_e_web_file):
+        beads = Sketch.from_file(renamed_e_web_file).beads
+        self.assert_e_is_phantom(beads)
+
+    def test_load_save_phantom(self, robot, renamed_e_web_file):
+        # this is not a rewire test, but an issue with load come up during writing rewire tests
+        # and here we already have the fixture
+        robot.cli(f'web load {renamed_e_web_file} save load-save.web')
+        beads = Sketch.from_file(robot.cwd / 'load-save.web').beads
+        self.assert_e_is_phantom(beads)
+
+    def assert_e_is_phantom(self, beads):
+        [e] = [b for b in beads if b.name == 'e']
+        assert e.freshness == Freshness.PHANTOM
+
+    def test_autofix(self, robot, renamed_e_web_file):
+        robot.cli(f'web load {renamed_e_web_file} auto-rewire color / ... f / save auto.web')
+
+        result = Sketch.from_file(robot.cwd / 'auto.web')
+
+        # f has inputs, which are not phantom
+        assert len(result.beads) > 1
+        assert all(bead.is_not_phantom for bead in result.beads)
+        # we get a WARNING for ambiguity
+        assert 'WARNING' in robot.stderr
+        # selected either ex or ey, we do not know
+        assert "Selected name 'e" in robot.stderr
+
+    def test_write_rewire_options_file(self, robot, renamed_e_web_file):
+        robot.cli(f'web load {renamed_e_web_file} rewire-options rewire-options.json')
+
+        # rewire_options has only one box
+        rewire_options = persistence.loads(robot.read_file('rewire-options.json'))
+        assert len(rewire_options) == 1
+
+        # has only one bead in box 'main'
+        [bead] = rewire_options['main']
+        assert bead['name'] == 'f'
+
+        assert {'ex', 'ey'} == set(bead['input_map']['e'])
+        assert 2 == len(bead['input_map']['e'])
+
+    def test_rewire(self, robot, renamed_e_web_file):
+        rewire_options = {
+            'main': [
+                {
+                    'name': 'f',
+                    'content_id': 'content_id_f1',
+                    'timestamp': '20000106T010000000000+0000',
+                    # has two options, we also test, that the first one is selected
+                    'input_map': {'e': ['ex', 'ey']}
+                },
+                {
+                    'name': 'non-existing',
+                    'content_id': 'content_id_f1',
+                    'timestamp': '20000106T010000000000+0000',
+                    'input_map': {'e': ['ex']}
+                }
+            ],
+            'another-box': [
+                {
+                    'name': 'whatever',
+                    'content_id': 'content_id_f1',
+                    'timestamp': '20000106T010000000000+0000',
+                    'input_map': {'e': ['ex']}
+                }
+            ]
+        }
+        robot.write_file('rewire-options.json', persistence.dumps(rewire_options))
+
+        robot.cli(f'web load {renamed_e_web_file} rewire rewire-options.json save rewired.web')
+
+        sketch = Sketch.from_file(robot.cwd / 'rewired.web')
+        [f] = [b for b in sketch.beads if b.name == 'f']
+        assert f.input_map == {'e': 'ex'}, f
+        assert 'WARNING' in robot.stderr
+        assert "Selected name 'ex'" in robot.stderr
