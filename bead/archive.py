@@ -69,10 +69,10 @@ class Archive(UnpackableBead):
 
     @property
     def cache_path(self):
-        if self.archive_path.suffix != 'zip':
+        if self.archive_path.suffix != '.zip':
             raise FileNotFoundError(f'Archive can not have cache {self.archive_path}')
 
-        return self.archive_path.with_suffix('meta')
+        return self.archive_path.with_suffix('.xmeta')
 
     meta_version = _cached_zip_attribute(meta.META_VERSION, 'meta_version')
     content_id = _cached_zip_attribute(CACHE_CONTENT_ID, 'content_id')

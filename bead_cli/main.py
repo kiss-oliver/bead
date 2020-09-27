@@ -56,6 +56,10 @@ def make_argument_parser(defaults):
             workspace.CmdZap,
             'Delete workspace.',
 
+            'xmeta',
+            box.CmdXmeta,
+            'eXport eXtended meta attributes to a file next to zip archive.',
+
             'version',
             CmdVersion,
             'Show program version.'))
