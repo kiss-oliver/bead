@@ -123,7 +123,7 @@ class Test_web_filter(TestCase, fixtures.RobotAndBeads):
 
 
 class Test_rewire(TestCase, fixtures.RobotAndBeads):
-    def renamed_e_web_file(self, robot, box):
+    def renamed_e_web_file(self, robot):
         sketcher = Sketcher()
         sketcher.define('a1 b1 c1 d1 e1 f1')
         sketcher.compile(
