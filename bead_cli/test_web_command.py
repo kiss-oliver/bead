@@ -190,7 +190,7 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
         assert {'ex', 'ey'} == set(bead['input_map']['e'])
         assert 2 == len(bead['input_map']['e'])
 
-    def test_rewire(self, robot, renamed_e_web_file):
+    def remap_e_to_ex_json(self, robot):
         rewire_options = {
             'main': [
                 {
@@ -216,9 +216,12 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
                 }
             ]
         }
-        robot.write_file('rewire-options.json', persistence.dumps(rewire_options))
+        json_filename = robot.cwd / 'rewire-options.json'
+        write_file(json_filename, persistence.dumps(rewire_options))
+        return json_filename
 
-        robot.cli(f'web load {renamed_e_web_file} rewire rewire-options.json save rewired.web')
+    def test_rewire(self, robot, renamed_e_web_file, remap_e_to_ex_json):
+        robot.cli(f'web load {renamed_e_web_file} rewire {remap_e_to_ex_json} save rewired.web')
 
         sketch = Sketch.from_file(robot.cwd / 'rewired.web')
         [f] = [b for b in sketch.beads if b.name == 'f']
