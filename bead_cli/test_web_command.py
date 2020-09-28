@@ -91,32 +91,32 @@ class Test_web_filter(TestCase, fixtures.RobotAndBeads):
         sketcher.sketch.to_file(robot.cwd / 'computation.web')
 
     def test_filter_no_args_no_filtering(self, robot, sketch):
-        robot.cli('web load computation.web / ... / save filtered.web')
+        robot.cli('web load computation.web / .. / save filtered.web')
 
         assert robot.read_file('computation.web') == robot.read_file('filtered.web')
 
     def test_filter_sources_through_cluster_links(self, robot, indirect_links_sketch):
-        robot.cli('web load computation.web / b ... / save filtered.web')
+        robot.cli('web load computation.web / b .. / save filtered.web')
 
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
         assert sketch.cluster_by_name.keys() == set('bcd')
         assert len(sketch.cluster_by_name['c']) == 2
 
     def test_filter_sinks_through_cluster_links(self, robot, indirect_links_sketch):
-        robot.cli('web load computation.web / ... c / save filtered.web')
+        robot.cli('web load computation.web / .. c / save filtered.web')
 
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
         assert sketch.cluster_by_name.keys() == set('abc')
         assert len(sketch.cluster_by_name['c']) == 2
 
     def test_filter(self, robot, sketch):
-        robot.cli('web load computation.web / b c ... c f / save filtered.web')
+        robot.cli('web load computation.web / b c .. c f / save filtered.web')
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
         assert sketch.cluster_by_name.keys() == set('bcef')
 
     def test_filter_filtered_out_sink(self, robot, indirect_links_sketch):
         # f1 is unreachable from sources {b, c}, so it will be not a reachable sink
-        robot.cli('web load computation.web / b c ... c f / save filtered.web')
+        robot.cli('web load computation.web / b c .. c f / save filtered.web')
 
         sketch = Sketch.from_file(robot.cwd / 'filtered.web')
         assert sketch.cluster_by_name.keys() == set('bc')
@@ -164,7 +164,7 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
         assert e.freshness == Freshness.PHANTOM
 
     def test_autofix(self, robot, renamed_e_web_file):
-        robot.cli(f'web load {renamed_e_web_file} auto-rewire color / ... f / save auto.web')
+        robot.cli(f'web load {renamed_e_web_file} auto-rewire color / .. f / save auto.web')
 
         result = Sketch.from_file(robot.cwd / 'auto.web')
 

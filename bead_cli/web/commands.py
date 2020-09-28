@@ -37,7 +37,7 @@ class CmdWeb(Command):
         Throw away current graph and load previously exported web from file.
         When it is the first command, discovering all archives is skipped.
 
-    / [source-name[s]] ... [sink-name[s]] /
+    / [source-name[s]] .. [sink-name[s]] /
         Filters computations by following input connections:
         - if the set of sources is not empty:
           drop all that do not have any of the sources as direct/indirect
@@ -209,7 +209,7 @@ class View(ProcessorWithFileName):
 
 class Filter(SketchProcessor):
     def __init__(self, args):
-        self.sources = self._pop_names(args, sentinel='...')
+        self.sources = self._pop_names(args, sentinel='..')
         self.sinks = self._pop_names(args, sentinel='/')
         super().__init__(args)
 
@@ -219,7 +219,7 @@ class Filter(SketchProcessor):
             name = args.pop()
             if name == sentinel:
                 return names
-            if name in ('...', '/'):
+            if name in ('..', '/'):
                 raise ValueError(f'Unexpected delimiter: {repr(name)} after {names}.')
             if not is_valid_name(name):
                 raise ValueError(f'Malformed name: {repr(name)} after {names}.')
@@ -235,7 +235,7 @@ class Filter(SketchProcessor):
 
 
 def is_valid_name(name):
-    return name not in ('...', '/')
+    return name not in ('..', '/')
 
 
 class SetFreshness(SketchProcessor):
