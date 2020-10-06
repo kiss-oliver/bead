@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import Dict, List, Set
 from bead.meta import BeadName, InputName
+from ..common import warning
 
 ContentId = str
 BoxName = str
@@ -46,3 +47,23 @@ def get_options(beads) -> Dict[BoxName, List[BeadRewireOptions]]:
             )
 
     return box_clusters
+
+
+def apply(bead, rewire_specs: List[BeadRewireOptions]):
+    """ Find the spec for the bead and update the bead's input_map.
+    """
+    for spec in rewire_specs:
+        if (
+            (spec['name'] == bead.name) and
+            (spec['content_id'] == bead.content_id) and
+            (spec['timestamp'] == bead.timestamp_str)
+        ):
+            input_map = {}
+            for input, names in spec['input_map'].items():
+                if len(names) > 1:
+                    context = f'bead {bead.name}@{bead.timestamp_str}'
+                    selected_msg = f"Selected name {names[0]!r} for input {input!r} from {names!r}"
+                    warning(f"{selected_msg} for {context}")
+                input_map[input] = names[0]
+            bead.input_map = input_map
+            return

@@ -124,3 +124,61 @@ class Test_box_commands(TestCase):
     def test_forget_nonexisting_box(self, robot):
         robot.cli('box', 'forget', 'non-existing')
         assert 'WARNING' in robot.stdout
+
+    def test_rewire(self, robot, dir1):
+        robot.cli('box', 'add', 'hack-box', dir1)
+
+        def make_bead(name, inputs=()):
+            robot.cli('new', name)
+            robot.cd(name)
+            for input in inputs:
+                robot.cli('input', 'add', f'input-{input}', input)
+            robot.write_file('output/README', name)
+            robot.cli('save')
+            robot.cd('..')
+            robot.cli('zap', name)
+
+        make_bead('a')
+        make_bead('b')
+        make_bead('x', inputs=['a', 'b'])
+
+        # a -> x
+        # b -> x
+
+        # rename 'a' to 'renamed'
+        from glob import glob
+        for f in glob(robot.cwd / dir1 / 'a*.zip'):
+            os.rename(f, robot.cwd / dir1 / 'renamed.zip')
+        for f in glob(robot.cwd / dir1 / 'a*'):
+            os.remove(f)
+
+        # "renamed" -> x
+        # b -> x
+
+        robot.cli('develop', 'x')
+        robot.cd('x')
+
+        # 'input load' should fail due to the renamed input a
+        robot.cli('input load')
+        assert 'WARNING' in robot.stderr
+        assert not os.path.exists(robot.cwd / 'input/input-a')
+        assert 'b' == robot.read_file('input/input-b/README')
+        robot.cd('..')
+        robot.cli('zap', 'x')
+
+        # end of test setup - now testing can start
+
+        # fix it up with rewire commands
+        robot.cli('web rewire-options rewire.json')
+        robot.cli('box rewire hack-box rewire.json')
+
+        # verify, that the renamed bead is loaded
+        robot.cli('develop', 'x')
+        robot.cd('x')
+        robot.cli('input load')
+        # import time, sys
+        # sys.stderr.write(robot.cwd)
+        # sys.stderr.write('\n')
+        # time.sleep(3600)
+        assert 'a' == robot.read_file('input/input-a/README')
+        assert 'b' == robot.read_file('input/input-b/README')

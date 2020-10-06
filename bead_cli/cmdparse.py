@@ -205,4 +205,4 @@ class Parser:
             # this is worked around here
             return -1
         run = getattr(args, '_cmdparse__run', print_help)
-        return run(args)
+        return run(args) or 0

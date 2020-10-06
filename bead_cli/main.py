@@ -104,7 +104,11 @@ def make_argument_parser(defaults):
 
             'forget',
             box.CmdForget,
-            'Forget a known box.'))
+            'Forget a known box.',
+
+            'rewire',
+            box.CmdRewire,
+            'Remap inputs.'))
 
     return parser
 

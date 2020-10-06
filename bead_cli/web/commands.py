@@ -8,7 +8,7 @@ import webbrowser
 from bead import tech
 from bead.box import UnionBox
 
-from ..common import OPTIONAL_ENV, die, warning
+from ..common import OPTIONAL_ENV, die
 from ..cmdparse import Command
 from .io import read_beads, write_beads
 from .sketch import Sketch
@@ -261,7 +261,7 @@ class Rewire(ProcessorWithFileName):
         rewire_options = tech.persistence.file_load(self.file_name)
         beads = [bead for bead in sketch.beads if bead.is_not_phantom]
         for bead in beads:
-            _patch_first(bead, rewire_options)
+            rewire.apply(bead, rewire_options.get(bead.box_name, []))
         return web_sketch.Sketch.from_beads(beads)
 
 
@@ -270,26 +270,8 @@ class AutoRewire(SketchProcessor):
         rewire_options = rewire.get_options(sketch.beads)
         beads = [bead for bead in sketch.beads if bead.is_not_phantom]
         for bead in beads:
-            _patch_first(bead, rewire_options)
+            rewire.apply(bead, rewire_options.get(bead.box_name, []))
         return web_sketch.Sketch.from_beads(beads)
-
-
-def _patch_first(bead, rewire_options):
-    for spec in rewire_options.get(bead.box_name, []):
-        if (
-            (spec['name'] == bead.name) and
-            (spec['content_id'] == bead.content_id) and
-            (spec['timestamp'] == bead.timestamp_str)
-        ):
-            input_map = {}
-            for input, names in spec['input_map'].items():
-                if len(names) > 1:
-                    context = f'bead {bead.name}@{bead.timestamp_str}'
-                    selected_msg = f"Selected name {names[0]!r} for input {input!r} from {names!r}"
-                    warning(f"{selected_msg} for {context}")
-                input_map[input] = names[0]
-            bead.input_map = input_map
-            return
 
 
 SUBCOMMANDS = {

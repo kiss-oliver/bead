@@ -133,16 +133,17 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
             """
         )
 
-        # Mess up the above a bit: make copies of `e1` to `ex` and `ey`, then deleting `e1`
+        # Mess up the above a bit: make copies of `e1` to `renamed_e` and `another_e_copy`,
+        # then deleting `e1`.
         # Since we are just making copies/renaming them, `f1` can use any of them as input.
         # Which one to select of the copies just affects future updates.
         sketcher.phantom('e1')
-        sketcher.clone('e1', 'ex')
-        sketcher.clone('e1', 'ey')
+        sketcher.clone('e1', 'renamed_e')
+        sketcher.clone('e1', 'another_e_copy')
         # a1 -> b1 -> c1 -> d1
         #                          [e1] -> f1  # [e1] is phantom - it is not existing by the name e
-        #       b1 ------------> ex[e1]
-        #       b1 ------------> ey[e1]
+        #       b1 ------------> renamed_e[e1]
+        #       b1 ------------> another_e_copy[e1]
 
         output_filename = robot.cwd / 'computation.web'
         sketcher.sketch.to_file(output_filename)
@@ -173,8 +174,8 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
         assert all(bead.is_not_phantom for bead in result.beads)
         # we get a WARNING for ambiguity
         assert 'WARNING' in robot.stderr
-        # selected either ex or ey, we do not know
-        assert "Selected name 'e" in robot.stderr
+        # selected either renamed_e or another_e_copy, we do not know
+        assert "Selected name '" in robot.stderr
 
     def test_write_rewire_options_file(self, robot, renamed_e_web_file):
         robot.cli(f'web load {renamed_e_web_file} rewire-options rewire-options.json')
@@ -187,10 +188,10 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
         [bead] = rewire_options['main']
         assert bead['name'] == 'f'
 
-        assert {'ex', 'ey'} == set(bead['input_map']['e'])
+        assert {'renamed_e', 'another_e_copy'} == set(bead['input_map']['e'])
         assert 2 == len(bead['input_map']['e'])
 
-    def remap_e_to_ex_json(self, robot):
+    def remap_e_to_renamed_e_json(self, robot):
         rewire_options = {
             'main': [
                 {
@@ -198,21 +199,23 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
                     'content_id': 'content_id_f1',
                     'timestamp': '20000106T010000000000+0000',
                     # has two options, we also test, that the first one is selected
-                    'input_map': {'e': ['ex', 'ey']}
+                    'input_map': {'e': ['renamed_e', 'another_e_copy']}
                 },
                 {
+                    # this does not exist, but should not cause any problem
                     'name': 'non-existing',
                     'content_id': 'content_id_f1',
                     'timestamp': '20000106T010000000000+0000',
-                    'input_map': {'e': ['ex']}
+                    'input_map': {'e': ['renamed_e']}
                 }
             ],
             'another-box': [
                 {
+                    # this does not exist, but should not cause any problem
                     'name': 'whatever',
                     'content_id': 'content_id_f1',
                     'timestamp': '20000106T010000000000+0000',
-                    'input_map': {'e': ['ex']}
+                    'input_map': {'e': ['renamed_e']}
                 }
             ]
         }
@@ -220,11 +223,12 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
         write_file(json_filename, persistence.dumps(rewire_options))
         return json_filename
 
-    def test_rewire(self, robot, renamed_e_web_file, remap_e_to_ex_json):
-        robot.cli(f'web load {renamed_e_web_file} rewire {remap_e_to_ex_json} save rewired.web')
+    def test_rewire(self, robot, renamed_e_web_file, remap_e_to_renamed_e_json):
+        robot.cli(
+            f'web load {renamed_e_web_file} rewire {remap_e_to_renamed_e_json} save rewired.web')
 
         sketch = Sketch.from_file(robot.cwd / 'rewired.web')
         [f] = [b for b in sketch.beads if b.name == 'f']
-        assert f.input_map == {'e': 'ex'}, f
+        assert f.input_map == {'e': 'renamed_e'}, f
         assert 'WARNING' in robot.stderr
-        assert "Selected name 'ex'" in robot.stderr
+        assert "Selected name 'renamed_e'" in robot.stderr

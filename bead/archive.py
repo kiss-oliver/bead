@@ -78,7 +78,19 @@ class Archive(UnpackableBead):
     content_id = _cached_zip_attribute(CACHE_CONTENT_ID, 'content_id')
     kind = _cached_zip_attribute(meta.KIND, 'kind')
     timestamp_str = _cached_zip_attribute(meta.FREEZE_TIME, 'timestamp_str')
-    input_map = _cached_zip_attribute(CACHE_INPUT_MAP, 'input_map')
+    # input_map = _cached_zip_attribute(CACHE_INPUT_MAP, 'input_map')
+
+    @property
+    def input_map(self):
+        try:
+            return self.cache[CACHE_INPUT_MAP]
+        except LookupError:
+            return self.ziparchive.input_map
+
+    @input_map.setter
+    def input_map(self, input_map):
+        self.cache[CACHE_INPUT_MAP] = input_map
+        self.save_cache()
 
     @cached_property
     def ziparchive(self):
