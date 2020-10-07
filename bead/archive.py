@@ -142,7 +142,8 @@ class Archive(UnpackableBead):
         self.ziparchive.unpack_data_to(fs_dir)
 
     def unpack_meta_to(self, workspace):
-        self.ziparchive.unpack_meta_to(workspace)
+        workspace.meta = self.ziparchive.meta
+        workspace.input_map = self.input_map
 
 
 def bead_name_from_file_path(path):
