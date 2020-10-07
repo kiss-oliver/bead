@@ -252,11 +252,12 @@ def _load(env, workspace, input):
             if bead:
                 break
         if bead is None:
-            warning(f'Could not find archive named {name} for input {input.name} - not loaded!')
+            warning(
+                f'Could not find archive named "{name}" for input "{input.name}" - not loaded!')
             return
         _check_load_with_feedback(workspace, input.name, bead)
     else:
-        print(f'Skipping {input.name} (already loaded)')
+        print(f'"{input.name}" is already loaded - skipping')
 
 
 def _check_load_with_feedback(workspace: Workspace, input_nick, bead):

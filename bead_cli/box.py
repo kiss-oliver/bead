@@ -103,7 +103,6 @@ class CmdRewire(Command):
         arg(OPTIONAL_ENV)
 
     def run(self, args):
-        print('TODO: implement')
         env = args.get_env()
         name = args.name
         for box in env.get_boxes():
