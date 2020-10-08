@@ -64,7 +64,6 @@ class ZipArchive(UnpackableBead):
         yield self._bead_creation_time_is_in_the_past()
         yield self._extra_file() is None
         yield self._file_with_different_content_id() is None
-        # TODO: yield self._cached_meta_mismatch() is None
 
     def _has_well_formed_meta(self):
         meta = self.meta

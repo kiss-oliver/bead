@@ -95,6 +95,5 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), 
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L106)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L161)
 - [TODO: remove nuke command after next release](https://github.com/e3krisztian/bead/blob/master/bead_cli/main.py#L46)
-- [TODO: yield self._cached_meta_mismatch() is None](https://github.com/e3krisztian/bead/blob/master/bead/ziparchive.py#L67)
 - [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L156)
 - [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L86)
