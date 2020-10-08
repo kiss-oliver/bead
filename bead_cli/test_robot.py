@@ -1,11 +1,11 @@
 import contextlib
 import os
-import fixtures
 from tracelog import TRACELOG
 
 from bead import tech
+import bead.zipopener
 
-from bead.test import TempDir, CaptureStdout, CaptureStderr, chdir
+from bead.test import TempDir, CaptureStdout, CaptureStderr, chdir, Fixture, setenv
 from .main import run
 from .environment import Environment
 
@@ -15,7 +15,7 @@ def environment(robot):
     '''
     Context manager - enable running code in the context of the robot.
     '''
-    with fixtures.EnvironmentVariable('HOME', robot.home):
+    with setenv('HOME', robot.home):
         with chdir(robot.cwd):
             try:
                 # FIXME: robot: environment file should be built by a function in environment
@@ -25,7 +25,7 @@ def environment(robot):
                 raise
 
 
-class Robot(fixtures.Fixture):
+class Robot(Fixture):
     '''
     Represents a fake user.
 
@@ -82,14 +82,23 @@ class Robot(fixtures.Fixture):
         Imitate calling the command line tool with the given args
         '''
         TRACELOG(*args)
+        if len(args) == 1 and ' ' in args[0]:
+            return self.cli(*args[0].split())
+
         with self.environment:
             with CaptureStdout() as stdout, CaptureStderr() as stderr:
                 try:
                     self.retval = run(''.__class__(self.config_dir), args)
+                    assert self.retval == 0
                 except BaseException as e:
                     TRACELOG(EXCEPTION=e)
                     raise
                 finally:
+                    # invalidate zip file cache
+                    # it would prevent deleting opened files on windows
+                    # and would keep zip files open, even after they are removed on unix
+                    bead.zipopener.close_all()
+
                     self.stdout = stdout.text
                     self.stderr = stderr.text
                     #
@@ -108,6 +117,9 @@ class Robot(fixtures.Fixture):
         assert not os.path.isabs(path)
         TRACELOG(path, content, realpath=self.cwd / path)
         tech.fs.write_file(self.cwd / path, content)
+
+    def read_file(self, filename):
+        return tech.fs.read_file(self.cwd / filename)
 
     def reset(self):
         '''

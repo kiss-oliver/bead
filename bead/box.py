@@ -1,11 +1,23 @@
 '''
 We are responsible to store (and retrieve) beads.
+
+We are a convenience feature, as beads can be stored and used directly as files.
+It is assumed, that boxes store disjunct sets of data.
+This implies, that when beads are branched (a copy is made), the copy process should
+- rename all the beads and update their input-maps
+- copy the beads to a new box, that will never be active at the same time, as the original
+
+Boxes can be used to:
+- share computations (beads) (when the box is on a shared drive (e.g. NFS or sshfs mounted))
+- store separate computation branches (e.g. versions, that are released to the public)
+- hide sensitive computations by splitting up storage according to access level
+  (this is naive access control, but could work)
 '''
 
-from fnmatch import fnmatch
 from datetime import datetime, timedelta
-from glob import iglob
+from glob import iglob, escape as glob_escape
 import os
+from typing import Iterator, Iterable, Sequence
 
 from .archive import Archive, InvalidArchive
 from . import spec as bead_spec
@@ -15,14 +27,14 @@ Path = tech.fs.Path
 
 
 # private and specific to Box implementation, when Box gains more power,
-# it should change how it handles queries (e.g. using BEAD_NAME_GLOB, KIND,
+# it should change how it handles queries (e.g. using BEAD_NAME, KIND,
 # or CONTENT_ID directly through an index)
 
 
 def _make_checkers():
-    def has_name_glob(nameglob):
+    def has_name(name):
         def filter(bead):
-            return fnmatch(bead.name, nameglob)
+            return bead.name == name
         return filter
 
     def has_kind(kind):
@@ -36,9 +48,9 @@ def _make_checkers():
         return filter
 
     return {
-        bead_spec.BEAD_NAME_GLOB: has_name_glob,
-        bead_spec.KIND:           has_kind,
-        bead_spec.CONTENT_ID:     has_content_prefix,
+        bead_spec.BEAD_NAME:  has_name,
+        bead_spec.KIND:       has_kind,
+        bead_spec.CONTENT_ID: has_content_prefix,
     }
 
 
@@ -87,7 +99,10 @@ There {is,will be,was} more info about BEADs at
 '''
 
 
-class Box(object):
+class Box:
+    """
+    Store Beads.
+    """
     # TODO: Box: support user maintained directory hierarchy
 
     def __init__(self, name=None, location=None):
@@ -103,37 +118,37 @@ class Box(object):
         '''
         return Path(self.location)
 
-    def get_bead(self, kind, content_id):
-        query = ((bead_spec.KIND, kind), (bead_spec.CONTENT_ID, content_id))
+    def find_bead(self, name, content_id):
+        query = ((bead_spec.BEAD_NAME, name), (bead_spec.CONTENT_ID, content_id))
         for bead in self._beads(query):
             return bead
-        raise LookupError(f'Bead {kind}/{content_id} not found')
 
-    def all_beads(self):
+    def all_beads(self) -> Iterator[Archive]:
         '''
         Iterator for all beads in this Box
         '''
         return iter(self._beads([]))
 
-    def _beads(self, conditions):
+    def _beads(self, conditions) -> Iterable[Archive]:
         '''
         Retrieve matching beads.
         '''
         match = compile_conditions(conditions)
 
-        # FUTURE IMPLEMENTATIONS: check for kind & content_id
-        # they are good candidates for indexing
-        bead_name_globs = [
+        bead_names = set(
             value
             for tag, value in conditions
-            if tag == bead_spec.BEAD_NAME_GLOB]
-        if bead_name_globs:
-            glob = bead_name_globs[0] + '*'
+            if tag == bead_spec.BEAD_NAME)
+        if bead_names:
+            if len(bead_names) > 1:
+                # easy path: names disagree
+                return []
+            # beadname_20170615T075813302092+0200.zip
+            glob = bead_names.pop() + '_????????T????????????[-+]????.zip'
         else:
             glob = '*'
 
-        # XXX: directory itself might be a pattern - is it OK?
-        paths = iglob(self.directory / glob)
+        paths = iglob(Path(glob_escape(self.directory)) / glob)
         beads = self._archives_from(paths)
         candidates = (bead for bead in beads if match(bead))
         return candidates
@@ -153,7 +168,7 @@ class Box(object):
         zipfilename = (
             self.directory / f'{workspace.name}_{timestamp}.zip')
         workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
-        return Archive(zipfilename)
+        return zipfilename
 
     def find_names(self, kind, content_id, timestamp):
         '''
@@ -207,7 +222,7 @@ class Box(object):
 
 
 class UnionBox:
-    def __init__(self, boxes):
+    def __init__(self, boxes: Sequence[Box]):
         self.boxes = tuple(boxes)
 
     def get_context(self, check_type, check_param, time):
@@ -228,7 +243,7 @@ class UnionBox:
         context = self.get_context(check_type, check_param, time)
         return context.best
 
-    def all_beads(self):
+    def all_beads(self) -> Iterator[Archive]:
         '''
         Iterator for all beads in this Box
         '''

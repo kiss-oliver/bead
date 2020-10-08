@@ -27,33 +27,31 @@ class Test_box_with_beads(TestCase):
 
     # tests
     def test_all_beads(self, box):
-        self.assertEquals(
-            set(['bead1', 'bead2', 'BEAD3']),
-            set(b.name for b in box.all_beads()))
+        assert set(['bead1', 'bead2', 'BEAD3']) == set(b.name for b in box.all_beads())
 
     def test_find_names(self, box, timestamp):
         (
             exact_match, best_guess, best_guess_timestamp, names
         ) = box.find_names(kind='test-bead1', content_id='', timestamp=timestamp)
 
-        self.assertIsNone(exact_match)
-        self.assertEquals('bead1', best_guess)
-        self.assertIsNotNone(best_guess_timestamp)
-        self.assertEquals(set(['bead1']), set(names))
+        assert exact_match is None
+        assert 'bead1' == best_guess
+        assert best_guess_timestamp is not None
+        assert set(['bead1']) == set(names)
 
     def test_find_names_works_even_with_removed_box_directory(self, box, timestamp):
         rmtree(box.directory)
         (
             exact_match, best_guess, best_guess_timestamp, names
         ) = box.find_names(kind='test-bead1', content_id='', timestamp=timestamp)
-        self.assertIsNone(exact_match)
-        self.assertIsNone(best_guess)
-        self.assertIsNone(best_guess_timestamp)
-        self.assertSequenceEqual((), names)
+        assert exact_match is None
+        assert best_guess is None
+        assert best_guess_timestamp is None
+        assert [] == list(names)
 
     def test_find_with_uppercase_name(self, box, timestamp):
-        matches = box.get_context(bead_spec.BEAD_NAME_GLOB, 'BEAD3', timestamp)
-        self.assertEquals('BEAD3', matches.best.name)
+        matches = box.get_context(bead_spec.BEAD_NAME, 'BEAD3', timestamp)
+        assert 'BEAD3' == matches.best.name
 
 
 class Test_box_methods_tolerate_junk_in_box(Test_box_with_beads):

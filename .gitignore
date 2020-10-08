@@ -2,6 +2,8 @@
 *.pyc
 .tox
 .coverage
-test-env
+/coverage
 build
 executables/
+.*_cache/
+*,cover

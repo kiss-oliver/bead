@@ -1,7 +1,6 @@
 import os
 
 from bead.test import TestCase, skipIf
-from testtools.matchers import Contains, FileContains
 
 from . import test_fixtures as fixtures
 from bead.workspace import Workspace
@@ -12,14 +11,13 @@ class Test(TestCase, fixtures.RobotAndBeads):
 
     def test_invalid_workspace_causes_error(self, robot):
         self.assertRaises(SystemExit, robot.cli, 'save')
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        assert 'ERROR' in robot.stderr
 
     def test_on_success_there_is_feedback(self, robot, box):
         robot.cli('new', 'bead')
         robot.cd('bead')
         robot.cli('save')
-        self.assertNotEquals(
-            robot.stdout, '', 'Expected some feedback, but got none :(')
+        assert robot.stdout != '', 'Expected some feedback, but got none :('
 
     @skipIf(not hasattr(os, 'symlink'), 'missing os.symlink')
     def test_symlink_is_resolved_on_save(self, robot, box):
@@ -32,10 +30,10 @@ class Test(TestCase, fixtures.RobotAndBeads):
         # save to box & clean up
         robot.cli('save')
         robot.cd('..')
-        robot.cli('nuke', 'bead')
+        robot.cli('zap', 'bead')
 
         robot.cli('develop', 'bead')
-        self.assertThat(robot.cwd / 'bead/symlink', FileContains('content'))
+        self.assert_file_contains(robot.cwd / 'bead/symlink', 'content')
 
 
 class Test_no_box(TestCase):
@@ -50,11 +48,11 @@ class Test_no_box(TestCase):
         robot.cd('bead')
         robot.cli('save')
         # there is a message on stderr that a new box has been created
-        self.assertThat(robot.stderr, Contains('home'))
+        assert 'home' in robot.stderr
         # a new box with name `home` has been indeed created and it has exactly one bead
         with robot.environment as env:
             homebox = env.get_box('home')
-        self.assertEquals(1, bead_count(homebox))
+        assert 1 == bead_count(homebox)
 
 
 def bead_count(box, kind=None):
@@ -81,22 +79,22 @@ class Test_more_than_one_boxes(TestCase):
     def test_save_dies_without_explicit_box(self, robot, box1, box2):
         robot.cli('new', 'bead')
         self.assertRaises(SystemExit, robot.cli, 'save', 'bead')
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        assert 'ERROR' in robot.stderr
 
     def test_save_stores_bead_in_specified_box(self, robot, box1, box2):
         robot.cli('new', 'bead')
         robot.cli('save', box1.name, '--workspace=bead')
         with robot.environment:
             kind = Workspace('bead').kind
-        self.assertEquals(1, bead_count(box1, kind))
-        self.assertEquals(0, bead_count(box2, kind))
+        assert 1 == bead_count(box1, kind)
+        assert 0 == bead_count(box2, kind)
         robot.cli('save', box2.name, '-w', 'bead')
-        self.assertEquals(1, bead_count(box1, kind))
-        self.assertEquals(1, bead_count(box2, kind))
+        assert 1 == bead_count(box1, kind)
+        assert 1 == bead_count(box2, kind)
 
     def test_invalid_box_specified(self, robot, box1, box2):
         robot.cli('new', 'bead')
         self.assertRaises(
             SystemExit,
             robot.cli, 'save', 'unknown-box', '--workspace', 'bead')
-        self.assertThat(robot.stderr, Contains('ERROR'))
+        assert 'ERROR' in robot.stderr

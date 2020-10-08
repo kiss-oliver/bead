@@ -3,7 +3,7 @@
 
 import os
 import stat
-from subprocess import check_call
+from subprocess import run, PIPE
 from glob import glob
 import shutil
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -26,7 +26,7 @@ def mkdir(dir):
 
 def pip(*args):
     print(f'pip {" ".join(args)}')
-    return check_call(('pip',) + args)
+    return run(('pip',) + args, check=True)
 
 
 def pip_download_source(*args):
@@ -70,14 +70,13 @@ progress = notification
 with further_output('Clean up'):
     rmtree(BUILD)
 
-PKG_DIRS = sorted(os.path.dirname(init_py) for init_py in glob('*/__init__.py'))
+git_ls_files = run(['git', 'ls-files'], stdout=PIPE, check=True).stdout.decode('utf-8')
 
-PY_SOURCES = []
-for pkg_dir in PKG_DIRS:
-    for root, dirs, files in os.walk(pkg_dir):
-        for file in files:
-            if file.endswith('.py'):
-                PY_SOURCES.append(os.path.normpath(os.path.join(root, file)))
+PY_SOURCES = [
+    line
+    for line in git_ls_files.splitlines()
+    if line.endswith('.py')
+]
 
 with further_output('Copying over our sources'):
     PY_DIRS = sorted({os.path.dirname(file) for file in PY_SOURCES})
@@ -102,11 +101,6 @@ with further_output('Unpacking packages'):
 
 with progress(f'Creating .pyz zip archive from the sources ({TOOL_PYZ})'):
     with ZipFile(TOOL_PYZ, mode='w', compression=ZIP_DEFLATED) as zip:
-        # add the entry point
-        zip.write('__main__.py')
-        # add debug logger
-        zip.write('tracelog.py')
-        # add python sources
         for realroot, dirs, files in os.walk(SRC):
             ziproot = os.path.relpath(realroot, SRC)
             for file_name in files:

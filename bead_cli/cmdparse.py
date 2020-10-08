@@ -24,6 +24,8 @@ class Command:
     argparse (user input), and a function.
     '''
 
+    FORMATTER_CLASS = argparse.HelpFormatter
+
     def declare(self, arg):
         '''
         Declare command arguments by overriding it.
@@ -77,10 +79,6 @@ class Parser:
         # subparsers should be an `argparse` implementation detail, but is not
         self.__subparsers = None
 
-        # XXX: cli parsing: revisit when python 2.x no longer supported
-        # it might be tempting to use argparser.set_defaults()
-        # to set default command to print help, but it works only on 3.x!
-
     @classmethod
     def new(cls, defaults, *args, **kwargs):
         '''
@@ -112,9 +110,8 @@ class Parser:
             instance = commandish()
             return instance
         if callable(commandish):
-            # XXX: introspect parameter names, default values, annotations?
-            raise NotImplementedError(
-                'Can not yet work with vanilla callables')
+            # enhancement: introspect parameter names, default values, annotations?
+            raise NotImplementedError('Can not work with vanilla callables')
 
     def arg(self, *args, **kwargs):
         '''
@@ -147,7 +144,11 @@ class Parser:
         '''
         command = self._make_command(commandish)
         parser = self._subparsers.add_parser(
-            name, help=title, description=command.description)
+            name,
+            help=title,
+            description=command.description,
+            formatter_class=command.FORMATTER_CLASS
+        )
         command.declare(self.__class__(parser, self.defaults).arg)
         parser.set_defaults(_cmdparse__run=command.run)
 
@@ -164,8 +165,8 @@ class Parser:
         MISMATCH = 'Names, commands, and titles do not match up!'
         assert len(names) == len(commands), MISMATCH
         assert len(names) == len(titles), MISMATCH
-        assert all(isinstance(n, ''.__class__) for n in names), MISMATCH
-        assert all(isinstance(t, ''.__class__) for t in titles), MISMATCH
+        assert all(isinstance(n, str) for n in names), MISMATCH
+        assert all(isinstance(t, str) for t in titles), MISMATCH
 
         for name, command, title in zip(names, commands, titles):
             self.command(name, command, title)
@@ -189,8 +190,19 @@ class Parser:
                 'ERROR: not a full command <%s>\n'
                 % ' '.join(pipes.quote(arg) for arg in argv))
             self.argparser.print_help()
-            return 2
+            return -1
 
-        args = self.argparser.parse_args(argv)
+        try:
+            args = self.argparser.parse_args(argv)
+        except SystemExit:
+            # argparse throws SystemExit when help triggered,
+            #   which is a surprising API:
+            # https://bugs.python.org/issue10506
+            #
+            # also most of the test runners misbehaves/misbehaved on it:
+            # https://github.com/testing-cabal/testtools/issues/144
+            #
+            # this is worked around here
+            return -1
         run = getattr(args, '_cmdparse__run', print_help)
-        return run(args)
+        return run(args) or 0

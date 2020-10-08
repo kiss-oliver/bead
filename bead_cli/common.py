@@ -5,6 +5,7 @@ from bead.workspace import Workspace
 from bead import spec as bead_spec
 from bead.archive import Archive
 from bead import box as bead_box
+from bead.tech.fs import Path
 from . import arg_help
 from . import arg_metavar
 from bead.tech.timestamp import time_from_user, parse_iso8601
@@ -39,6 +40,11 @@ def OPTIONAL_WORKSPACE(parser):
         help=arg_help.WORKSPACE)
 
 
+def assert_valid_workspace(workspace):
+    if not workspace.is_valid:
+        die(f'{workspace.directory} is not a valid workspace')
+
+
 class get_env:
     '''
     Make an Environment when called.
@@ -48,7 +54,7 @@ class get_env:
     '''
 
     def __init__(self, config_dir):
-        self.config_dir = config_dir
+        self.config_dir = Path(config_dir)
 
     def __call__(self):
         config_dir = self.config_dir
@@ -74,7 +80,7 @@ def OPTIONAL_ENV(parser):
         help=arg_help.ENV)
 
 
-class DefaultArgSentinel(object):
+class DefaultArgSentinel:
     '''
     I am a sentinel for default values.
 
@@ -125,10 +131,10 @@ def resolve_bead(env, bead_ref_base, time):
     # not a file - try box search
     unionbox = bead_box.UnionBox(env.get_boxes())
 
-    return unionbox.get_at(bead_spec.BEAD_NAME_GLOB, bead_ref_base, time)
+    return unionbox.get_at(bead_spec.BEAD_NAME, bead_ref_base, time)
 
 
-def verify_with_feedback(archive):
+def verify_with_feedback(archive: Archive):
     print(f'Verifying archive {archive.archive_filename} ...', end='', flush=True)
     is_valid = archive.is_valid
     if is_valid:

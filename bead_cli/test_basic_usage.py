@@ -1,6 +1,5 @@
 import os
 from bead.test import TestCase
-from testtools.content import text_content
 
 from .test_robot import Robot
 
@@ -25,40 +24,40 @@ class Test_basic_command_line(TestCase):
 
     # tests
     def test(self, robot, cli, cd, ls, box_dir):
-        self.addDetail('home', text_content(robot.home))
+        print(f'home: {robot.home}')
 
         cli('new', 'something')
-        self.assertIn('something', robot.stdout)
+        assert 'something' in robot.stdout
 
         cd('something')
         cli('status')
-        self.assertNotIn('Inputs', robot.stdout)
+        assert 'Inputs' not in robot.stdout
 
         cli('box', 'add', 'default', box_dir)
         cli('save')
 
         cd('..')
         cli('develop', 'something', 'something-develop')
-        self.assertIn(robot.cwd / 'something-develop', ls())
+        assert robot.cwd / 'something-develop' in ls()
 
         cd('something-develop')
         cli('input', 'add', 'older-self', 'something')
         cli('status')
-        self.assertIn('Inputs', robot.stdout)
-        self.assertIn('older-self', robot.stdout)
+        assert 'Inputs' in robot.stdout
+        assert 'older-self' in robot.stdout
 
         cli('web')
 
         # this might leave behind the empty directory on windows
-        cli('nuke')
+        cli('zap')
         cd('..')
-        cli('nuke', 'something')
+        cli('zap', 'something')
 
         something_develop_dir = robot.home / 'something-develop'
         if os.path.exists(something_develop_dir):
             # on windows it is not possible to remove
-            # the current working directory (nuke does this)
-            self.assertNotEqual(os.name, 'posix', 'Must be removed on posix')
-            self.assertEqual([], ls(something_develop_dir))
+            # the current working directory (zap does this)
+            assert os.name != 'posix', 'Must be removed on posix'
+            assert [] == ls(something_develop_dir)
             os.rmdir(something_develop_dir)
-        self.assertEqual([], ls(robot.home))
+        assert [] == ls(robot.home)

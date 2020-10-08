@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "bead"
+version = "0.0.3"
+description = "Linked frozen computations"
+authors = ["Krisztián Fekete"]
+license = "The Unlicense"
+packages = [
+    { include = "bead" },
+    { include = "bead_cli" },
+    { include = "tracelog.py" },
+    { include = "tests" },
+]
+
+[tool.poetry.scripts]
+bead = 'bead_cli.main:main'
+
+[tool.poetry.dependencies]
+python = "> 3.6"
+appdirs = ""
+attrs = ""
+cached-property = ""
+
+[tool.poetry.dev-dependencies]
+pytest-cov = ""
+flake8 = ""
+freezegun = ""
+pytest = "^5.3"
+mypy = "^0.761"
+
+[build-system]
+requires = ["poetry>=1.0"]
+build-backend = "poetry.masonry.api"

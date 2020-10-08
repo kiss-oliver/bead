@@ -1,24 +1,19 @@
 import os
 import sys
-import time
-import subprocess
-import webbrowser
 
 from bead import tech
 from bead.workspace import Workspace
 from bead import layouts
-
-from bead.box import UnionBox
+import bead.spec as bead_spec
 
 from .cmdparse import Command
-from .common import die, warning
+from .common import assert_valid_workspace, die, warning
 from .common import DefaultArgSentinel
 from .common import OPTIONAL_WORKSPACE, OPTIONAL_ENV
 from .common import BEAD_REF_BASE, BEAD_TIME, resolve_bead
 from .common import verify_with_feedback
 from . import arg_metavar
 from . import arg_help
-from . import web
 
 timestamp = tech.timestamp.timestamp
 
@@ -110,8 +105,8 @@ class CmdSave(Command):
             box = env.get_box(box_name)
             if box is None:
                 die(f'Unknown box: {box_name}')
-        box.store(workspace, timestamp())
-        print('Successfully stored bead.')
+        location = box.store(workspace, timestamp())
+        print(f'Successfully stored bead at {location}.')
 
 
 DERIVE_FROM_BEAD_NAME = DefaultArgSentinel('derive one from bead name')
@@ -162,11 +157,6 @@ class CmdDevelop(Command):
             print('Input data not loaded, update if needed and load manually')
 
 
-def assert_valid_workspace(workspace):
-    if not workspace.is_valid:
-        die(f'{workspace.directory} is not a valid workspace')
-
-
 def print_inputs(env, workspace, verbose):
     assert_valid_workspace(workspace)
     inputs = sorted(workspace.inputs)
@@ -175,38 +165,41 @@ def print_inputs(env, workspace, verbose):
         boxes = env.get_boxes()
 
         print('Inputs:')
+        has_not_loaded = False
+        is_not_first_input = True
         for input in inputs:
-            print('input/' + input.name)
-            print('\tFreeze time:', input.timestamp_str)
-            print('\tName[s]:')
-            has_name = False
+            if is_not_first_input:
+                print('')
+            is_not_loaded = not workspace.is_loaded(input.name)
+            has_not_loaded = has_not_loaded or is_not_loaded
+            print(f'input/{input.name}')
+            print(f'\tStatus:      {"**NOT LOADED**" if is_not_loaded else "loaded"}')
+            input_bead_name = workspace.get_input_bead_name(input.name)
+            print(f'\tBead:        {input_bead_name} # {input.timestamp_str}')
+            if verbose:
+                print(f'\tKind:        {input.kind}')
+                print(f'\tContent id:  {input.content_id}')
+            print('\tBox[es]:')
+            has_box = False
             for box in boxes:
-                (
-                    exact_match, best_guess, best_guess_timestamp, names
-                ) = box.find_names(input.kind, input.content_id, input.timestamp)
-                #
-                has_name = has_name or exact_match or best_guess or names
-                if exact_match:
-                    print(f'\t * -r {box.name} {exact_match}')
-                    names.remove(exact_match)
-                elif best_guess:
-                    print(f'\t ? -r {box.name} {best_guess}')
-                    names.remove(best_guess)
-                for name in sorted(names):
-                    print(f'\t [-r {box.name} {name}]')
-            if verbose or not has_name:
-                print('\tBead kind:', input.kind)
-                print('\tContent id:', input.content_id)
+                try:
+                    context = box.get_context(
+                        bead_spec.BEAD_NAME, input_bead_name, input.timestamp)
+                except LookupError:
+                    # not in this box
+                    continue
+                bead = context.best
+                has_box = True
+                exact_match = bead.content_id == input.content_id
+                print(f'\t {"*" if exact_match else "?"} -r {box.name} # {bead.timestamp_str}')
+            if not has_box:
+                print('\t - no candidates :(')
+                print('\t   Maybe it has been renamed? or is it in an unreachable box?')
+            is_not_first_input = True
 
         print('')
-        unloaded = [
-            input.name
-            for input in inputs
-            if not workspace.is_loaded(input.name)]
-        if unloaded:
-            print('These inputs are not loaded:')
-            unloaded_list = '\t- ' + '\n\t- '.join(unloaded)
-            print(unloaded_list.expandtabs(2))
+        if has_not_loaded:
+            print('Some inputs are currently not loaded.')
             print('You can "load" or "update" them manually.')
     else:
         print('No inputs defined')
@@ -227,7 +220,6 @@ class CmdStatus(Command):
         workspace = args.workspace
         verbose = args.verbose
         env = args.get_env()
-        # TODO: use a template and render it with passing in all data
         kind_needed = verbose
         if workspace.is_valid:
             print(f'Bead Name: {workspace.name}')
@@ -239,7 +231,7 @@ class CmdStatus(Command):
             warning(f'Invalid workspace ({workspace.directory})')
 
 
-class CmdNuke(Command):
+class CmdZap(Command):
     '''
     Delete the workspace, inluding data, code and documentation.
     '''
@@ -257,101 +249,14 @@ class CmdNuke(Command):
         print(f'Deleted workspace {directory}')
 
 
-class CmdWeb(Command):
+class CmdNuke(Command):
     '''
-    Visualize connections to other beads.
+    No operation, you probably want zap, to delete the workspace.
 
-    Write a GraphViz .dot file and create other representations as requested.
+    Nuke was a bad name.
     '''
-
-    def declare(self, arg):
-        arg(OPTIONAL_ENV)
-        arg('-o', '--output-base', default='web',
-            help='File name base of generated files'
-            + ' (e.g. dot file will be stored as <OUTPUT_BASE>.dot)')
-        arg('--to-csv', default=False, action='store_true',
-            help='Write bead meta data to files:'
-            + ' <OUTPUT_BASE>-beads.csv and <OUTPUT_BASE>-inputs.csv')
-        arg('--from-csv', metavar='INPUT_BASE',
-            help='Load bead metadata from <INPUT_BASE>-beads.csv and <INPUT_BASE>-inputs.csv')
-        arg('--svg', default=False, action='store_true',
-            help="Call GraphViz's `dot` to create <OUTPUT_BASE>.svg file as well")
-        arg('--png', default=False, action='store_true',
-            help="Call GraphViz's `dot` to create an <OUTPUT_BASE>.png file as well")
-        arg('--view', default=False, action='store_true',
-            help="Open web browser with the generated SVG file (implies --svg)")
-        arg('--drop-edges', default=False, action='store_true',
-            help="Show only edges for the most recent beads for each kind")
-        arg('names', metavar='NAME', nargs='*',
-            help="Restrict output graph to these names and their inputs (default: all beads)")
 
     def run(self, args):
-        base_file = args.output_base
-
-        if args.from_csv:
-            with open(f'{args.from_csv}_beads.csv') as beads_csv_stream:
-                with open(f'{args.from_csv}_inputs.csv') as inputs_csv_stream:
-                    all_beads = web.read_beads(beads_csv_stream, inputs_csv_stream)
-        else:
-            env = args.get_env()
-            all_beads = load_all_beads(env.get_boxes())
-        print(f"Loaded {len(all_beads)} beads")
-
-        if args.to_csv:
-            with open(f'{base_file}_beads.csv', 'w') as beads_csv_stream:
-                with open(f'{base_file}_inputs.csv', 'w') as inputs_csv_stream:
-                    web.write_beads(all_beads, beads_csv_stream, inputs_csv_stream)
-
-        dot_weaver = web.Weaver(all_beads)
-        if args.names:
-            beads_to_plot = {
-                bead.content_id
-                for bead in dot_weaver.all_beads
-                if bead.name in args.names}
-            dot_weaver.restrict_to(beads_to_plot)
-        do_all_edges = not args.drop_edges
-        dot_str = dot_weaver.weave(do_all_edges)
-
-        dot_file = f'{base_file}.dot'
-        print(f"Creating {dot_file}")
-        tech.fs.write_file(dot_file, dot_str)
-
-        if args.png:
-            png_file = f'{base_file}.png'
-            print(f"Creating {png_file}")
-            graphviz_dot(dot_file, png_file)
-
-        if args.svg or args.view:
-            svg_file = f'{base_file}.svg'
-            print(f"Creating {svg_file}")
-            graphviz_dot(dot_file, svg_file)
-            if args.view:
-                print(f"Viewing {svg_file}")
-                webbrowser.open(svg_file)
-
-
-def load_all_beads(boxes):
-    columns = int(os.environ.get('COLUMNS', 80))
-    all_beads = []
-    load_start = time.perf_counter()
-    # This UnionBox.all_beads is the meat, the rest is just user feedback for big/slow
-    # environments
-    for n, bead in enumerate(UnionBox(boxes).all_beads()):
-        load_end = time.perf_counter()
-
-        msg = f"\rLoaded bead {n+1} ({bead.archive_filename})"[:columns]
-        msg = msg + ' ' * (columns - len(msg))
-        print(msg, end="", flush=True)
-        if load_end - load_start > 1:
-            print(f"\nLoading took {load_end - load_start} seconds")
-        all_beads.append(bead)
-        load_start = time.perf_counter()
-    print("\r" + " " * columns + "\r", end="")
-    return all_beads
-
-
-def graphviz_dot(dot_file, output_file):
-    _, ext = os.path.splitext(output_file)
-    filetype = ext.lstrip('.')
-    cmd = ['dot', dot_file, '-o', output_file, '-T', filetype]
-    subprocess.check_call(cmd)
+        print('Nothing happened.')
+        print()
+        print('You probably want to use zap, the nuke command is about to disappear.')

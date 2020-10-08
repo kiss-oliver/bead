@@ -9,7 +9,7 @@ class TestPath(TestCase):
 
     def test_div(self):
         result = m.Path('a') / 'b' / '..' / 'b'
-        self.assertEquals(('a', '/', 'b'), result.partition('/'))
+        assert ('a', '/', 'b') == result.partition('/')
 
 
 class Test_make_readonly(TestCase):
@@ -115,12 +115,8 @@ class Test_all_subpaths(TestCase):
 
     def then_all_paths_are_found(self):
         root = self.__root
-        self.assertEquals(
-            {root}
-            | set(root / d for d in self.DIRS)
-            | set(root / f for f in self.FILES),
-            self.__paths
-        )
+        all_paths = {root} | set(root / d for d in self.DIRS) | set(root / f for f in self.FILES)
+        assert all_paths == self.__paths
 
 
 class Test_read_write_file(TestCase):
@@ -130,4 +126,4 @@ class Test_read_write_file(TestCase):
         testfile = root / 'testfile'
         content = u'Test_read_write_file testfile content / áíőóüú@!#@!#$$@'
         m.write_file(testfile, content)
-        self.assertEquals(content, m.read_file(testfile))
+        assert content == m.read_file(testfile)

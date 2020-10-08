@@ -25,8 +25,8 @@ with the following minimum structure:
 }
 '''
 
-from collections import namedtuple
 from .tech.timestamp import time_from_timestamp
+import attr
 
 # Metadata versions determine the content_id used and potentially
 # other processing differences. Having it in the metadata potentially
@@ -42,7 +42,43 @@ INPUT_CONTENT_ID   = 'content_id'
 INPUT_FREEZE_TIME  = 'freeze_time'
 
 
-class InputSpec(namedtuple('InputSpec', 'name kind content_id timestamp_str')):
+class ValidatingStr(str):
+    def __init__(self, string: str = ''):
+        if not self.is_wellformed(string):
+            raise ValueError(f'Not a valid {self.__class__.__name__}: {string!r}')
+        str.__init__(string)
+
+    @classmethod
+    def is_wellformed(cls, string: str) -> bool:
+        raise NotImplementedError
+
+
+class BeadName(ValidatingStr):
+    @classmethod
+    def is_wellformed(cls, string: str) -> bool:
+        # check, that string can be a path in current directory
+        return string not in ('', '.', '..') and '/' not in string and '__' not in string
+
+
+assert type(BeadName('asd')) == BeadName
+assert type(BeadName('asd') + '/') != BeadName
+assert type(BeadName('asd')[0]) != BeadName
+
+
+class InputName(BeadName):
+    pass
+
+
+assert isinstance(InputName('asd'), BeadName)
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class InputSpec:
+    name: InputName = attr.ib(converter=InputName)
+    kind: str
+    content_id: str
+    timestamp_str: str
+
     @property
     def timestamp(self):
         return time_from_timestamp(self.timestamp_str)

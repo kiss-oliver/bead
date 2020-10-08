@@ -12,6 +12,11 @@ BOX_LOCATION = 'directory'
 
 
 class Environment:
+    """
+    I am responsible for storing/retrieving user specific data.
+
+    Currently includes just the list of boxes and their definitions.
+    """
 
     def __init__(self, filename):
         self.filename = filename
@@ -70,11 +75,3 @@ class Environment:
 
     def is_known_box(self, name):
         return self.get_box(name) is not None
-
-    def get_bead(self, kind, content_id):
-        for box in self.get_boxes():
-            try:
-                return box.get_bead(kind, content_id)
-            except LookupError:
-                pass
-        raise LookupError(f'Bead {kind}/{content_id} not found')
