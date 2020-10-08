@@ -3,6 +3,7 @@ import os
 from tracelog import TRACELOG
 
 from bead import tech
+import bead.zipopener
 
 from bead.test import TempDir, CaptureStdout, CaptureStderr, chdir, Fixture, setenv
 from .main import run
@@ -93,6 +94,11 @@ class Robot(Fixture):
                     TRACELOG(EXCEPTION=e)
                     raise
                 finally:
+                    # invalidate zip file cache
+                    # it would prevent deleting opened files on windows
+                    # and would keep zip files open, even after they are removed on unix
+                    bead.zipopener.close_all()
+
                     self.stdout = stdout.text
                     self.stderr = stderr.text
                     #

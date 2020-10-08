@@ -1,7 +1,6 @@
 from bead.archive import Archive
 from bead.tech.fs import read_file, write_file
 from bead.test import TestCase
-import bead.zipopener
 
 from . import test_fixtures as fixtures
 
@@ -31,9 +30,6 @@ class Test_xmeta(TestCase, fixtures.RobotAndBeads):
         with robot.environment:
             write_file(archive_filename, '')
             assert read_file(archive_filename) == ''
-
-        # invalidate zip file cache - keeps zip files open, even after they are removed
-        bead.zipopener.close_all()
 
         xmeta_archive = Archive(archive_filename)
         assert archive_attributes == get_meta(xmeta_archive)

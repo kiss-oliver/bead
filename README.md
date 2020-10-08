@@ -91,7 +91,7 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/break-chains-
 - [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/ziparchive.py#L43)
 - [FIXME: die with message when directory already exists](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/workspace.py#L48)
 - [FIXME: rename Bead.timestamp* to .freeze_time*](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/bead.py#L33)
-- [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L20)
+- [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_robot.py#L21)
 - [FIXME: this test helper uses private to box implementation information](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead_cli/test_feature_update_by_name.py#L108)
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L106)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/break-chains-by-name/bead/box.py#L161)
