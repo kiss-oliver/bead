@@ -168,6 +168,9 @@ class CmdUpdate(Command):
         workspace = get_workspace(args)
         env = args.get_env()
         input = workspace.get_input(input_nick)
+        if input is None:
+            die(f'Workspace does not have input "{input_nick}"'
+                ' - did you want to add it as a new one?')
         if bead_ref_base is SAME_BEAD_NEWEST_VERSION:
             def get_context(time):
                 unionbox = UnionBox(env.get_boxes())
