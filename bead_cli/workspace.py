@@ -35,7 +35,7 @@ def assert_may_be_valid_name(name):
 
 class CmdNew(Command):
     '''
-    Create and initialize new workspace directory with a new bead.
+    Create and initialize new workspace directory for a new bead.
     '''
 
     def declare(self, arg):
@@ -43,13 +43,14 @@ class CmdNew(Command):
             help='bead and directory to create')
 
     def run(self, args):
-        workspace = args.workspace
+        workspace: Workspace = args.workspace
         assert_may_be_valid_name(workspace.name)
-        # FIXME: die with message when directory already exists
+        if os.path.exists(workspace.directory):
+            die(f'Directory {workspace.name} already exists.')
 
         kind = tech.identifier.uuid()
         workspace.create(kind)
-        print(f'Created {workspace.name}')
+        print(f'Created "{workspace.name}"')
 
 
 def WORKSPACE_defaulting_to(default_workspace):

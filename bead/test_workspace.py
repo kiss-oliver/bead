@@ -20,18 +20,15 @@ A_KIND = 'an arbitrary identifier that is not used by chance'
 class Test_create(TestCase):
 
     def test_valid(self):
-        self.given_an_empty_directory()
-        self.when_initialized()
+        self.when_a_new_workspace_is_created()
         self.then_directory_is_a_valid_bead_dir()
 
     def test_has_no_inputs(self):
-        self.given_an_empty_directory()
-        self.when_initialized()
+        self.when_a_new_workspace_is_created()
         self.then_workspace_has_no_inputs()
 
     def test_of_specified_kind(self):
-        self.given_an_empty_directory()
-        self.when_initialized()
+        self.when_a_new_workspace_is_created()
         self.then_workspace_is_of_specified_kind()
 
     # implementation
@@ -42,10 +39,8 @@ class Test_create(TestCase):
     def workspace(self):
         return m.Workspace(self.__workspace_dir)
 
-    def given_an_empty_directory(self):
-        self.__workspace_dir = self.new_temp_dir()
-
-    def when_initialized(self):
+    def when_a_new_workspace_is_created(self):
+        self.__workspace_dir = self.new_temp_dir() / 'new_workspace'
         self.workspace.create(A_KIND)
 
     def then_directory_is_a_valid_bead_dir(self):
@@ -69,7 +64,7 @@ class Test_for_current_working_directory(TestCase):
         assert tech.fs.Path(root) == ws.directory
 
     def test_workspace_root(self):
-        root = self.new_temp_dir()
+        root = self.new_temp_dir() / 'new_workspace'
         workspace = m.Workspace(root)
         workspace.create(A_KIND)
         with chdir(root):
@@ -77,7 +72,7 @@ class Test_for_current_working_directory(TestCase):
         assert tech.fs.Path(root) == ws.directory
 
     def test_workspace_above_root(self):
-        root = self.new_temp_dir()
+        root = self.new_temp_dir() / 'new_workspace'
         workspace = m.Workspace(root)
         workspace.create(A_KIND)
         with chdir(root / layouts.Workspace.INPUT):
@@ -110,7 +105,6 @@ class Test_pack(TestCase):
     # implementation
 
     __workspace_dir = None
-    __zipdir = None
     __zipfile = None
     __SOURCE1 = b's1'
     __SOURCE2 = b's2'
@@ -123,7 +117,7 @@ class Test_pack(TestCase):
         return m.Workspace(self.__workspace_dir)
 
     def given_a_workspace(self):
-        self.__workspace_dir = self.new_temp_dir()
+        self.__workspace_dir = self.new_temp_dir() / 'workspace'
         self.workspace.create(A_KIND)
         layout = layouts.Workspace
 
@@ -138,8 +132,7 @@ class Test_pack(TestCase):
         write_file(self.__workspace_dir / 'subdir/source2', self.__SOURCE2)
 
     def when_archived(self):
-        self.__zipdir = self.new_temp_dir()
-        self.__zipfile = self.__zipdir / 'bead.zip'
+        self.__zipfile = self.new_temp_dir() / 'bead.zip'
         self.workspace.pack(self.__zipfile, timestamp(), self.__BEAD_COMMENT)
 
     def then_archive_contains_files_from_bead_directory(self):
@@ -195,7 +188,7 @@ class Test_pack_stability(TestCase):
 
 def make_bead(path, filespecs):
     with temp_dir() as root:
-        workspace = m.Workspace(root)
+        workspace = m.Workspace(root / 'workspace')
         workspace.create(A_KIND)
         for filename, content in filespecs.items():
             write_file(workspace.directory / filename, content)
@@ -233,7 +226,7 @@ class Test_load(TestCase):
         return m.Workspace(self.__workspace_dir)
 
     def given_a_workspace(self):
-        self.__workspace_dir = self.new_temp_dir()
+        self.__workspace_dir = self.new_temp_dir() / 'workspace'
         self.workspace.create(A_KIND)
 
     def _load_a_bead(self, input_nick):
@@ -298,7 +291,7 @@ class Test_input_map(TestCase):
     # implementation
 
     def workspace_dir(self):
-        return self.new_temp_dir()
+        return self.new_temp_dir() / 'workspace'
 
     def workspace(self, workspace_dir):
         workspace = m.Workspace(workspace_dir)
@@ -338,7 +331,7 @@ class Test_is_valid(TestCase):
     # fixtures
 
     def workspace(self):
-        workspace = m.Workspace(self.new_temp_dir())
+        workspace = m.Workspace(self.new_temp_dir() / 'workspace')
         workspace.create(A_KIND)
         return workspace
 

@@ -86,10 +86,7 @@ class Workspace(Bead):
         Works with either an empty directory or a directory to be created.
         '''
         dir = self.directory
-        try:
-            assert os.listdir(dir) == []
-        except OSError:
-            pass
+        assert not os.path.exists(dir)
 
         self.create_directories()
 
