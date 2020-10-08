@@ -1,3 +1,5 @@
+import os
+
 from bead.test import TestCase
 
 from bead.workspace import Workspace
@@ -47,3 +49,8 @@ class Test_develop(TestCase, fixtures.RobotAndBeads):
 
         # output must be unpacked as well!
         self.assert_file_contains(ws / layouts.Workspace.OUTPUT / 'README', bead_a)
+
+    def test_dies_if_directory_exists(self, robot, bead_a):
+        os.makedirs(robot.cwd / bead_a)
+        self.assertRaises(SystemExit, robot.cli, 'develop', bead_a)
+        assert 'ERROR' in robot.stderr

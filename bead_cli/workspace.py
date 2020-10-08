@@ -145,6 +145,9 @@ class CmdDevelop(Command):
         else:
             workspace = args.workspace
 
+        if os.path.exists(workspace.directory):
+            die(f'Workspace "{workspace.name}" directory already exists'
+                ' - do you have an old checkout?')
         bead.unpack_to(workspace)
         assert workspace.is_valid
 

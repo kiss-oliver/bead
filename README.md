@@ -95,5 +95,5 @@ Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), 
 - [TODO: Box: support user maintained directory hierarchy](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L106)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L161)
 - [TODO: remove nuke command after next release](https://github.com/e3krisztian/bead/blob/master/bead_cli/main.py#L46)
-- [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L156)
+- [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L159)
 - [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L86)
