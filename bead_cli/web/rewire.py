@@ -64,6 +64,7 @@ def apply(bead, rewire_specs: List[BeadRewireOptions]):
                     context = f'bead {bead.name}@{bead.freeze_time_str}'
                     selected_msg = f"Selected name {names[0]!r} for input {input!r} from {names!r}"
                     warning(f"{selected_msg} for {context}")
-                input_map[input] = names[0]
+                if names:
+                    input_map[input] = names[0]
             bead.input_map = input_map
             return

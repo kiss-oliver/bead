@@ -259,6 +259,8 @@ def color_beads(sketch: Sketch) -> bool:
     """
     heads, sink = add_final_sink_to(heads_of(sketch))
     head_eval_order = toposort(heads.edges)
+    if not head_eval_order:  # empty
+        return True
     assert head_eval_order[-1] == sink
 
     for cluster in sketch.clusters:
