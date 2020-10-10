@@ -27,13 +27,12 @@ class Bead:
     # frozen beads only details
     # (workspaces fake them with recognisable values)
     content_id: str
-    timestamp_str: str
+    freeze_time_str: str
     box_name: str
 
-    # FIXME: rename Bead.timestamp* to .freeze_time*
     @property
-    def timestamp(self):
-        return time_from_timestamp(self.timestamp_str)
+    def freeze_time(self):
+        return time_from_timestamp(self.freeze_time_str)
 
     def get_input(self, name):
         for input in self.inputs:

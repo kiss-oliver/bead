@@ -49,7 +49,7 @@ class Archive(UnpackableBead):
         # The resulting archive can still be invalid and die unexpectedly later with
         # InvalidArchive exception, as these are potentially cached values
         self.meta_version
-        self.timestamp
+        self.freeze_time
         self.kind
 
     def load_cache(self):
@@ -77,7 +77,7 @@ class Archive(UnpackableBead):
     meta_version = _cached_zip_attribute(meta.META_VERSION, 'meta_version')
     content_id = _cached_zip_attribute(CACHE_CONTENT_ID, 'content_id')
     kind = _cached_zip_attribute(meta.KIND, 'kind')
-    timestamp_str = _cached_zip_attribute(meta.FREEZE_TIME, 'timestamp_str')
+    freeze_time_str = _cached_zip_attribute(meta.FREEZE_TIME, 'freeze_time_str')
 
     @property
     def input_map(self):
@@ -111,7 +111,7 @@ class Archive(UnpackableBead):
         ensure(meta.META_VERSION, ziparchive.meta_version)
         ensure(CACHE_CONTENT_ID, ziparchive.content_id)
         ensure(meta.KIND, ziparchive.kind)
-        ensure(meta.FREEZE_TIME, ziparchive.timestamp_str)
+        ensure(meta.FREEZE_TIME, ziparchive.freeze_time_str)
         ensure(meta.INPUTS, ziparchive.meta[meta.INPUTS])
 
         # need not match

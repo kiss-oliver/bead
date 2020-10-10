@@ -162,21 +162,21 @@ class Box:
             else:
                 yield archive
 
-    def store(self, workspace, timestamp):
+    def store(self, workspace, freeze_time):
         # -> Bead
         zipfilename = (
-            self.directory / f'{workspace.name}_{timestamp}.zip')
-        workspace.pack(zipfilename, timestamp=timestamp, comment=ARCHIVE_COMMENT)
+            self.directory / f'{workspace.name}_{freeze_time}.zip')
+        workspace.pack(zipfilename, freeze_time=freeze_time, comment=ARCHIVE_COMMENT)
         return zipfilename
 
     def find_names(self, kind, content_id, timestamp):
         '''
-        -> (exact_match, best_guess, best_guess_timestamp, names)
+        -> (exact_match, best_guess, best_guess_freeze_time, names)
         where
-            exact_match          = name (kind & content_id matched)
-            best_guess           = name (kind matched, timestamp is closest to input's)
-            best_guess_timestamp = timestamp ()
-            names                = sequence of names (kind matched)
+            exact_match            = name (kind & content_id matched)
+            best_guess             = name (kind matched, timestamp is closest to input's)
+            best_guess_freeze_time = timestamp ()
+            names                  = sequence of names (kind matched)
         '''
         assert isinstance(timestamp, datetime)
         try:
@@ -187,31 +187,34 @@ class Box:
         beads = self._archives_from(paths)
         candidates = (bead for bead in beads if bead.kind == kind)
 
-        exact_match          = None
-        best_guess           = None
-        best_guess_timestamp = None
-        best_guess_timedelta = None
-        names                = set()
+        exact_match            = None
+        best_guess             = None
+        best_guess_freeze_time = None
+        best_guess_timedelta   = None
+        names                  = set()
         for bead in candidates:
             if bead.content_id == content_id:
                 exact_match = bead.name
             #
-            bead_timestamp = time_from_timestamp(bead.timestamp_str)
-            bead_timedelta = bead_timestamp - timestamp
+            bead_freeze_time = time_from_timestamp(bead.freeze_time_str)
+            bead_timedelta = bead_freeze_time - timestamp
             if bead_timedelta < timedelta():
                 bead_timedelta = -bead_timedelta
             if (
                 (best_guess_timedelta is None) or
                 (bead_timedelta < best_guess_timedelta) or
-                (bead_timedelta == best_guess_timedelta and bead_timestamp > best_guess_timestamp)
+                (
+                    (bead_timedelta == best_guess_timedelta) and
+                    (bead_freeze_time > best_guess_freeze_time)
+                )
             ):
                 best_guess = bead.name
-                best_guess_timestamp = bead_timestamp
+                best_guess_freeze_time = bead_freeze_time
                 best_guess_timedelta = bead_timedelta
             #
             names.add(bead.name)
 
-        return exact_match, best_guess, best_guess_timestamp, names
+        return exact_match, best_guess, best_guess_freeze_time, names
 
     def get_context(self, check_type, check_param, time):
         # in theory timestamps can be [intentionally] duplicated, but let's
@@ -252,9 +255,9 @@ class UnionBox:
 
 class BeadContext:
     def __init__(self, time, bead, prev, next):
-        assert bead is None or bead.timestamp == time
-        assert prev is None or prev.timestamp < time
-        assert next is None or next.timestamp > time
+        assert bead is None or bead.freeze_time == time
+        assert prev is None or prev.freeze_time < time
+        assert next is None or next.freeze_time > time
         assert bead or prev or next
         self.time = time
         self.bead = bead
@@ -269,7 +272,7 @@ class BeadContext:
             return self.next
         if not self.next:
             return self.prev
-        if self.time - self.prev.timestamp < self.next.timestamp - self.time:
+        if self.time - self.prev.freeze_time < self.next.freeze_time - self.time:
             return self.prev
         return self.next
 
@@ -277,16 +280,16 @@ class BeadContext:
 def make_context(time, beads):
     match, prev, next = None, None, None
     for bead in beads:
-        if bead.timestamp < time:
-            if prev is None or prev.timestamp < bead.timestamp:
+        if bead.freeze_time < time:
+            if prev is None or prev.freeze_time < bead.freeze_time:
                 prev = bead
-        elif bead.timestamp > time:
-            if next is None or bead.timestamp < next.timestamp:
+        elif bead.freeze_time > time:
+            if next is None or bead.freeze_time < next.freeze_time:
                 next = bead
         else:
-            assert bead.timestamp == time
+            assert bead.freeze_time == time
             assert match is None or match.content_id == bead.content_id, (
-                'multiple beads with same timestamp')
+                'multiple beads with same freeze time')
             match = bead
     if match or prev or next:
         return BeadContext(time, match, prev, next)

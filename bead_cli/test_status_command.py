@@ -20,7 +20,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         bead_with_inputs = beads[bead_with_inputs]
         assert bead_with_inputs.kind not in robot.stdout
         assert bead_a.kind not in robot.stdout
-        assert bead_a.timestamp_str in robot.stdout
+        assert bead_a.freeze_time_str in robot.stdout
         assert bead_a.content_id not in robot.stdout
 
     def test_verbose(self, robot, beads, bead_with_inputs, bead_a):
@@ -35,7 +35,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         bead_with_inputs = beads[bead_with_inputs]
         assert bead_with_inputs.kind in robot.stdout
         assert bead_a.kind in robot.stdout
-        assert bead_a.timestamp_str in robot.stdout
+        assert bead_a.freeze_time_str in robot.stdout
         assert bead_a.content_id in robot.stdout
 
     def test_inputs_not_in_known_boxes(
@@ -51,7 +51,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
 
         bead_a = beads[bead_a]
         assert bead_with_inputs in robot.stdout
-        assert bead_a.timestamp_str in robot.stdout
+        assert bead_a.freeze_time_str in robot.stdout
 
     def test_verbose_inputs_not_in_known_boxes(
             self, robot, beads, bead_with_inputs, bead_a):
@@ -67,7 +67,7 @@ class Test_status(TestCase, fixtures.RobotAndBeads):
         bead_with_inputs = beads[bead_with_inputs]
         assert bead_with_inputs.kind in robot.stdout
         assert bead_a.kind in robot.stdout
-        assert bead_a.timestamp_str in robot.stdout
+        assert bead_a.freeze_time_str in robot.stdout
         assert bead_a.content_id in robot.stdout
 
     def test_invalid_workspace(self, robot):

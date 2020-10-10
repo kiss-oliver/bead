@@ -52,9 +52,9 @@ class Port:
 
 def dot_cluster_as_fragments(cluster_name, beads, indent='  '):
     assert beads
-    # beads are sorted in descending order by timestamp
-    timestamps = [b.timestamp for b in beads]
-    assert timestamps == sorted(timestamps, reverse=True)
+    # beads are sorted in descending order by freeze_time
+    freeze_times = [b.freeze_time for b in beads]
+    assert freeze_times == sorted(freeze_times, reverse=True)
     # they have the same name
     assert {bead.name for bead in beads} == {cluster_name}
 
@@ -77,7 +77,7 @@ def dot_cluster_as_fragments(cluster_name, beads, indent='  '):
         yield '    <TR>'
         yield f'<TD PORT="{Port(bead).input}" {color}></TD>'
         yield f'<TD PORT="{Port(bead).output}" {color}>'
-        yield f'{bead.timestamp}'
+        yield f'{bead.freeze_time}'
         yield '</TD>'
         yield '</TR>\n'
     yield indent

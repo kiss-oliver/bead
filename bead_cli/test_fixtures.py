@@ -84,15 +84,15 @@ class RobotAndBeads:
         return hacked_bead_path
 
     def _bead_with_history(self, robot, box, bead_name, bead_kind):
-        def make_bead(timestamp):
+        def make_bead(freeze_time):
             with TempDir() as tempdir_obj:
                 workspace_dir = os.path.join(tempdir_obj.path, bead_name)
                 ws = Workspace(workspace_dir)
                 ws.create(bead_kind)
-                sentinel_file = ws.directory / f'sentinel-{timestamp}'
-                tech.fs.write_file(sentinel_file, timestamp)
-                tech.fs.write_file(ws.directory / 'output/README', timestamp)
-                box.store(ws, timestamp)
+                sentinel_file = ws.directory / f'sentinel-{freeze_time}'
+                tech.fs.write_file(sentinel_file, freeze_time)
+                tech.fs.write_file(ws.directory / 'output/README', freeze_time)
+                box.store(ws, freeze_time)
                 tech.fs.rmtree(workspace_dir)
 
         with robot.environment:

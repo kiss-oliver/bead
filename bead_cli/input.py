@@ -156,7 +156,7 @@ class CmdUpdate(Command):
                 if workspace.is_loaded(input.name):
                     print(
                         f'Skipping update of "{input.name}":'
-                        + f' no other candidate found ({bead_name}@{input.timestamp})')
+                        + f' no other candidate found ({bead_name}@{input.freeze_time})')
                 else:
                     warning(f'Could not find bead for "{input.name}" with name "{bead_name}"')
             else:
@@ -187,7 +187,7 @@ class CmdUpdate(Command):
             if args.bead_offset:
                 # handle --prev --next
                 assert args.bead_time == TIME_LATEST
-                context = get_context(input.timestamp)
+                context = get_context(input.freeze_time)
                 if args.bead_offset == 1:
                     bead = context.next
                 else:
@@ -208,10 +208,10 @@ class CmdUpdate(Command):
 def _update_input(workspace, input, bead):
     if workspace.is_loaded(input.name) and input.content_id == bead.content_id:
         assert input.kind == bead.kind
-        assert input.timestamp == bead.timestamp
+        assert input.freeze_time == bead.freeze_time
         print(
             f'Skipping update of {input.name}:'
-            + f' it is already at requested version ({input.timestamp})')
+            + f' it is already at requested version ({input.freeze_time})')
     else:
         if input.kind != bead.kind:
             warning(f'Updating input "{input.name}" with a bead of different kind')

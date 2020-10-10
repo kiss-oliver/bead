@@ -18,7 +18,7 @@ class Test_xmeta(TestCase, fixtures.RobotAndBeads):
                 'meta_version': a.meta_version,
                 'content_id': a.content_id,
                 'kind': a.kind,
-                'timestamp_str': a.timestamp_str,
+                'freeze_time': a.freeze_time_str,
                 'inputs': a.inputs,
                 'input_map': a.input_map,
             }

@@ -80,7 +80,7 @@ class Sketcher:
             name=name.rstrip(string.digits),
             kind=kind,
             content_id=f"content_id_{proto}",
-            timestamp_str=timestamp.strftime('%Y%m%dT%H%M%S%f%z'),
+            freeze_time_str=timestamp.strftime('%Y%m%dT%H%M%S%f%z'),
             box_name=box_name,
         )
         # clones share inputs, thus if a new input is added to any of them
@@ -94,7 +94,7 @@ class Sketcher:
             name=input_name,
             kind=input_bead.kind,
             content_id=input_bead.content_id,
-            timestamp_str=input_bead.timestamp_str,
+            freeze_time_str=input_bead.freeze_time_str,
         )
         bead.inputs.append(input_spec)
         self._map_input(bead, input_name, input_bead.name)

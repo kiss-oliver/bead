@@ -77,11 +77,11 @@ class InputSpec:
     name: InputName = attr.ib(converter=InputName)
     kind: str
     content_id: str
-    timestamp_str: str
+    freeze_time_str: str
 
     @property
-    def timestamp(self):
-        return time_from_timestamp(self.timestamp_str)
+    def freeze_time(self):
+        return time_from_timestamp(self.freeze_time_str)
 
 
 def parse_inputs(meta):

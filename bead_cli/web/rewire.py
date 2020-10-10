@@ -41,7 +41,7 @@ def get_options(beads) -> Dict[BoxName, List[BeadRewireOptions]]:
                 {
                     'name': bead.name,
                     'content_id': bead.content_id,
-                    'timestamp': bead.timestamp_str,
+                    'freeze_time': bead.freeze_time_str,
                     'input_map': input_map
                 }
             )
@@ -56,12 +56,12 @@ def apply(bead, rewire_specs: List[BeadRewireOptions]):
         if (
             (spec['name'] == bead.name) and
             (spec['content_id'] == bead.content_id) and
-            (spec['timestamp'] == bead.timestamp_str)
+            (spec['freeze_time'] == bead.freeze_time_str)
         ):
             input_map = {}
             for input, names in spec['input_map'].items():
                 if len(names) > 1:
-                    context = f'bead {bead.name}@{bead.timestamp_str}'
+                    context = f'bead {bead.name}@{bead.freeze_time_str}'
                     selected_msg = f"Selected name {names[0]!r} for input {input!r} from {names!r}"
                     warning(f"{selected_msg} for {context}")
                 input_map[input] = names[0]

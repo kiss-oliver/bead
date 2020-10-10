@@ -29,7 +29,7 @@ class Dummy:
     name: str = attr.ib(kw_only=True, default="UNKNOWN")
     content_id: str = attr.ib(kw_only=True)
     kind: str = attr.ib(kw_only=True)
-    timestamp_str: str = attr.ib(kw_only=True)
+    freeze_time_str: str = attr.ib(kw_only=True)
     inputs: List[InputSpec] = attr.ib(kw_only=True, factory=list, converter=list)
 
     # these can be modified after the object is created
@@ -38,8 +38,8 @@ class Dummy:
     box_name: str = attr.ib(kw_only=True, default='')
 
     @cached_property
-    def timestamp(self):
-        return time_from_timestamp(self.timestamp_str)
+    def freeze_time(self):
+        return time_from_timestamp(self.freeze_time_str)
 
     @cached_property
     def ref(self) -> 'Ref':
@@ -51,7 +51,7 @@ class Dummy:
             name=bead.name,
             content_id=bead.content_id,
             kind=bead.kind,
-            timestamp_str=bead.timestamp_str,
+            freeze_time_str=bead.freeze_time_str,
             inputs=bead.inputs,
             input_map=bead.input_map,
             freshness=getattr(bead, 'freshness', Freshness.SUPERSEDED),
@@ -70,7 +70,7 @@ class Dummy:
                 name=bead.get_input_bead_name(inputspec.name),
                 content_id=inputspec.content_id,
                 kind=inputspec.kind,
-                timestamp_str=inputspec.timestamp_str))
+                freeze_time_str=inputspec.freeze_time_str))
         phantom.freshness = Freshness.PHANTOM
         return phantom
 

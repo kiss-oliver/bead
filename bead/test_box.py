@@ -12,10 +12,10 @@ class Test_box_with_beads(TestCase):
     def box(self):
         box = Box('test', self.new_temp_dir())
 
-        def add_bead(name, kind, timestamp):
+        def add_bead(name, kind, freeze_time):
             ws = Workspace(self.new_temp_dir() / name)
             ws.create(kind)
-            box.store(ws, timestamp)
+            box.store(ws, freeze_time)
 
         add_bead('bead1', 'test-bead1', '20160704T000000000000+0200')
         add_bead('bead2', 'test-bead2', '20160704T162800000000+0200')

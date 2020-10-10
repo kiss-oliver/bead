@@ -71,7 +71,7 @@ class Workspace(Bead):
         return f'<WORKSPACE {self.directory}>'
 
     @property
-    def timestamp_str(self):
+    def freeze_time_str(self):
         return tech.timestamp.timestamp()
 
     @property
@@ -108,13 +108,13 @@ class Workspace(Bead):
         fs.ensure_directory(dir / layouts.Workspace.TEMP)
         fs.ensure_directory(dir / layouts.Workspace.META)
 
-    def pack(self, zipfilename, timestamp, comment):
+    def pack(self, zipfilename, freeze_time, comment):
         '''
         Create archive from workspace.
         '''
         assert not os.path.exists(zipfilename)
         try:
-            _ZipCreator().create(zipfilename, self, timestamp, comment)
+            _ZipCreator().create(zipfilename, self, freeze_time, comment)
         except (RuntimeError, Exception):
             if os.path.exists(zipfilename):
                 os.remove(zipfilename)
@@ -132,12 +132,12 @@ class Workspace(Bead):
         return os.path.isdir(
             self.directory / layouts.Workspace.INPUT / input_nick)
 
-    def add_input(self, input_nick, kind, content_id, timestamp_str):
+    def add_input(self, input_nick, kind, content_id, freeze_time_str):
         m = self.meta
         m[meta.INPUTS][input_nick] = {
             meta.INPUT_KIND: kind,
             meta.INPUT_CONTENT_ID: content_id,
-            meta.INPUT_FREEZE_TIME: timestamp_str}
+            meta.INPUT_FREEZE_TIME: freeze_time_str}
         self.meta = m
 
     def delete_input(self, input_nick):
@@ -189,7 +189,7 @@ class Workspace(Bead):
         try:
             self.add_input(
                 input_nick,
-                bead.kind, bead.content_id, bead.timestamp_str)
+                bead.kind, bead.content_id, bead.freeze_time_str)
             destination_dir = input_dir / input_nick
             bead.unpack_data_to(destination_dir)
             for f in fs.all_subpaths(destination_dir):
@@ -320,7 +320,7 @@ class _ZipCreator:
                 input.name: {
                     meta.INPUT_KIND: input.kind,
                     meta.INPUT_CONTENT_ID: input.content_id,
-                    meta.INPUT_FREEZE_TIME: input.timestamp_str}
+                    meta.INPUT_FREEZE_TIME: input.freeze_time_str}
                 for input in workspace.inputs},
             meta.FREEZE_NAME: workspace.name}
 

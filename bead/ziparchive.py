@@ -126,7 +126,7 @@ class ZipArchive(UnpackableBead):
         return self._meta[meta.KIND]
 
     @property
-    def timestamp_str(self):
+    def freeze_time_str(self):
         return self._meta[meta.FREEZE_TIME]
 
     @property

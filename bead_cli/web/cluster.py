@@ -21,7 +21,7 @@ class Cluster:
         phantom_head = (
             Dummy(
                 name=name,
-                timestamp_str=EPOCH_STR,
+                freeze_time_str=EPOCH_STR,
                 content_id=None,
                 kind='EMPTY CLUSTER'))
         phantom_head.set_freshness(Freshness.PHANTOM)
@@ -33,7 +33,7 @@ class Cluster:
         self.beads_by_content_id[bead.content_id] = bead
 
         def head_order(bead):
-            return (bead.is_not_phantom, bead.timestamp)
+            return (bead.is_not_phantom, bead.freeze_time)
 
         if head_order(bead) >= head_order(self.head):
             self.head = bead
@@ -45,7 +45,7 @@ class Cluster:
         return (
             sorted(
                 self.beads_by_content_id.values(),
-                key=(lambda bead: bead.timestamp),
+                key=(lambda bead: bead.freeze_time),
                 reverse=True))
 
     def reset_freshness(self):

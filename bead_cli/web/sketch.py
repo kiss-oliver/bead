@@ -109,7 +109,7 @@ def add_final_sink_to(sketch: Sketch) -> Tuple[Sketch, Dummy]:
         name=sink_name,
         content_id=sink_name,
         kind=sink_name,
-        timestamp_str='SINK',
+        freeze_time_str='SINK',
         freshness=UP_TO_DATE
     )
     sink_edges = (Edge(src, sink) for src in sketch.beads)
@@ -163,7 +163,7 @@ class ClusterFilter:
                 name=name,
                 content_id=name,
                 kind=name,
-                timestamp_str=EPOCH_STR,
+                freeze_time_str=EPOCH_STR,
             )
             for name in sketch.cluster_by_name
         }

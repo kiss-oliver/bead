@@ -197,7 +197,7 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
                 {
                     'name': 'f',
                     'content_id': 'content_id_f1',
-                    'timestamp': '20000106T010000000000+0000',
+                    'freeze_time': '20000106T010000000000+0000',
                     # has two options, we also test, that the first one is selected
                     'input_map': {'e': ['renamed_e', 'another_e_copy']}
                 },
@@ -205,7 +205,7 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
                     # this does not exist, but should not cause any problem
                     'name': 'non-existing',
                     'content_id': 'content_id_f1',
-                    'timestamp': '20000106T010000000000+0000',
+                    'freeze_time': '20000106T010000000000+0000',
                     'input_map': {'e': ['renamed_e']}
                 }
             ],
@@ -214,7 +214,7 @@ class Test_rewire(TestCase, fixtures.RobotAndBeads):
                     # this does not exist, but should not cause any problem
                     'name': 'whatever',
                     'content_id': 'content_id_f1',
-                    'timestamp': '20000106T010000000000+0000',
+                    'freeze_time': '20000106T010000000000+0000',
                     'input_map': {'e': ['renamed_e']}
                 }
             ]

@@ -101,12 +101,12 @@ class Test_feature_update_by_name(TestCase, fixtures.RobotAndBeads):
         self.assert_loaded(robot, 'b', bead_b)
 
 
-def _copy(box, bead_name, bead_timestamp, new_name):
+def _copy(box, bead_name, bead_freeze_time, new_name):
     """
     Copy a bead to a new name within box.
     """
     # FIXME: this test helper uses private to box implementation information
     # namely how the current box implementation stores archives in zip files
-    source = box.directory / f'{bead_name}_{bead_timestamp}.zip'
-    destination = box.directory / f'{new_name}_{bead_timestamp}.zip'
+    source = box.directory / f'{bead_name}_{bead_freeze_time}.zip'
+    destination = box.directory / f'{new_name}_{bead_freeze_time}.zip'
     shutil.copy(source, destination)
