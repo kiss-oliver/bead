@@ -1,3 +1,4 @@
+from bead.exceptions import InvalidArchive
 import os.path
 
 from .cmdparse import Command
@@ -264,8 +265,11 @@ def _load(env, workspace, input):
 
 
 def _check_load_with_feedback(workspace: Workspace, input_nick, bead):
-    is_valid = verify_with_feedback(bead)
-    if is_valid:
+    try:
+        verify_with_feedback(bead)
+    except InvalidArchive:
+        warning(f'Bead for {input_nick} is found but damaged - not loading.')
+    else:
         workspace.set_input_bead_name(input_nick, bead.name)
         if workspace.is_loaded(input_nick):
             print(f'Removing current data from {input_nick}')
@@ -273,8 +277,6 @@ def _check_load_with_feedback(workspace: Workspace, input_nick, bead):
         print(f'Loading new data to {input_nick} ...', end='', flush=True)
         workspace.load(input_nick, bead)
         print(' Done')
-    else:
-        warning(f'Bead for {input_nick} is found but damaged - not loading.')
 
 
 class CmdUnload(Command):

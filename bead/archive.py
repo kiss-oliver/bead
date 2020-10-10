@@ -117,9 +117,8 @@ class Archive(UnpackableBead):
         # need not match
         self.cache.setdefault(CACHE_INPUT_MAP, ziparchive.input_map)
 
-    @property
-    def is_valid(self):
-        return self.ziparchive.is_valid
+    def validate(self):
+        self.ziparchive.validate()
 
     @property
     def inputs(self):

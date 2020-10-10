@@ -39,12 +39,7 @@ class ZipArchive(UnpackableBead):
         except (zipopener.BadZipFile, OSError, IOError):
             raise InvalidArchive(self.archive_filename)
 
-    # -
-    # FIXME: Archive.is_valid is too costly for a property
-    # in fact it is so costly in some cases, that the user is worth
-    # notifying that processing is happening, see verify_with_feedback(archive)
-    @property
-    def is_valid(self):
+    def validate(self):
         '''
         verify, that
         - all files under code, data, meta are present in the manifest
@@ -57,7 +52,8 @@ class ZipArchive(UnpackableBead):
             - has freezed name
             - has inputs (even if empty)
         '''
-        return all(self._checks())
+        if not all(self._checks()):
+            raise InvalidArchive
 
     def _checks(self):
         yield self._has_well_formed_meta()

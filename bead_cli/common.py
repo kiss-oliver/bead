@@ -1,3 +1,4 @@
+from bead.exceptions import InvalidArchive
 import os
 import sys
 
@@ -136,9 +137,9 @@ def resolve_bead(env, bead_ref_base, time):
 
 def verify_with_feedback(archive: Archive):
     print(f'Verifying archive {archive.archive_filename} ...', end='', flush=True)
-    is_valid = archive.is_valid
-    if is_valid:
+    try:
+        archive.validate()
         print(' OK', flush=True)
-    else:
+    except InvalidArchive:
         print(' DAMAGED!', flush=True)
-    return is_valid
+        raise

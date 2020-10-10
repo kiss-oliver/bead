@@ -1,3 +1,4 @@
+from bead.exceptions import InvalidArchive
 import os
 import sys
 
@@ -137,9 +138,10 @@ class CmdDevelop(Command):
             bead = resolve_bead(env, args.bead_ref_base, args.bead_time)
         except LookupError:
             die('Bead not found!')
-        is_valid = verify_with_feedback(bead)
-        if not is_valid:
-            die('Bead is found but damaged')
+        try:
+            verify_with_feedback(bead)
+        except InvalidArchive:
+            die('Bead is damaged')
         if args.workspace is DERIVE_FROM_BEAD_NAME:
             workspace = Workspace(bead.name)
         else:

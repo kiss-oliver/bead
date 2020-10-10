@@ -88,11 +88,10 @@ Thank you for your interest!
 
 Updated by script ([./ci](https://github.com/e3krisztian/bead/blob/master/ci)), text in this section and afterwards will be overwritten
 
-- [FIXME: Archive.is_valid is too costly for a property](https://github.com/e3krisztian/bead/blob/master/bead/ziparchive.py#L43)
 - [FIXME: rename Bead.timestamp* to .freeze_time*](https://github.com/e3krisztian/bead/blob/master/bead/bead.py#L33)
 - [FIXME: robot: environment file should be built by a function in environment](https://github.com/e3krisztian/bead/blob/master/bead_cli/test_robot.py#L21)
 - [FIXME: this test helper uses private to box implementation information](https://github.com/e3krisztian/bead/blob/master/bead_cli/test_feature_update_by_name.py#L108)
 - [TODO: log/report problem](https://github.com/e3krisztian/bead/blob/master/bead/box.py#L160)
 - [TODO: remove nuke command after next release](https://github.com/e3krisztian/bead/blob/master/bead_cli/main.py#L46)
-- [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L159)
-- [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L86)
+- [XXX: try to load smaller inputs?](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L161)
+- [XXX: (usability) save - support saving directly to a directory outside of workspace](https://github.com/e3krisztian/bead/blob/master/bead_cli/workspace.py#L87)
