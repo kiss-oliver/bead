@@ -18,8 +18,7 @@ def environment(robot):
     with setenv('HOME', robot.home):
         with chdir(robot.cwd):
             try:
-                # FIXME: robot: environment file should be built by a function in environment
-                yield Environment(robot.config_dir / 'env.json')
+                yield Environment.from_dir(robot.config_dir)
             except BaseException as e:
                 robot.retval = e
                 raise

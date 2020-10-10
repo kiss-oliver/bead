@@ -24,6 +24,10 @@ class Environment:
         if os.path.exists(self.filename):
             self.load()
 
+    @classmethod
+    def from_dir(cls, directory):
+        return cls(os.path.join(directory, 'env.json'))
+
     def load(self):
         with open(self.filename, 'r') as f:
             self._content = persistence.load(f)

@@ -62,8 +62,9 @@ class get_env:
         try:
             os.makedirs(config_dir)
         except OSError:
-            assert os.path.isdir(config_dir)
-        return Environment(config_dir / 'env.json')
+            if not os.path.isdir(config_dir):
+                raise
+        return Environment.from_dir(config_dir)
 
     def __repr__(self):
         return f'Environment at {self.config_dir}'
