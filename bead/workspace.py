@@ -267,11 +267,20 @@ class _ZipCreator:
 
     def create(self, zip_file_name, workspace, timestamp, comment):
         assert workspace.is_valid
+        user_compression_preference = os.environ.get('BEAD_ZIP_COMPRESSION')
+        compression = {
+            'off': zipfile.ZIP_STORED,
+            'stored': zipfile.ZIP_STORED,
+            # these are not universally supported compression methods
+            # 'lzma': zipfile.ZIP_LZMA,
+            # 'bz2': zipfile.ZIP_BZIP2,
+            'deflated': zipfile.ZIP_DEFLATED,
+        }.get(user_compression_preference, zipfile.ZIP_DEFLATED)
         try:
             with zipfile.ZipFile(
                 zip_file_name,
                 mode='w',
-                compression=zipfile.ZIP_DEFLATED,
+                compression=compression,
                 allowZip64=True,
             ) as self.zipfile:
                 self.zipfile.comment = comment.encode('utf-8')
