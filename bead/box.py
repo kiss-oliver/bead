@@ -103,7 +103,6 @@ class Box:
     """
     Store Beads.
     """
-    # TODO: Box: support user maintained directory hierarchy
 
     def __init__(self, name=None, location=None):
         self.location = location
