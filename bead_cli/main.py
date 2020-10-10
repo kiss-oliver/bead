@@ -1,5 +1,5 @@
+import os
 import sys
-import tempfile
 import traceback
 
 import appdirs
@@ -125,11 +125,11 @@ FAILURE_TEMPLATE = """\
 If you are using the latest version, and have not reported this error yet
 please report this problem by copy-pasting the content of file {error_report}
 at {repo}/issues/new
-or attaching the file to an email to {dev}@gmail.com.
+and/or attaching the file to an email to {dev}@gmail.com.
 
 Please make sure you copy-paste from the file {error_report}
-and not from the console, as the shown exception text was limited
-for your convenience, and it is not really helpful in fixing the bug.
+and not from the console, as the shown exception text was shortened
+for your convenience, thus it is not really helpful in fixing the bug.
 """
 
 
@@ -148,15 +148,10 @@ def main(run=run):
         sys_argv = f'{sys.argv!r}'
         exception = traceback.format_exc()
         short_exception = traceback.format_exc(limit=1)
-        with tempfile.NamedTemporaryFile(
-            dir='.',
-            prefix=f'error_{timestamp()}',
-            suffix='.txt',
-            mode='w',
-            delete=False
-        ) as f:
-            error_report = f.name
-            f.write(f'sys_argv = {sys_argv}\n{exception}\n')
+        error_report = os.path.abspath(f'error_{timestamp()}.txt')
+        with open(error_report, 'w') as f:
+            f.write(f'sys_argv = {sys_argv}\n')
+            f.write(f'{exception}\n')
         print(
             FAILURE_TEMPLATE.format(
                 exception=short_exception,

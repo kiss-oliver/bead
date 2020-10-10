@@ -28,7 +28,7 @@ def test_unhandled_error(tmp_path, capsys, monkeypatch):
         main(run=run_raise_unhandled)
 
     stderr = capsys.readouterr().err
-    error_report_path, = list(tmp_path.glob('error_*.txt'))
+    [error_report_path] = list(tmp_path.glob('error_*.txt'))
 
     # stderr is what the user see
     assert 'UnhandledError' in stderr
