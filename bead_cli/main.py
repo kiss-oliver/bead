@@ -7,20 +7,35 @@ from .cmdparse import Parser, Command
 
 from bead.tech.fs import Path
 from bead.tech.timestamp import timestamp
+from .common import warning
 from . import workspace
 from . import input
 from . import box
 from .web import commands as web
-from . import PACKAGE, VERSION
+from . import git_info
+
+
+VERSION_INFO = f'''
+Python:
+------
+{sys.version}
+
+Bead source:
+-----------
+origin: {git_info.GIT_REPO}
+branch: {git_info.GIT_BRANCH}
+date: {git_info.GIT_DATE}
+hash: {git_info.GIT_HASH}
+'''
 
 
 class CmdVersion(Command):
     '''
-    Show program version
+    Show program version info
     '''
 
     def run(self, args):
-        print(f'{PACKAGE} version {VERSION}')
+        print(VERSION_INFO)
 
 
 def make_argument_parser(defaults):
@@ -134,8 +149,10 @@ for your convenience, thus it is not really helpful in fixing the bug.
 
 
 def main(run=run):
+    if git_info.DIRTY:
+        warning('test build, DO NOT USE for production!!!')
     config_dir = appdirs.user_config_dir(
-        PACKAGE + '-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
+        'bead_cli-6a4d9d98-8e64-4a2a-b6c2-8a753ea61daf')
     try:
         retval = run(config_dir, sys.argv[1:])
     except KeyboardInterrupt:
@@ -152,6 +169,9 @@ def main(run=run):
         with open(error_report, 'w') as f:
             f.write(f'sys_argv = {sys_argv}\n')
             f.write(f'{exception}\n')
+            f.write(f'{VERSION_INFO}\n')
+            if git_info.DIRTY:
+                f.write('WARNING: TEST BUILD, UNKNOWN, UNCOMMITTED CHANGES !!!\n')
         print(
             FAILURE_TEMPLATE.format(
                 exception=short_exception,
