@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bead"
-version = "0.8.0"
+version = "0.8.1"
 description = "Linked frozen computations"
 authors = ["Krisztián Fekete"]
 license = "The Unlicense"
