@@ -22,10 +22,11 @@ Python:
 
 Bead source:
 -----------
-origin: {git_info.GIT_REPO}
-branch: {git_info.GIT_BRANCH}
-date: {git_info.GIT_DATE}
-hash: {git_info.GIT_HASH}
+origin:  {git_info.GIT_REPO}
+branch:  {git_info.GIT_BRANCH}
+date:    {git_info.GIT_DATE}
+hash:    {git_info.GIT_HASH}
+version: {git_info.TAG_VERSION}{'-dirty' if git_info.DIRTY else ''}
 '''
 
 
