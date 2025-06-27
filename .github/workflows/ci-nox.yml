@@ -1,5 +1,4 @@
-# GitHub Actions workflow for Python project
-name: CI
+name: Nox CI
 
 on:
   push:
@@ -19,9 +18,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+      - name: Install Nox
+        run: pip install nox
+      - name: Run Nox session for correct Python version
         run: |
-          python -m pip install --upgrade pip
-          pip install tox
-      - name: Run tests
-        run: tox
+          if [[ "${{ matrix.python-version }}" == "3.8" ]]; then
+            nox -s tests_3_8
+          elif [[ "${{ matrix.python-version }}" == "3.12" ]]; then
+            nox -s tests_3_12
+          fi
