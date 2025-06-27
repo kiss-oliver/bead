@@ -127,7 +127,7 @@ def parse_commands(env, words):
         try:
             cmd_class = SUBCOMMANDS[cmd_name]
             cmd = cmd_class(remaining_words)
-        except:
+        except Exception:
             return commands, remaining[::-1]
         commands.append(cmd)
 
@@ -300,7 +300,7 @@ def load_all_beads(boxes):
     for n, bead in enumerate(UnionBox(boxes).all_beads()):
         load_end = time.perf_counter()
 
-        msg = f"\rLoaded bead {n+1} ({bead.archive_filename})"[:columns]
+        msg = f"\rLoaded bead {n + 1} ({bead.archive_filename})"[:columns]
         msg = msg + ' ' * (columns - len(msg))
         print(msg, end="", flush=True)
         if load_end - load_start > 1:
