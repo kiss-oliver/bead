@@ -1,6 +1,7 @@
 Health:
-Travis [![Build Status](https://travis-ci.org/e3krisztian/bead.svg?branch=master)](https://travis-ci.org/e3krisztian/bead)
 AppVeyor [![Build Status](https://ci.appveyor.com/api/projects/status/github/e3krisztian/bead?branch=master&svg=true)](https://ci.appveyor.com/project/e3krisztian/bead)
+
+[![CI](https://github.com/e3krisztian/bead/actions/workflows/ci.yml/badge.svg)](https://github.com/e3krisztian/bead/actions/workflows/ci.yml)
 
     B-E-+
      \ \ \
