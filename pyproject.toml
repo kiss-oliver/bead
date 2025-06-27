@@ -25,7 +25,7 @@ pytest-cov = ""
 flake8 = ""
 freezegun = ""
 pytest = "^5.3"
-mypy = "^0.761"
+mypy = ""
 
 [build-system]
 requires = ["poetry>=1.0"]
